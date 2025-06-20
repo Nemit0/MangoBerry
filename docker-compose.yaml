@@ -1,0 +1,21 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    networks:
+      - mangoberry-net
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    networks:
+      - mangoberry-net
+networks:
+    mangoberry-net:
+      driver: bridge
