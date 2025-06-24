@@ -1,6 +1,6 @@
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
-from database import engine
+from MangoBerry.backend.database import engine
 
 # Reflect the existing database
 Base = automap_base()

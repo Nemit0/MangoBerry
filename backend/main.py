@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
-from database import SessionLocal, engine
-import models
+from MangoBerry.backend.database import SessionLocal, engine
+import MangoBerry.backend.models as models
 
 app = FastAPI()
 
