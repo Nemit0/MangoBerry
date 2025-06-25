@@ -1,8 +1,12 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
+from dotenv import load_dotenv
+import os
 
-DATABASE_URL = "mysql+pymysql://mangoberry:mangoberry@10.241.144.46:3306/MangoBerry"
 
+load_dotenv()
+
+DATABASE_URL = os.getenv("SQL_URL")
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()

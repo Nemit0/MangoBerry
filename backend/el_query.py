@@ -10,8 +10,8 @@ client = Elasticsearch(
 
 query = {
     "query": {
-        "match": {
-            "name": "하늘찬"
+        "match_phrase_prefix": {
+            "name": "하"
         }
     }
 }
@@ -21,4 +21,4 @@ response = client.search(index="restaurant", body=query)
 # Print result names
 for hit in response["hits"]["hits"]:
     doc = hit["_source"]
-    print(f"{doc['name']} — {doc['type']} - {doc['location']}")
+    print(f"이름: {doc['name']} \n음식 종류: {doc['type']} \n위도와 경도: {doc['location']['lat']}, {doc['location']['lon']}")

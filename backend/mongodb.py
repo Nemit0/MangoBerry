@@ -1,6 +1,10 @@
 from pymongo import MongoClient
-# uri = "mongodb+srv://mangoberry:mangoberry@mangoberry.mlzqhtq.mongodb.net/"
-uri = "mongodb://mangoberry:mangoberry@10.241.144.46:27017/?authSource=customer_info"
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+uri = os.getenv("MONGO_URI")
+
 client = MongoClient(uri)
 # try:
 #     info = client.server_info()

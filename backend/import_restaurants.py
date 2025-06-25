@@ -1,6 +1,9 @@
 import csv
 from elasticsearch import Elasticsearch
 import os
+import sys
+
+sys.stdout.reconfigure(encoding='utf-8')
 
 # Connect to Elasticsearch
 client = Elasticsearch(
