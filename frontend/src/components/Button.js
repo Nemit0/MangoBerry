@@ -17,6 +17,7 @@ const ButtonGroup = () => {
         <button className="btn login">로그인</button>
         <button className="btn signup">가입하기</button>
         <button className="btn check">중복확인</button>
+        <button className="btn follow">팔로우</button>
       </div>
 
       <div className="section">

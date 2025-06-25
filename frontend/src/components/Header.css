@@ -17,63 +17,83 @@
     font-size: 100px;
   }
 
+  /* 검색창 전체 바탕 */
   .search-bar {
-    display: flex;
-    gap: 8px;
-    flex: 1;
-    max-width: 400px;
-    margin: 0 24px;
-  }
-  
-  .search-bar input {
-    flex: 1;
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-  }
-  
-  .search-bar button {
-    padding: 8px 16px;
-    background-color: #1e90ff;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-  
-  .auth-buttons {
-    display: flex;
-    gap: 12px;
-  }
-  
-  .btn {
-    padding: 8px 14px;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    cursor: pointer;
-  }
-  
-  .signup {
-    background-color: #20c997;
-    color: white;
-  }
-  
-  .login {
-    background-color: #007bff;
-    color: white;
-  }
-  
-  .logout {
-    background-color: #dc3545;
-    color: white;
-  }
-  
-  .nav-btn {
-    border-radius: 50%;
-    background-color: #9A4A6E;
-    color: #FAF0D2;
-    width:  60px;
-    height: 60px;
-    cursor: pointer;
-  }
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 800px;
+  height: 50px;
+  background-color: #E6E6E6; /* 회색 바탕 */
+  border-radius: 10px;        /* 모서리 둥글게 */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 바깥 그림자 */
+  padding: 0 12px;
+  margin: 0 24px;
+}
+
+/* 입력창 */
+.search-bar input {
+  flex: 1;
+  width: 190px;
+  height: 26px;
+  border: none;
+  font-size: 20px;
+  color: #AAAAAA;                    /* 입력 텍스트 색 */
+  background-color:#E6E6E6;       /* 회색 바탕 */
+  outline: none;
+}
+
+/* placeholder 색 지정 */
+.search-bar input::placeholder {
+  color: #AAAAAA; /* 연한 회색 */
+}
+
+/* 돋보기 버튼 */
+.search-bar button {
+  background-color: transparent;   /* 배경 투명 */
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #212121; /* 진한 회색 */
+  font-size: 24px;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.signup {
+  background-color: white;
+  color: #000000;
+  width: 56px;
+  height: 19px;
+}
+
+.login {
+  background-color: white;
+  color: #000000;
+  width: 42px;
+  height: 19px;
+}
+
+.logout {
+  background-color: white;
+  color: #000000;
+  width: 56px;
+  height: 19px;
+}
+
+.nav-icon {
+  border-radius: 50%;
+  background-color: #9A4A6E;
+  color: #FAF0D2;
+  width:  60px;
+  height: 60px;
+  cursor: pointer;
+}

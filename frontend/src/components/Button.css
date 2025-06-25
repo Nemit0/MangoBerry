@@ -14,102 +14,28 @@
     justify-content: center;
   }
   
-.btn {
-    padding: 10px 16px;
+  /* 종류별 색상 스타일 */
+.next, .prev, .done, .cancel, .register {
+    background-color: #000000;
+    color: #ffffff;
+    width: 100px;
+    height: 50px;
     border: none;
-    border-radius: 8px;
-    font-size: 1rem;
+    border-radius: 5px;
+    font-size: 30px;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: all 0.3s ease;
   }
   
-  /* 종류별 색상 스타일 */
-.next {
-    background-color: #000000;
-    color: #ffffff;
-    width: 100px;
-    height: 50px;
-    border: none;
-    border-radius: 5px;
-    font-size: 30px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    }
-
-.next:hover {
-    background-color: #9747ff;
-    color: #FAF0D2;
-    }
-
-.prev {
-    background-color: #000000;
-    color: #ffffff;
-    width: 100px;
-    height: 50px;
-    border: none;
-    border-radius: 5px;
-    font-size: 30px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    }
-
-.prev:hover {
-    background-color: #9747ff;
-    color: #FAF0D2;
-    }
-
-.done {
-    background-color: #000000;
-    color: #ffffff;
-    width: 100px;
-    height: 50px;
-    border: none;
-    border-radius: 5px;
-    font-size: 30px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    }
-
-.done:hover {
-    background-color: #9747ff;
-    color: #FAF0D2;
-    }
-
-.cancel {
-    background-color: #000000;
-    color: #ffffff;
-    width: 100px;
-    height: 50px;
-    border: none;
-    border-radius: 5px;
-    font-size: 30px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    }
-
-.cancel:hover {
-    background-color: #9747ff;
-    color: #FAF0D2;
-    }
-
-.register {
-    background-color: #000000;
-    color: #ffffff;
-    width: 100px;
-    height: 50px;
-    border: none;
-    border-radius: 5px;
-    font-size: 30px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    }
-
+.next:hover,
+.prev:hover,
+.done:hover,
+.cancel:hover,
 .register:hover {
     background-color: #9747ff;
     color: #FAF0D2;
-    }
-
-
+  }
+  
 /*GUMIO 로고*/
 .main {
     background-color: white;
@@ -133,11 +59,8 @@
 
 .follow:hover{
     background-color: #ffffff;
-    color: #FAF0D2;                
-    width: 76px;
-    height: 32px;
+    color: #FAF0D2;               
     border: 1px solid #96466E;
-    font-size: 30px;
     }
 
 .login {
@@ -174,7 +97,6 @@
     background-color: #9747ff;
     color: #FAF0D2;
     }
-
 
 .check {
     background-color: #000000;
