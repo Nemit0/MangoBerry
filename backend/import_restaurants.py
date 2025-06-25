@@ -20,7 +20,7 @@ with open("MangoBerry/backend/info.csv", newline='', encoding="utf-8") as csvfil
                 "r_id": int(row["r_id"]),
                 "id": row["id"],
                 "name": row["name"],
-                "type": row["type"],
+                "type": row["type"].split(">")[1].strip() if ">" in row["type"] else row["type"],
                 "lat": float(row["lat"]),
                 "lon": float(row["lon"]),
                 "location": {
@@ -28,8 +28,16 @@ with open("MangoBerry/backend/info.csv", newline='', encoding="utf-8") as csvfil
                     "lon": float(row["lon"])
                 }
             }
-            response = client.index(index=index_name, document=doc)
-            print(f"Inserted: {row['name']} | ID: {response['_id']}")
+            # response = client.index(index=index_name, id=row["r_id"], document=doc)
+            # print(f"Inserted: {row['name']} | ID: {response['_id']}")
+
+            doc_id = row["r_id"]
+
+            if not client.exists(index=index_name, id=doc_id):
+                response = client.index(index=index_name, id=doc_id, document=doc)
+                print(f"Inserted: {row['name']} | ID: {doc_id}")
+            else:
+                print(f"Skipped duplicate: {row['name']} | ID: {doc_id}")
+
         except Exception as e:
             print(f"Failed to insert row: {row} — {e}")
-

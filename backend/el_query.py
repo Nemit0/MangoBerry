@@ -11,7 +11,7 @@ client = Elasticsearch(
 query = {
     "query": {
         "match": {
-            "name": "우리담"
+            "name": "하늘찬"
         }
     }
 }
@@ -21,4 +21,4 @@ response = client.search(index="restaurant", body=query)
 # Print result names
 for hit in response["hits"]["hits"]:
     doc = hit["_source"]
-    print(f"{doc['name']} — {doc['type']}")
+    print(f"{doc['name']} — {doc['type']} - {doc['location']}")
