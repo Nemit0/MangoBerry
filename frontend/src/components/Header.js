@@ -1,16 +1,11 @@
 import React from 'react';
 import './Header.css';
-import { BsJustify } from "react-icons/bs";
-import { BsXLg, BsX } from "react-icons/bs";
-import { IoMapOutline } from "react-icons/io5";
+import { BsJustify, BsXLg, BsX, BsPersonFill} from "react-icons/bs";
+import { IoMapOutline, IoSearch } from "react-icons/io5";
 import { AiOutlineFileAdd } from "react-icons/ai";
-import { TbPhotoPlus } from "react-icons/tb";
+import { TbPhotoPlus, TbMapSearch } from "react-icons/tb";
 import { BiUser } from "react-icons/bi";
-import { BsPersonFill } from "react-icons/bs";
 import { GoHomeFill } from "react-icons/go";
-import { IoSearch } from "react-icons/io5";
-import { TbMapSearch } from "react-icons/tb";	
-
 
 const Header = ({ isLoggedIn }) => {
   return (
@@ -34,7 +29,7 @@ const Header = ({ isLoggedIn }) => {
 
         <div className="search-bar">
             <input type="text" placeholder="검색어를 입력하세요" />
-            <button>검색</button>
+            <button><IoSearch /></button>
         </div>
 
         <div className="auth-buttons">
