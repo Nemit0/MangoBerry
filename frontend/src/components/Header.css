@@ -1,0 +1,79 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 1920px;
+    height: 200px;
+    background-color: #f8f9fa;
+    border-bottom: 0px solid #ddd;
+  }
+  
+  .logo {
+    background-color: white;
+    color: #96466E;
+    width: 224px;
+    height: 106px;
+    cursor: default;
+    font-size: 100px;
+  }
+
+  .search-bar {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+    max-width: 400px;
+    margin: 0 24px;
+  }
+  
+  .search-bar input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  
+  .search-bar button {
+    padding: 8px 16px;
+    background-color: #1e90ff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .auth-buttons {
+    display: flex;
+    gap: 12px;
+  }
+  
+  .btn {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  
+  .signup {
+    background-color: #20c997;
+    color: white;
+  }
+  
+  .login {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .logout {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  .nav-btn {
+    border-radius: 50%;
+    background-color: #9A4A6E;
+    color: #FAF0D2;
+    width:  60px;
+    height: 60px;
+    cursor: pointer;
+  }
