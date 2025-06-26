@@ -1,0 +1,54 @@
+.left-sidebar-container {
+    padding: 20px 15px;
+    background-color: #f8f8f8;
+    height: 100%; /* 부모로부터 높이 상속 */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.hamburger-menu {
+    width: 30px;
+    height: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.hamburger-menu .line {
+    width: 100%;
+    height: 3px;
+    background-color: #333;
+    border-radius: 2px;
+}
+
+.sidebar-content {
+    flex-grow: 1; /* 남은 공간을 차지하여 스크롤 가능하게 */
+    overflow-y: auto; /* 내용이 넘치면 자체 스크롤 */
+    padding-right: 5px; /* 스크롤바가 생길 경우 내용을 가리지 않도록 여백 추가 */
+}
+
+/* 폰트, 여백 등 미세 조정 (선택 사항) */
+.left-sidebar-container h3 {
+    margin-top: 0;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.left-sidebar-container ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+.left-sidebar-container li {
+    padding: 8px 0;
+    cursor: pointer;
+    color: #555;
+}
+
+.left-sidebar-container li:hover {
+    color: #007bff;
+}

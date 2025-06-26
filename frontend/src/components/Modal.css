@@ -1,0 +1,54 @@
+/* src/components/Modal/Modal.css */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6); /* 반투명 검은색 배경 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000; /* Header의 z-index보다 높게 설정하여 최상단에 표시 */
+    animation: fadeIn 0.3s forwards; /* 페이드인 애니메이션 */
+}
+
+.modal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    max-width: 600px; /* 모달 최대 너비 */
+    max-height: 80vh; /* 뷰포트 높이의 80%를 최대 높이로 */
+    overflow-y: auto; /* 내용이 넘치면 스크롤 가능 */
+    animation: slideIn 0.3s forwards; /* 슬라이드인 애니메이션 */
+}
+
+.modal-close-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 2em;
+    cursor: pointer;
+    color: #666;
+    line-height: 1; /* x 버튼 세로 정렬 */
+}
+
+.modal-close-button:hover {
+    color: #333;
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}

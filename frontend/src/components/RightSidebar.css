@@ -1,0 +1,7 @@
+.right-sidebar-container {
+    padding: 20px 15px; /* 기존 패딩 유지 */
+    background-color: #f8f8f8;
+    height: 100%;
+    box-sizing: border-box;
+    overflow-y: auto; /* 우측 사이드바 내용이 넘치면 자체 스크롤 */
+}

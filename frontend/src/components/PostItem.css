@@ -1,0 +1,91 @@
+/* src/components/PostItem/PostItem.css */
+.post-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    overflow: hidden; /* 이미지 오버플로우 방지 */
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* 그리드 아이템의 높이를 동일하게 */
+}
+
+.post-image {
+    width: 100%;
+    height: 180px; /* 이미지 고정 높이 */
+    object-fit: cover; /* 이미지 비율 유지하며 채우기 */
+    display: block; /* 이미지 아래 공백 제거 */
+}
+
+.post-info {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* 남은 공간을 차지하여 내용이 적어도 높이 유지 */
+}
+
+.post-header-meta {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.post-user-icon {
+    margin-right: 5px;
+}
+
+.post-user-name {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.post-category {
+    background-color: #e6f7ff;
+    color: #1890ff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8em;
+}
+
+.post-title {
+    margin: 5px 0 10px;
+    font-size: 1.2em;
+    color: #333;
+    font-weight: bold;
+}
+
+.post-rating {
+    margin-bottom: 10px;
+    color: #ffc107; /* 별 색상 */
+    font-size: 1.1em;
+}
+
+.post-description-tags {
+    margin-bottom: 10px;
+    display: flex;
+    flex-wrap: wrap; /* 태그가 많을 경우 줄바꿈 */
+    gap: 5px;
+}
+
+.tag-badge {
+    background-color: #e0e7ff;
+    color: #3667e4;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    white-space: nowrap; /* 태그 줄바꿈 방지 */
+}
+
+.post-content-preview {
+    font-size: 0.9em;
+    color: #777;
+    line-height: 1.4;
+    flex-grow: 1; /* 내용이 적어도 카드의 남은 공간을 채움 */
+    overflow: hidden; /* 넘치는 텍스트 숨김 */
+    text-overflow: ellipsis; /* ...으로 표시 */
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* 2줄까지만 표시 */
+    -webkit-box-orient: vertical;
+}
