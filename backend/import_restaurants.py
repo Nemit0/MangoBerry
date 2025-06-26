@@ -4,12 +4,16 @@ import os
 import sys
 
 sys.stdout.reconfigure(encoding='utf-8')
+from dotenv import load_dotenv
+import os
 
-# Connect to Elasticsearch
+load_dotenv()
+
 client = Elasticsearch(
     "https://2ae07f7bf36d47cc9da14549c264281b.us-central1.gcp.cloud.es.io:443",
-    api_key="MnZmV241Y0JYMlJVdEl6TkpIQjU6dmlCQ1JHMjZjVVlRSVNxdXJncFk0QQ=="
+    api_key=os.getenv("API_KEY")
 )
+
 
 index_name = "restaurant"
 print("current working directory", os.getcwd())
