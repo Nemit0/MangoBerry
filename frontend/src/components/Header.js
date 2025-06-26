@@ -1,51 +1,49 @@
 import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext'; // AuthContext 임포트
+import SearchBar from './SearchBar'; // SearchBar 컴포넌트 임포트
 import './Header.css';
-import { BsJustify, BsXLg, BsX, BsPersonFill} from "react-icons/bs";
-import { IoMapOutline, IoSearch } from "react-icons/io5";
-import { AiOutlineFileAdd } from "react-icons/ai";
-import { TbPhotoPlus, TbMapSearch } from "react-icons/tb";
-import { BiUser } from "react-icons/bi";
-import { GoHomeFill } from "react-icons/go";
 
-const Header = ({ isLoggedIn }) => {
-  return (
-    <>
-      <div className="side-nav">
-        <button className="nav-icon"><BsJustify /></button>           
-        <button className="nav-icon"><BsXLg /></button> 
-        <button className="nav-icon"><BsX /></button>          
-        <button className="nav-icon"><IoMapOutline /></button>
-        <button className="nav-icon"><AiOutlineFileAdd /></button>
-        <button className="nav-icon"><TbPhotoPlus /></button>
-        <button className="nav-icon"><BiUser /></button>
-        <button className="nav-icon"><BsPersonFill /></button>
-        <button className="nav-icon"><GoHomeFill /></button>
-        <button className="nav-icon"><IoSearch /></button>
-        <button className="nav-icon"><TbMapSearch /></button>  
-      </div>
+function Header({ searchTerm, onSearchChange }) { // 검색어 관련 props 받기
+    const { isLoggedIn, logout } = useAuth(); // AuthContext에서 상태 및 함수 가져오기
+    const navigate = useNavigate();
 
-      <header className="header">
-        <div className="logo">GUMIO</div>
+    const handleLogoClick = () => {
+        navigate('/'); // 로고 클릭 시 HomePage로 이동
+    };
 
-        <div className="search-bar">
-            <input type="text" placeholder="검색어를 입력하세요" />
-            <button><IoSearch /></button>
-        </div>
+    const handleLogoutClick = () => {
+        logout(); // 로그아웃 처리
+        navigate('/'); // 로그아웃 후 HomePage로 이동
+    };
 
-        <div className="auth-buttons">
-            {isLoggedIn ? (
-            <button className="btn logout">로그아웃</button>
-            ) : (
-            <>
-                <button className="btn signup">회원가입</button>
-                <button className="btn login">로그인</button>
-            </>
-            )}
-        </div>
+    return (
+        <header className="header-container">
+            <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
+                GUMIO
+            </div>
+
+            <div className="header-search-area">
+                {/* SearchBar 컴포넌트 사용 */}
+                <SearchBar
+                    searchTerm={searchTerm}
+                    onSearchChange={onSearchChange}
+                    placeholder="게시물 검색..."
+                />
+            </div>
+
+            <nav className="header-nav">
+                {!isLoggedIn && ( // 로그아웃 상태일 때만 회원가입 표시
+                    <Link to="/register" className="nav-link">회원가입</Link>
+                )}
+                {isLoggedIn ? ( // 로그인 상태이면 로그아웃 표시
+                    <span onClick={handleLogoutClick} className="nav-link logout-link">로그아웃</span>
+                ) : ( // 로그아웃 상태이면 로그인 표시
+                    <Link to="/login" className="nav-link">로그인</Link>
+                )}
+            </nav>
         </header>
-    </>
     );
-};
-
+}
 
 export default Header;
