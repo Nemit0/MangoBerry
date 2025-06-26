@@ -1,10 +1,16 @@
 
 from elasticsearch import Elasticsearch, helpers
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
 client = Elasticsearch(
     "https://2ae07f7bf36d47cc9da14549c264281b.us-central1.gcp.cloud.es.io:443",
-    api_key="MnZmV241Y0JYMlJVdEl6TkpIQjU6dmlCQ1JHMjZjVVlRSVNxdXJncFk0QQ=="
+    api_key=os.getenv("API_KEY")
 )
+
 index_name = "restaurant"
 all_docs = helpers.scan(client, index=index_name)
 
