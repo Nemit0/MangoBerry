@@ -1,7 +1,7 @@
 import React from 'react';
-import './ButtonGroup.css';
+import './Button.css';
 
-const ButtonGroup = () => {
+const Button = () => {
   return (
     <div className="button-container">
       <div className="section">
@@ -29,4 +29,4 @@ const ButtonGroup = () => {
   );
 };
 
-export default ButtonGroup;
+export default Button;
