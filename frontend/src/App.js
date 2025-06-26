@@ -11,12 +11,11 @@ import FollowingPage from './pages/FollowingPage';
 import OthersPage from './pages/OthersPage';
 import MapPage from './pages/MapPage';
 import NotFoundPage from './pages/NotFoundPage';
-import ButtonGroup from './components/Button';
 
 function App() {
   return (
     <div className="App">
-      <ButtonGroup/>
+      <Button/>
       <Routes>
         <Route path='/' element={<HomePage />}/>
         <Route path='/login' element={<LoginPage />}/>
