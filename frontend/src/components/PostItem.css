@@ -1,4 +1,9 @@
 /* src/components/PostItem/PostItem.css */
+@font-face {
+    font-family: 'Bangers';
+    src: url(../assets/fonts/Bangers/Bangers-Regular.ttf);
+}
+
 .post-card {
     border: 1px solid #ddd;
     border-radius: 8px;
@@ -37,7 +42,8 @@
 }
 
 .post-user-name {
-    font-weight: bold;
+    font-family: 'Bangers';
+    font-size: 20px;
     margin-right: 10px;
 }
 
@@ -62,16 +68,34 @@
     font-size: 1.1em;
 }
 
-.post-description-tags {
+.post-positive-tags {
+    margin-bottom: 5px;
+    display: flex;
+    flex-wrap: wrap; /* 태그가 많을 경우 줄바꿈 */
+    gap: 5px;
+}
+
+.post-negative-tags {
     margin-bottom: 10px;
     display: flex;
     flex-wrap: wrap; /* 태그가 많을 경우 줄바꿈 */
     gap: 5px;
 }
 
-.tag-badge {
-    background-color: #e0e7ff;
-    color: #3667e4;
+.positive-tag-badge {
+    background-color: #ffffff;
+    border: 1px solid rgba(30, 150, 0, 1);
+    color: rgba(30, 150, 0, 1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    white-space: nowrap; /* 태그 줄바꿈 방지 */
+}
+
+.negative-tag-badge {
+    background-color: #ffffff;
+    border: 1px solid rgba(150, 0, 0, 1);
+    color: rgba(150, 0, 0, 1);
     padding: 4px 8px;
     border-radius: 4px;
     font-size: 0.8em;
@@ -86,6 +110,6 @@
     overflow: hidden; /* 넘치는 텍스트 숨김 */
     text-overflow: ellipsis; /* ...으로 표시 */
     display: -webkit-box;
-    -webkit-line-clamp: 2; /* 2줄까지만 표시 */
+    line-clamp: 2; /* 2줄까지만 표시 */
     -webkit-box-orient: vertical;
 }

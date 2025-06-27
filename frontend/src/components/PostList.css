@@ -67,3 +67,39 @@
     color: #444;
     margin-top: 20px;
 }
+
+/* 태그를 담는 컨테이너 */
+.post-positive-tags,
+.post-negative-tags {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: flex; /* 태그들을 가로로 나열 */
+    flex-wrap: wrap; /* 공간이 부족하면 다음 줄로 넘김 */
+    gap: 8px; /* 태그들 사이의 간격 */
+}
+
+/* 개별 긍정 태그 스타일 */
+.positive-tag-badge {
+    display: inline-block; /* 태그 크기에 맞게 */
+    padding: 8px 15px; /* 내부 여백 */
+    border: 1px solid rgba(30, 150, 0, 1); /* 초록색 테두리 */
+    color: rgba(30, 150, 0, 1); /* 초록색 글씨 */
+    background-color: #ffffff; /* 연한 초록색 배경 */
+    border-radius: 20px; /* 둥근 모서리 */
+    font-size: 0.9em;
+    font-weight: bold;
+    white-space: nowrap; /* 태그 내용이 한 줄에 표시되도록 */
+}
+
+/* 개별 부정 태그 스타일 */
+.negative-tag-badge {
+    display: inline-block;
+    padding: 8px 15px;
+    border: 1px solid rgba(150, 0, 0, 1); /* 빨간색 테두리 */
+    color: rgba(150, 0, 0, 1); /* 빨간색 글씨 */
+    background-color: #ffffff; /* 연한 빨간색 배경 */
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: bold;
+    white-space: nowrap;
+}

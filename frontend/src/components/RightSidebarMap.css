@@ -1,0 +1,139 @@
+/* src/components/RightSidebar/RightSidebarMap.css */
+
+.map-search-controls {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.map-search-toggle-button {
+    background-color: #f0f2f5;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px 15px;
+    width: 100%;
+    text-align: left;
+    font-size: 1em;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.map-search-toggle-button:hover {
+    background-color: #e0e2e5;
+}
+
+.map-search-toggle-button .icon {
+    font-size: 1.2em;
+}
+
+.map-search-tab {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.search-input-area {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.search-input-area input {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.search-input-area button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+}
+
+.search-input-area button:hover {
+    background-color: #0056b3;
+}
+
+.filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+.filter-buttons button {
+    background-color: #e9ecef;
+    color: #495057;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.filter-buttons button:hover {
+    background-color: #dee2e6;
+}
+
+.search-results-list {
+    max-height: 300px; /* 검색 결과 목록의 최대 높이 */
+    overflow-y: auto; /* 내용이 넘치면 스크롤바 생성 */
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+}
+
+.search-result-item {
+    padding: 10px 5px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item:hover {
+    background-color: #f8f8f8;
+}
+
+.search-result-item .place-name {
+    font-weight: bold;
+    color: #333;
+    margin: 0 0 5px 0;
+    font-size: 1em;
+}
+
+.search-result-item .place-address {
+    font-size: 0.85em;
+    color: #666;
+    margin: 0;
+}
+
+.search-result-item .place-phone {
+    font-size: 0.8em;
+    color: #888;
+    margin: 0;
+}
+
+.no-results-message {
+    text-align: center;
+    color: #999;
+    padding: 20px;
+    font-size: 0.9em;
+}
