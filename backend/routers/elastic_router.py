@@ -14,7 +14,7 @@ es = Elasticsearch("https://2ae07f7bf36d47cc9da14549c264281b.us-central1.gcp.clo
     api_key=(os.getenv("API_KEY_ID"), os.getenv("API_KEY"))
 )
 
-es.search(index="restaurant", query={"match_all": {}})
+es.search(index="full_restaurant", query={"match_all": {}})
 
 def get_location_from_ip(ip: str):
     try:
@@ -42,7 +42,7 @@ def search_restaurant_es(
     if name:
         must.append({"match_phrase_prefix": {"name": name}})
     if category:
-        must.append({"match": {"categories": category}})
+        must.append({"term": {"categories": category}})
 
     query = {
         "_source":["name", "categories", "r_id"],
@@ -55,7 +55,7 @@ def search_restaurant_es(
     }
 
     try:
-        response = es.search(index="restaurant", body=query)
+        response = es.search(index="full_restaurant", body=query)
         return {
             "success": True,
             "result": [hit["_source"] for hit in response["hits"]["hits"]]
@@ -106,7 +106,7 @@ def nearby_from_ip(request: Request, distance: str = "5km", size: int = 10):
     }
 
     try:
-        response = es.search(index="restaurant", body=query)
+        response = es.search(index="full_restaurant", body=query)
         return {
             "success": True,
             "location": {"lat": lat, "lon": lon},
