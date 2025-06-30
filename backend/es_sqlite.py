@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+print(os.getcwd())
 
 def extract_categories(type_str):
     if not type_str:
@@ -24,17 +25,17 @@ def extract_categories(type_str):
 
 
 # Connect to SQLite
-conn = sqlite3.connect("MangoBerry/backend/seoul_restaurants.sqlite")
+conn = sqlite3.connect("MangoBerry/backend/clean_copy.sqlite")
 cursor = conn.cursor()
 
 # Fetch all columns
-cursor.execute("SELECT r_id, id, name, type, lat, lon FROM restaurants;")
+cursor.execute("SELECT r_id, id, name, type, lat, lon, address FROM restaurants;")
 rows = cursor.fetchall()
 
 # Format documents
 documents = []
 for row in rows:
-    r_id, rid, name, r_type, lat, lon = row
+    r_id, rid, name, r_type, lat, lon, address = row
     if lat is None or lon is None:
         continue
 
@@ -51,7 +52,8 @@ for row in rows:
         "location": {
             "lat": lat,
             "lon": lon
-        }
+        },
+        "address":address
     }
     documents.append(doc)
 
@@ -73,7 +75,8 @@ mappings = {
             "categories": {"type": "keyword"},
             "lat": {"type": "float"},
             "lon": {"type": "float"},
-            "location": {"type": "geo_point"}
+            "location": {"type": "geo_point"},
+            "address": {"type":"text"}
         }
     }
 }
