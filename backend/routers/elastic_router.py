@@ -5,6 +5,7 @@ import requests
 from dotenv import load_dotenv
 from fastapi import APIRouter, Query, Request
 from elasticsearch import Elasticsearch
+
 sys.stdout.reconfigure(encoding='utf-8')
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
@@ -29,6 +30,7 @@ es = Elasticsearch(
     os.getenv("ES_HOST"),
     basic_auth=(os.getenv("ES_USER"), os.getenv("ES_PASS"))
 )
+
 
 es.search(index="full_restaurant", query={"match_all": {}})
 
