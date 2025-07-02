@@ -1,7 +1,10 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+// src/contexts/AuthContext.js (예시 - 이대로 구현되어 있어야 합니다)
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-const AuthContext = createContext(null);
+// 1. AuthContext 생성 (초기값은 null 또는 기본값)
+const AuthContext = createContext(null); 
 
+// 2. AuthProvider 컴포넌트 정의
 export const AuthProvider = ({ children }) => {
     // 실제 앱에서는 토큰 유효성 검사, API 호출 등을 통해 로그인 상태를 확인합니다.
     const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -57,10 +60,12 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
+// 4. useAuth 커스텀 훅 정의 (컨텍스트를 쉽게 사용할 수 있도록)
 export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    // 이 에러는 AuthProvider 밖에서 useAuth를 호출했을 때 발생합니다.
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };
