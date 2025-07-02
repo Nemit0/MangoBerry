@@ -2,3 +2,7 @@ requests
 fastapi
 uvicorn
 elasticsearch~=8.13
+dotenv
+sqlalchemy
+pymysql
+pymongo
