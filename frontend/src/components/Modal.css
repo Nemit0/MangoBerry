@@ -20,16 +20,16 @@
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     position: relative;
-    max-width: 600px; /* 모달 최대 너비 */
-    max-height: 80vh; /* 뷰포트 높이의 80%를 최대 높이로 */
+    max-width: 1200px; /* 모달 최대 너비 */
+    max-height: 100vh; /* 뷰포트 높이의 80%를 최대 높이로 */
     overflow-y: auto; /* 내용이 넘치면 스크롤 가능 */
     animation: slideIn 0.3s forwards; /* 슬라이드인 애니메이션 */
 }
 
 .modal-close-button {
     position: absolute;
-    top: 15px;
-    right: 15px;
+    top: 40px;
+    right: 40px;
     background: none;
     border: none;
     font-size: 2em;
