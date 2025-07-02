@@ -1,10 +1,26 @@
 // src/components/RightSidebar.js
 import React, { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import './RightSidebar.css';
 import './RightSidebarMap.css'; // 지도 검색 탭 관련 스타일 임포트
 
 function RightSidebar({ isMapPage, isSearchTabOpen, toggleSearchTab, onSearch, searchResults, currentKeyword, onResultItemClick }) {
     const [searchInputValue, setSearchInputValue] = useState(currentKeyword || '');
+
+    const { isLoggedIn } = useAuth(); // 로그인 상태와 함수 가져오기
+    const location = useLocation(); // 현재 경로 정보 가져오기
+    const navigate = useNavigate(); // 페이지 이동 함수 가져오기
+
+    // 버튼을 보여줄 페이지 경로 정의
+    const allowedPaths = ['/', '/my']; // HomePage는 '/', MyPage는 '/my'
+
+    // 현재 경로가 허용된 경로 중 하나인지 확인
+    const shouldShowButton = isLoggedIn && allowedPaths.includes(location.pathname);
+
+    const handleNewPageClick = () => {
+        navigate('/new'); // NewPage 경로로 이동
+    };
 
     // currentKeyword가 변경될 때마다 searchInputValue 동기화
     React.useEffect(() => {
@@ -81,6 +97,17 @@ function RightSidebar({ isMapPage, isSearchTabOpen, toggleSearchTab, onSearch, s
                 <>
                     {/* 기존 HomePage에서 보여주던 RightSidebar 내용 */}
                 </>
+            )}
+            <div className='right-sidebar-content-top'>
+                
+            </div>
+            {shouldShowButton && (
+                <button
+                    onClick={handleNewPageClick}
+                    className='sidebar-new-page-button'
+                >
+                    새로운 페이지로 이동
+                </button>
             )}
         </div>
     );

@@ -4,4 +4,53 @@
     height: 100%;
     box-sizing: border-box;
     overflow-y: auto; /* 우측 사이드바 내용이 넘치면 자체 스크롤 */
+
+    display: flex;
+    flex-direction: column; /* 자식 요소들을 세로로 정렬 */
+    
+    /* ⭐⭐ 이 부분이 핵심입니다: 부모(main-content) 높이를 100% 채우도록 ⭐⭐ */
+    height: 100%; 
+    /* 또는 flex-grow: 1; 을 사용할 수도 있지만, 
+       main-content가 flex 컨테이너일 때만 효과적입니다. 
+       일반적으로 height: 100%가 더 직관적이고 확실합니다. */
+
+    /* position: sticky; top: 0; 는 스크롤 시 고정하는 용도이며, 
+       버튼을 맨 아래에 두는 것과는 직접적인 관련이 없습니다. 
+       원하신다면 유지하세요. */
+    position: sticky;
+    top: 0;
+    align-self: flex-start; /* sticky와 함께 사용하여 정렬 문제 방지 */
+}
+
+/* 사이드바 상단 내용들을 묶는 컨테이너 */
+.right-sidebar-content-top {
+    flex-grow: 1; /* ⭐⭐ 이 컨테이너가 사용 가능한 모든 공간을 차지하여 버튼을 하단으로 밀어냅니다. ⭐⭐ */
+    width: 100%; /* 부모 너비에 맞춤 */
+    display: flex;
+    flex-direction: column; /* 내부 요소들을 세로로 정렬 */
+    /* align-items: center; */ /* 내부 콘텐츠를 중앙 정렬하고 싶다면 유지 */
+}
+
+.sidebar-new-page-button {
+    padding: 10px 15px;
+    margin-bottom: 10px; /* 버튼 사이 간격 */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    width: 100%; /* 버튼 너비를 사이드바에 맞춤 */
+    max-width: 200px; /* 버튼 최대 너비 */
+}
+
+.sidebar-new-page-button {
+    background-color: #28a745;
+    color: white;
+    /* ⭐⭐ 이 속성이 버튼을 맨 아래로 보냅니다 ⭐⭐ */
+    margin-top: auto; 
+    margin-bottom: 0; /* 혹시 모를 하단 마진 제거 */
+}
+
+.sidebar-new-page-button:hover {
+    background-color: #218838;
 }

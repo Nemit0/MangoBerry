@@ -8,12 +8,22 @@ export const AuthProvider = ({ children }) => {
         // 초기 로드 시 로컬 스토리지에서 로그인 상태 확인
         return localStorage.getItem('isLoggedIn') === 'true';
     });
+    // 팝업을 처음 로그인 시점에 보여줄지 여부 (로그인 시 true로 설정하고, 팝업 닫을 때 false로)
+    const [showWelcomePopup, setShowWelcomePopup] = useState(false);
+
+    // 사용자가 팝업을 이미 봤는지 여부를 localStorage에서 로드
+    const [hasSeenWelcomePopup, setHasSeenWelcomePopup] = useState(() => {
+        return localStorage.getItem('hasSeenWelcomePopup') === 'true';
+    });
 
     const login = () => {
         setIsLoggedIn(true);
         localStorage.setItem('isLoggedIn', 'true');
         alert('로그인 되었습니다!');
         // 실제 로그인 성공 후 페이지 이동 (예: navigate('/')) 또는 다른 처리
+        if (!hasSeenWelcomePopup) {
+            setShowWelcomePopup(true);
+        }
     };
 
     const logout = () => {
@@ -21,6 +31,8 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('isLoggedIn');
         alert('로그아웃 되었습니다.');
         // 실제 로그아웃 후 페이지 이동 (예: navigate('/')) 또는 다른 처리
+        // 로그아웃 시에는 팝업 상태 초기화하지 않음 (다시 로그인하면 첫 로그인 아님)
+        // 만약 로그아웃하면 팝업 상태도 초기화하고 싶다면 여기서 setHasSeenWelcomePopup(false);
     };
 
     // isLoggedIn 상태가 변경될 때마다 로컬 스토리지에 동기화 (선택 사항)
@@ -28,8 +40,18 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('isLoggedIn', isLoggedIn);
     }, [isLoggedIn]);
 
+    // hasSeenWelcomePopup 상태가 변경될 때 localStorage 업데이트
+    useEffect(() => {
+        localStorage.setItem('hasSeenWelcomePopup', hasSeenWelcomePopup);
+    }, [hasSeenWelcomePopup]);
+
+    const closeWelcomePopUp = () => {
+        setShowWelcomePopup(false);
+        setHasSeenWelcomePopup(true); // 팝업을 닫으면 봤다고 표시
+    }
+
     return (
-        <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
+        <AuthContext.Provider value={{ isLoggedIn, login, logout, showWelcomePopup, closeWelcomePopUp, hasSeenWelcomePopup }}>
             {children}
         </AuthContext.Provider>
     );

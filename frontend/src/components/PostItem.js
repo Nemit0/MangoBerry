@@ -8,8 +8,20 @@ function PostItem({ post, onClick }) { // <-- onClick prop 추가
     const positiveParts = (post.positive || '').split(', ');
     const negativeParts = (post.negative || '').split(', ');
 
+    const gaugeWidth = (post.rating / 5) * 100; // 백분율로 계산
+
     return (
         <div className="post-card" onClick={() => onClick(post)}> {/* <-- 클릭 이벤트 추가 */}
+            <div className='post-rating-container'>
+                <div
+                    className='post-rating-gauge'
+                    style={{width: `${gaugeWidth}%`}} // 계산된 너비 적용
+                ></div>
+            </div>
+            
+            {/* <div className="post-rating">
+                    {'⭐'.repeat(post.rating)}
+            </div> */}
             <img src={post.image} alt={post.title} className="post-image" />
             <div className="post-info">
                 <div className="post-header-meta">
@@ -19,9 +31,7 @@ function PostItem({ post, onClick }) { // <-- onClick prop 추가
                     <span className="post-datePosted">{post.datePosted}</span>
                 </div>
                 <h3 className="post-title">{post.title}</h3>
-                <div className="post-rating">
-                    {'⭐'.repeat(post.rating)}
-                </div>
+                
                 <div className="post-positive-tags">
                     {positiveParts[0] && <span className="positive-tag-badge">{positiveParts[0]}</span>}
                     {positiveParts[1] && <span className="positive-tag-badge">{positiveParts[1]}</span>}
