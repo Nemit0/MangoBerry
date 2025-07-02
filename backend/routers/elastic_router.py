@@ -5,6 +5,7 @@ import requests
 from dotenv import load_dotenv
 from fastapi import APIRouter, Query, Request
 from elasticsearch import Elasticsearch
+
 sys.stdout.reconfigure(encoding='utf-8')
 
 load_dotenv()
@@ -13,11 +14,21 @@ key = os.getenv("API_KEY")
 print("ES_ID:", id)
 print("ES_KEY:", key)
 
+print("ES_HOST:", os.getenv("ES_HOST"))
+print("ES_USER:", os.getenv("ES_USER"))
+print("ES_PASS:", os.getenv("ES_PASS"))
 
 router = APIRouter()
-es = Elasticsearch("https://2ae07f7bf36d47cc9da14549c264281b.us-central1.gcp.cloud.es.io:443",
-    api_key=(os.getenv("API_KEY_ID"), os.getenv("API_KEY"))
+# es = Elasticsearch("https://2ae07f7bf36d47cc9da14549c264281b.us-central1.gcp.cloud.es.io:443",
+#     api_key=(os.getenv("API_KEY_ID"), os.getenv("API_KEY"))
+# )
+
+
+es = Elasticsearch(
+    os.getenv("ES_HOST"),
+    basic_auth=(os.getenv("ES_USER"), os.getenv("ES_PASS"))
 )
+
 
 es.search(index="full_restaurant", query={"match_all": {}})
 
@@ -40,6 +51,7 @@ def get_location_from_ip(ip: str):
 def search_restaurant_es(
     name: str = Query(None),
     category: str = Query(None),
+    address: str = Query(None),
     size: int = Query(10)
 ):
     must = []
@@ -48,9 +60,11 @@ def search_restaurant_es(
         must.append({"match_phrase_prefix": {"name": name}})
     if category:
         must.append({"term": {"categories": category}})
+    if address:
+        must.append({"match_phrase_prefix": {"address": address}})
 
     query = {
-        "_source":["name", "categories", "r_id"],
+        "_source":["name", "categories", "r_id", "address"],
         "query": {
             "bool": {
                 "must": must if must else [{"match_all": {}}]
@@ -73,9 +87,15 @@ def search_restaurant_es(
 
 @router.get("/nearby_from_ip")
 def nearby_from_ip(request: Request, distance: str = "5km", size: int = 10):
-    #ip = request.client.host
-    ip = "121.162.119.1"
+    ip = request.client.host
+
+    # Localhost fallback for development
+    if ip.startswith("127.") or ip == "localhost":
+        print(f"Local IP {ip} detected, using fallback IP.")
+        ip = "121.162.119.1"  # Example IP in Seoul
+
     user_location = get_location_from_ip(ip)
+
 
     print("User IP:", ip)
     print("User location:", user_location)
@@ -106,7 +126,7 @@ def nearby_from_ip(request: Request, distance: str = "5km", size: int = 10):
                 }
             }
         ],
-        "_source": ["r_id", "name", "categories", "location"],
+        "_source": ["r_id", "name", "categories", "address"],
         "size": size
     }
 

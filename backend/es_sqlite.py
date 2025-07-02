@@ -2,6 +2,7 @@ import sqlite3
 from elasticsearch import Elasticsearch, helpers
 import os
 from dotenv import load_dotenv
+import json
 
 # Load environment variables
 load_dotenv()
@@ -31,73 +32,54 @@ cursor = conn.cursor()
 # Fetch all columns
 cursor.execute("SELECT r_id, id, name, type, lat, lon FROM restaurants;")
 rows = cursor.fetchall()
+print("Host:", os.getenv("ES_HOST"))
+print("User:", os.getenv("ES_USER"))
+print("Pass:", os.getenv("ES_PASS"))
 
-# Format documents
-documents = []
-for row in rows:
-    r_id, rid, name, r_type, lat, lon = row
-    if lat is None or lon is None:
-        continue
 
-    categories = extract_categories(r_type)
-
-    doc = {
-        "r_id": r_id,
-        "id": rid,
-        "name": name,
-        "type": r_type,
-        "categories": categories,
-        "lat": lat,
-        "lon": lon,
-        "location": {
-            "lat": lat,
-            "lon": lon
-        }
-    }
-    documents.append(doc)
-
-# Connect to Elasticsearch
+# Elasticsearch connection
 es = Elasticsearch(
     "https://2ae07f7bf36d47cc9da14549c264281b.us-central1.gcp.cloud.es.io:443",
     api_key=(os.getenv("API_KEY_ID"), os.getenv("API_KEY"))
 )
 
 
-# Define the mapping you need
-mappings = {
-    "mappings": {
-        "properties": {
-            "r_id": {"type": "integer"},
-            "id": {"type": "keyword"},
-            "name": {"type": "text"},
-            "type": {"type": "keyword"},
-            "categories": {"type": "keyword"},
-            "lat": {"type": "float"},
-            "lon": {"type": "float"},
-            "location": {"type": "geo_point"}
-        }
-    }
-}
+try:
+    print("Elasticsearch info:")
+    print(es.info())
+except Exception as e:
+    print("Connection failed:")
+    print(e)
+
+
+
 
 index_name = "full_restaurant"
 
-# Delete existing index to avoid type conflicts
+# Delete existing index if it exists
 if es.indices.exists(index=index_name):
     es.indices.delete(index=index_name)
 
-# Create new index with exact mapping
-es.indices.create(index=index_name, body=mappings)
-
-# Upload documents with r_id as unique _id
-actions = [
-    {
-        "_index": index_name,
-        "_id": doc["r_id"],
-        "_source": doc
+# Create new index with proper mapping
+es.indices.create(
+    index=index_name,
+    body={
+        "settings": {
+            "number_of_shards": 1
+        },
+        "mappings": {
+            "properties": {
+                "r_id": {"type": "integer"},
+                "id": {"type": "keyword"},
+                "name": {"type": "text"},
+                "type": {"type": "keyword"},
+                "categories": {"type": "keyword"},
+                "lat": {"type": "float"},
+                "lon": {"type": "float"},
+                "location": {"type": "geo_point"},
+                "address": {"type": "text"}
+            }
+        }
     }
-    for doc in documents
-]
+)
 
-helpers.bulk(es, actions)
-
-print(f"Uploaded {len(documents)} documents to Elasticsearch index '{index_name}' with your exact mapping.")
