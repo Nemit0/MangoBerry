@@ -1,13 +1,18 @@
+// src/pages/HomePage.js
 import React, { useState } from 'react';
 import Header from '../components/Header';
 import LeftSidebar from '../components/LeftSidebar';
 import PostList from '../components/PostList';
 import RightSidebar from '../components/RightSidebar';
 import './HomePage.css';
+import WelcomePopup from '../components/WelcomePopup';
+import { useAuth } from '../contexts/AuthContext';
 
 function HomePage() {
     // 검색어 상태를 HomePage에서 관리
     const [searchTerm, setSearchTerm] = useState('');
+
+    const { isLoggedIn, showWelcomePopup, closeWelcomePopUp } = useAuth();
 
     // Header에서 검색어가 변경될 때 호출될 핸들러
     const handleSearchChange = (term) => {
@@ -30,6 +35,11 @@ function HomePage() {
                 <main className="middle-posts-area">
                     <PostList searchTerm={searchTerm} /> {/* PostList에 검색어 전달 */}
                 </main>
+
+                {/* WelcomePopup 조건부 렌더링 */}
+                {isLoggedIn && showWelcomePopup && (
+                    <WelcomePopup onClose={closeWelcomePopUp} />
+                )}
 
                 {/* 우측 고정 사이드바 */}
                 <aside className="right-sidebar">

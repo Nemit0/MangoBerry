@@ -1,4 +1,9 @@
 /* src/components/PostList/PostList.css */
+@font-face {
+    font-family: 'Bangers';
+    src: url(../assets/fonts/Bangers/Bangers-Regular.ttf);
+}
+
 .post-list-wrapper {
     /* 이 Wrapper는 PostList의 전체 높이를 차지하며 PostList 컨테이너를 포함 */
     height: 100%; /* 부모(middle-posts-area)로부터 100% 높이를 받음 */
@@ -30,47 +35,111 @@
 
 /* PostList 내부의 모달 상세 내용 스타일 */
 .post-detail-modal-content {
-    padding: 10px;
+    display: flex; /* 자식 요소(modal-left, modal-right)를 가로로 정렬 */
+    padding: 20px;
+    gap: 30px; /* 좌우 영역 사이의 간격 */
+    max-width: 900px; /* 모달 내용의 최대 너비 (조정 가능) */
+    margin: 0 auto; /* 중앙 정렬 */
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     text-align: left; /* 텍스트 정렬 */
 }
 
-.post-detail-modal-content h2 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 1.8em;
+.modal-left {
+    flex: 1; /* 사용 가능한 공간의 절반을 차지 (예: 50%) */
+    display: flex;
+    flex-direction: column; /* 내부 요소들을 세로로 정렬 */
+    align-items: center; /* 사용자 이름과 이미지를 가운데 정렬 */
+    padding: 10px;
+}
+
+.modal-user-name {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 15px; /* 사용자 이름과 이미지 사이 간격 */
     color: #333;
 }
 
-.post-detail-image {
-    max-width: 100%;
+.modal-post-image {
+    max-width: 100%; /* 부모 너비에 맞춤 */
     height: auto;
     border-radius: 8px;
-    margin-bottom: 20px;
-    display: block; /* 이미지 아래 공백 제거 */
-    margin-left: auto;
-    margin-right: auto;
+    object-fit: cover;
+    margin-bottom: 20px; /* 이미지 하단 여백 */
 }
 
-.post-detail-meta p {
-    margin-bottom: 8px;
-    font-size: 1.1em;
-    color: #555;
+.modal-right {
+    flex: 1.5; /* 사용 가능한 공간의 나머지 (예: 75% 또는 더 넓게) */
+    display: flex;
+    flex-direction: column; /* 내부 요소들을 세로로 정렬 */
+    padding: 10px;
 }
 
-.post-detail-meta strong {
-    color: #333;
+/* 별점 게이지 스타일 */
+.modal-rating-gauge {
+    width: 100%; /* 부모(.modal-right) 너비에 맞춤 */
+    margin-bottom: 16px; /* 아래 제목과의 간격 */
 }
 
-.post-detail-content {
-    font-size: 1em;
-    line-height: 1.6;
-    color: #444;
-    margin-top: 20px;
+.modal-rating-header {
+    display: flex;
+    justify-content: space-between; /* '별점'과 퍼센트 텍스트를 양쪽 끝으로 정렬 */
+    align-items: center;
+    margin-bottom: 8px; /* 게이지 바와의 간격 */
+}
+
+.modal-rating-header strong {
+    font-size: 1rem;
+}
+
+/* 게이지 바의 배경 (이제 전체 너비) */
+.modal-gauge-container {
+    width: 100%; /* 부모 너비에 꽉 채움 */
+    height: 15px; /* 높이를 살짝 조정 */
+    background-color: #e9ecef; /* 약간 더 부드러운 배경색 */
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* 실제 별점을 나타내는 게이지 바 */
+.modal-gauge-bar {
+    height: 100%;
+    background-color: rgba(150, 70, 110, 1);
+    border-radius: 8px;
+    transition: width 0.5s ease-in-out;
+}
+
+/* 점수와 백분율 텍스트 */
+.modal-rating-text {
+    font-size: 2em;
+    color: rgba(150, 70, 110, 1);
+    font-weight: 500;
+    font-family: 'Bangers';
+}
+
+/* .modal-post-rating {
+    font-size: 1.2em;
+    color: orange;
+    margin-bottom: 10px;
+} */
+
+.modal-post-title {
+    font-size: 1.8em;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #222;
+}
+
+.modal-date-posted {
+    font-size: 0.9em;
+    color: #777;
+    margin-bottom: 15px;
 }
 
 /* 태그를 담는 컨테이너 */
-.post-positive-tags,
-.post-negative-tags {
+.modal-post-positive-tags,
+.modal-post-negative-tags {
     margin-top: 10px;
     margin-bottom: 10px;
     display: flex; /* 태그들을 가로로 나열 */
@@ -79,7 +148,7 @@
 }
 
 /* 개별 긍정 태그 스타일 */
-.positive-tag-badge {
+.modal-positive-tag-badge {
     display: inline-block; /* 태그 크기에 맞게 */
     padding: 8px 15px; /* 내부 여백 */
     border: 1px solid rgba(30, 150, 0, 1); /* 초록색 테두리 */
@@ -92,7 +161,7 @@
 }
 
 /* 개별 부정 태그 스타일 */
-.negative-tag-badge {
+.modal-negative-tag-badge {
     display: inline-block;
     padding: 8px 15px;
     border: 1px solid rgba(150, 0, 0, 1); /* 빨간색 테두리 */
@@ -102,4 +171,42 @@
     font-size: 0.9em;
     font-weight: bold;
     white-space: nowrap;
+}
+
+.modal-post-content {
+    font-size: 1.1em;
+    line-height: 1.6;
+    color: #444;
+    margin-top: 20px;
+    white-space: pre-wrap; /* 줄바꿈 유지 */
+    overflow-y: auto; /* 내용이 길면 스크롤바 생성 */
+    max-height: 300px; /* 내용 영역의 최대 높이 (조정 가능) */
+}
+
+/* 반응형 디자인 (선택 사항): 화면이 좁아지면 세로로 정렬 */
+@media (max-width: 768px) {
+    .post-detail-modal-content {
+        flex-direction: column; /* 세로 정렬 */
+        padding: 15px;
+        gap: 20px;
+    }
+
+    .modal-left,
+    .modal-right {
+        flex: none; /* flexgrow를 없애고 내용에 따라 크기 조절 */
+        width: 100%;
+        padding: 0;
+    }
+
+    .modal-user-name {
+        margin-bottom: 10px;
+    }
+
+    .modal-post-image {
+        margin-bottom: 15px;
+    }
+
+    .modal-post-content {
+        max-height: 200px; /* 모바일에서 내용 영역 높이 조정 */
+    }
 }
