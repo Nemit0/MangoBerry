@@ -1,158 +1,115 @@
-.header-container {
-  position: fixed; /* 뷰포트에 고정 */
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 60px; /* 헤더 높이 */
-  background-color: #fff;
-  border-bottom: 1px solid #e0e0e0;
-  z-index: 1000; /* 다른 요소 위에 표시 */
-  box-sizing: border-box; /* 패딩, 보더 포함 높이 계산 */
+/* src/components/Header.css */
 
+.main-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
-  gap: 20px; /* 요소들 간의 간격 */
+  padding: 10px 20px;
+  background-color: #fff;
+  border-bottom: 1px solid #eee;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .logo {
-  font-size: 28px; /* 로고 크기 조정 */
+  font-family: 'Bangers', sans-serif;
+  font-size: 2.2em; /* <--- 변경: font-size 단위 (px, em 등)를 포함하여 유효하게 지정 */
   font-weight: bold;
-  color: #333;
-  white-space: nowrap; /* 줄바꿈 방지 */
-}
-
-.header-search-area {
-  flex-grow: 1; /* 남은 공간을 SearchBar가 차지하도록 */
-  display: flex; /* SearchBar 내부 정렬을 위해 */
-  justify-content: center; /* SearchBar를 중앙으로 정렬 */
-}
-
-.header-nav {
-  display: flex;
-  gap: 15px; /* 네비게이션 링크 간격 */
-  white-space: nowrap; /* 줄바꿈 방지 */
-}
-
-.nav-link {
-  text-decoration: none;
-  color: #555;
-  font-size: 16px;
+  color: #96466E;
   cursor: pointer;
-  transition: color 0.2s;
+  margin: 0;
 }
 
-.nav-link:hover {
-  color: #007bff;
-}
-
-.logout-link {
-  color: #dc3545; /* 로그아웃 링크 색상 */
-}
-.logout-link:hover {
-  color: #b02a37;
-}
-
-
-/* ↓여기 아래는 민희님이 하신 것 ↓*/
-
-/* .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 1920px;
-    height: 200px;
-    background-color: #f8f9fa;
-    border-bottom: 0px solid #ddd;
-  }
-  
-  .logo {
-    background-color: white;
-    color: #96466E;
-    width: 224px;
-    height: 106px;
-    cursor: default;
-    font-size: 100px;
-  } */
-
-  /* 검색창 전체 바탕 */
-  .search-bar {
+.search-bar-container {
   display: flex;
   align-items: center;
-  gap: 8px;
-  width: 800px;
-  height: 50px;
-  background-color: #E6E6E6; /* 회색 바탕 */
-  border-radius: 10px;        /* 모서리 둥글게 */
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 바깥 그림자 */
-  padding: 0 12px;
-  margin: 0 24px;
+  border: 1px solid #ddd;
+  border-radius: 8px; /* <--- 변경: 모서리 둥글기 조절 (더 네모지게) */
+  padding: 8px 15px;
+  background-color: #f5f5f5;
+  flex-grow: 1;
+  max-width: 400px;
+  margin: 0 auto;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
 }
 
-/* 입력창 */
-.search-bar input {
-  flex: 1;
-  width: 190px;
-  height: 26px;
+.search-input {
   border: none;
-  font-size: 20px;
-  color: #AAAAAA;                    /* 입력 텍스트 색 */
-  background-color:#E6E6E6;       /* 회색 바탕 */
   outline: none;
+  background: transparent;
+  flex-grow: 1;
+  font-size: 1em;
+  padding-right: 10px;
+  color: #333;
 }
 
-  /* placeholder 색 지정 */
-.search-bar input::placeholder {
-  color: #AAAAAA; /* 연한 회색 */
+.search-input::placeholder {
+  color: #aaa;
 }
 
-/* 돋보기 버튼 */
-.search-bar button {
-  background-color: transparent;   /* 배경 투명 */
+.search-button {
+  background: none;
   border: none;
   cursor: pointer;
-  padding: 2px;
-  width: 24px;
-  height: 24px;
+  color: #555;
+  font-size: 1.2em;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #212121; /* 진한 회색 */
-  font-size: 24px;
 }
 
-/* .auth-buttons {
+.header-right {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  flex-shrink: 0;
+  padding-top: 10px;
 }
 
-.signup {
-  background-color: white;
-  color: #000000;
-  width: 56px;
-  height: 19px;
-} */
-
-/* .login {
-  background-color: white;
-  color: #000000;
-  width: 42px;
-  height: 19px;
-}
-
-.logout {
-  background-color: white;
-  color: #000000;
-  width: 56px;
-  height: 19px;
-}
-
-.nav-icon {
-  border-radius: 50%;
-  background-color: #9A4A6E;
-  color: #FAF0D2;
-  width:  60px;
-  height: 60px;
+.header-text-button { /* <--- 변경: 클래스 이름 변경 및 텍스트 버튼 스타일 적용 */
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.85em;
+  color: #888;
   cursor: pointer;
-} */
+  text-decoration: none;
+  line-height: 1;
+  outline: none;
+  /* 호버 효과는 없습니다. */
+}
+
+/* --- 반응형 디자인을 위한 미디어 쿼리 (선택 사항) --- */
+@media (max-width: 768px) {
+  .main-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px;
+  }
+  .header-left {
+      width: 100%;
+      justify-content: space-between;
+  }
+  .search-bar-container {
+      width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+  }
+  .header-right {
+      width: 100%;
+      justify-content: flex-end;
+      padding-top: 0;
+  }
+}
