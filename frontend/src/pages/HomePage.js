@@ -34,11 +34,6 @@ function HomePage() {
                     <PostList searchTerm={searchTerm} /> {/* PostList에 검색어 전달 */}
                 </main>
 
-                {/* WelcomePopup 조건부 렌더링 */}
-                {isLoggedIn && showWelcomePopup && (
-                    <WelcomePopup onClose={closeWelcomePopUp} />
-                )}
-
                 {/* 우측 고정 사이드바 */}
                 <aside className="right-sidebar">
                     <RightSidebar />
