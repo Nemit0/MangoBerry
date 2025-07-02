@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+print(os.getcwd())
 
 
 def extract_categories(type_str):
@@ -24,7 +25,7 @@ def extract_categories(type_str):
 
 
 # Connect to SQLite
-conn = sqlite3.connect("MangoBerry/backend/seoul_restaurants.sqlite")
+conn = sqlite3.connect("clean_copy.sqlite")
 cursor = conn.cursor()
 
 # Fetch all columns

@@ -8,6 +8,11 @@ from elasticsearch import Elasticsearch
 sys.stdout.reconfigure(encoding='utf-8')
 
 load_dotenv()
+id = os.getenv("API_KEY_ID")
+key = os.getenv("API_KEY")
+print("ES_ID:", id)
+print("ES_KEY:", key)
+
 
 router = APIRouter()
 es = Elasticsearch("https://2ae07f7bf36d47cc9da14549c264281b.us-central1.gcp.cloud.es.io:443",

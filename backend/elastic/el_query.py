@@ -13,17 +13,40 @@ client = Elasticsearch(
     api_key=os.getenv("API_KEY")
 )
 
-query = {
-    "query": {
-        "match_phrase_prefix": {
-            "name": "하"
+def extract_categories(type_str):
+    parts = [p.strip() for p in type_str.split(">")]
+    categories = []
+    for p in parts[1:]:
+        categories.extend([cat.strip() for cat in p.split(",")])
+    return [cat for cat in categories if cat]
+
+def get_query(name=None, food_type=None, location=None, category=None):
+    must = []
+    if name:
+        must.append({"match_phrase_prefix": {"name": name}})
+    if food_type:
+        must.append({"wildcard": {"type": f"*{food_type}*"}})
+    if location:
+        must.append({"match": {"location": location}})
+    if category:
+        must.append({"term": {"categories": category}})
+    return {
+        "query": {
+            "bool": {
+                "must": must
+            }
         }
     }
+
+params = {
+    "food_type": "",
+    "category": "베이커리",
+    "name": "",
+    "location": ""
 }
+query = get_query(**params)
+response = client.search(index="restaurant", body=query, size=50)
 
-response = client.search(index="restaurant", body=query)
-
-# Print result names
 for hit in response["hits"]["hits"]:
     doc = hit["_source"]
-    print(f"이름: {doc['name']} \n음식 종류: {doc['type']} \n위도와 경도: {doc['location']['lat']}, {doc['location']['lon']}")
+    print(f"{doc['name']} — {doc.get('categories')} — {doc['location']}")
