@@ -25,7 +25,7 @@ def extract_categories(type_str):
 
 
 # Connect to SQLite
-conn = sqlite3.connect("clean_copy.sqlite")
+conn = sqlite3.connect("routers/clean_copy.sqlite")
 cursor = conn.cursor()
 
 # Fetch all columns
