@@ -30,7 +30,8 @@ mappings = {
             "r_id": {"type": "integer"},
             "id": {"type": "keyword"},
             "name": {"type": "text"},
-            "type": {"type": "text"},
+            "type": {"type": "keyword"},
+            "categories": {"type": "keyword"},
             "lat": {"type": "float"},
             "lon": {"type": "float"},
             "location": {"type": "geo_point"}

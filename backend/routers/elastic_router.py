@@ -8,8 +8,13 @@ from elasticsearch import Elasticsearch
 
 sys.stdout.reconfigure(encoding='utf-8')
 
-#oad_dotenv()
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
+
+id = os.getenv("API_KEY_ID")
+key = os.getenv("API_KEY")
+print("ES_ID:", id)
+print("ES_KEY:", key)
+
 
 print("ES_HOST:", os.getenv("ES_HOST"))
 print("ES_USER:", os.getenv("ES_USER"))
