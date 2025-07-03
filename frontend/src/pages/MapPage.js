@@ -3,8 +3,6 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Header from '../components/Header';
 import LeftSidebar from '../components/LeftSidebar';
 import RightSidebar from '../components/RightSidebar';
-import Button from '../components/Button'; // Button 컴포넌트 임포트
-import { TbMapSearch } from "react-icons/tb"; // 지도 내 검색 아이콘 임포트
 import '../pages/HomePage.css';
 import './MapPage.css';
 
@@ -104,7 +102,7 @@ function MapPage() {
         markersRef.current.forEach(marker => marker.setMap(null));
         markersRef.current = [];
 
-        const imageSrc = 'https://cdn-icons-png.flaticon.com/512/3082/3082365.png'; //
+        const imageSrc = 'https://cdn-icons-png.flaticon.com/512/3082/3082365.png';
         const bounds = new window.kakao.maps.LatLngBounds();
 
         for (let i = 0; i < places.length; i++) {
@@ -181,10 +179,10 @@ function MapPage() {
         setIsSearchTabOpen(prev => !prev);
     };
 
-    const handleMapSearch = () => {
-        alert('지도 내 검색 기능을 실행합니다!');
-        // 실제 검색 로직 또는 모달 호출 (미완완)
-    };
+    // const handleMapSearch = () => {
+    //     alert('지도 내 검색 기능을 실행합니다!');
+    //     // 실제 검색 로직 또는 모달 호출 (미완완)
+    // };
 
     return (
         <div className="homepage-layout">
@@ -201,7 +199,7 @@ function MapPage() {
                         ref={mapContainer}
                         style={{ width: '100%', height: '100%' }}
                     ></div>
-                    {/* 오른쪽 상단에 지도 내 검색 아이콘 버튼 추가 */}
+                    {/* 오른쪽 상단에 지도 내 검색 아이콘 버튼 추가
                     <div style={{
                         position: 'absolute', // 부모 요소 (main) 기준으로 위치 지정
                         top: '20px', // main 태그 상단에서 20px 아래
@@ -214,7 +212,7 @@ function MapPage() {
                             onClick={handleMapSearch}
                             ariaLabel="지도 내 검색"
                         />
-                    </div>
+                    </div> */}
                 </main>
 
                 <aside className="right-sidebar">
