@@ -38,7 +38,11 @@ def upload_single_file(local_path: Path, key: str) -> None:
         Key=key,
         ExtraArgs=extra_args,
     )
+<<<<<<< HEAD
     print("done")
+=======
+    print("✓ done")
+>>>>>>> c1b9690 (review api and started s3)
 # ---------------------------------------------------------------------------#
 # 2. Big file (≥5 GB) – multipart + tqdm progress bar                         #
 # ---------------------------------------------------------------------------#
@@ -66,10 +70,17 @@ def upload_large_file_multipart(local_path: Path, key: str, part_size_mb: int = 
         Config=config,
     )
     progress.close()
+<<<<<<< HEAD
     print("done")
 
 # ---------------------------------------------------------------------------#
 # 3. Generate a pre-signed URL so someone else can PUT without credentials    #
+=======
+    print("✓ done")
+
+# ---------------------------------------------------------------------------#
+# 4. Generate a pre-signed URL so someone else can PUT without credentials    #
+>>>>>>> c1b9690 (review api and started s3)
 # ---------------------------------------------------------------------------#
 def generate_presigned_url(key: str, expires_in: int = 3600) -> str:
     """
