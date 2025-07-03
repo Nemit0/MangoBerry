@@ -1,6 +1,6 @@
 .right-sidebar-container {
     padding: 20px 15px; /* 기존 패딩 유지 */
-    background-color: #f8f8f8;
+    background-color: #979797;
     height: 100%;
     box-sizing: border-box;
     overflow-y: auto; /* 우측 사이드바 내용이 넘치면 자체 스크롤 */
@@ -20,6 +20,7 @@
     position: sticky;
     top: 0;
     align-self: flex-start; /* sticky와 함께 사용하여 정렬 문제 방지 */
+    flex-basis: 500px;
 }
 
 /* 사이드바 상단 내용들을 묶는 컨테이너 */

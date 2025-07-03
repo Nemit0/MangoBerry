@@ -1,10 +1,11 @@
 .left-sidebar-container {
     padding: 20px 15px;
-    background-color: #f8f8f8;
+    background-color: #979797;
     height: 100%; /* 부모로부터 높이 상속 */
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
+    flex-basis: 500px;
 }
 
 .hamburger-menu {

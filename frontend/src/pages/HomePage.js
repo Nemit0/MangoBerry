@@ -30,7 +30,7 @@ function HomePage() {
                     <LeftSidebar />
                 </aside>
                 {/* 중간 게시물 영역 (PostList) - 스크롤 가능 */}
-                <main className="middle-posts-area">
+                <main className="homepage-middle-posts-area">
                     <PostList searchTerm={searchTerm} /> {/* PostList에 검색어 전달 */}
                 </main>
 
