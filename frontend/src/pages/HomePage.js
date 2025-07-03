@@ -5,6 +5,7 @@ import LeftSidebar from '../components/LeftSidebar';
 import PostList from '../components/PostList';
 import RightSidebar from '../components/RightSidebar';
 import { useAuth } from '../contexts/AuthContext';
+import WelcomePopup from '../components/WelcomePopup';
 
 import './HomePage.css';
 
