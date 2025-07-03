@@ -4,9 +4,9 @@ import Header from '../components/Header';
 import LeftSidebar from '../components/LeftSidebar';
 import PostList from '../components/PostList';
 import RightSidebar from '../components/RightSidebar';
-import './HomePage.css';
-import WelcomePopup from '../components/WelcomePopup';
 import { useAuth } from '../contexts/AuthContext';
+
+import './HomePage.css';
 
 function HomePage() {
     // 검색어 상태를 HomePage에서 관리

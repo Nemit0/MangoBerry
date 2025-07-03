@@ -24,7 +24,6 @@ import NotFoundPage from './pages/NotFoundPage';
 function App() {
   return (
     <>
-      
         <Routes>
           <Route path='/' element={<HomePage />}/>
           <Route path='/login' element={<LoginPage />}/>
@@ -37,8 +36,7 @@ function App() {
           <Route path='/others' element={<OthersPage />}/>
           <Route path='/map' element={<MapPage />}/>
           <Route path='*' element={<NotFoundPage />}/>
-        </Routes>
-      
+        </Routes>  
     </>
   );
 }

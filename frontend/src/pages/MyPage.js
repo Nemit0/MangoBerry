@@ -10,8 +10,6 @@ import '../pages/HomePage.css';
 
 function MyPage() {
     const navigate = useNavigate();
-
-    // <--- 변경: 편집 페이지로 이동하는 함수. postId를 받지 않습니다.
     const goToEditPage = () => { // postId 인자 제거
         navigate('/edit'); // <--- 변경: /edit 경로로만 이동
     };
@@ -31,8 +29,8 @@ function MyPage() {
                     
                     {/* <--- 변경: 편집 버튼 예시 (실제로는 게시물별로 있어야 함) */}
                     <div style={{ marginTop: '30px', padding: '20px', border: '1px solid #ddd', borderRadius: '5px' }}>
-                        <h3>내 게시물 #1 (예시)</h3>
-                        <p>이것은 제가 작성한 첫 번째 게시물 내용입니다.</p>
+                        <h3>내 게시물 #1 </h3>
+                        <p> 첫 번째 게시물 </p>
                         {/* <--- 변경: onClick 함수에 postId 인자 제거 */}
                         <Button onClick={goToEditPage} className="custom-button primary">
                             편집
@@ -40,8 +38,8 @@ function MyPage() {
                     </div>
 
                     <div style={{ marginTop: '20px', padding: '20px', border: '1px solid #ddd', borderRadius: '5px' }}>
-                        <h3>내 게시물 #2 (예시)</h3>
-                        <p>이것은 제가 작성한 두 번째 게시물 내용입니다.</p>
+                        <h3>내 게시물 #2 </h3>
+                        <p> 두 번째 게시물 </p>
                         {/* <--- 변경: onClick 함수에 postId 인자 제거 */}
                         <Button onClick={goToEditPage} className="custom-button primary">
                             편집

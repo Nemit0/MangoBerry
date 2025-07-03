@@ -1,6 +1,6 @@
-// src/components/Header.js (올바른 코드)
+// src/components/Header.js (수정된 올바른 코드)
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom'; // ← Link 추가!
 import { IoSearch } from 'react-icons/io5';
 import './Header.css';
 import { useAuth } from '../contexts/AuthContext';
@@ -8,8 +8,9 @@ import { useAuth } from '../contexts/AuthContext';
 function Header({ searchTerm: initialSearchTerm = '', onSearchChange }) {
     const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
     const navigate = useNavigate();
-    const { isLoggedIn, logout } = useAuth();
     const location = useLocation();
+
+    const { isLoggedIn, logout } = useAuth();
 
     console.log("Header - 현재 라우트:", location.pathname, "로그인 상태:", isLoggedIn);
 
@@ -46,28 +47,16 @@ function Header({ searchTerm: initialSearchTerm = '', onSearchChange }) {
                 </button>
             </form>
 
-            <div className="header-right"> 
-                {isLoggedIn ? (
-                    <span onClick={handleLogout} className="header-text-button">
-                        로그아웃
-                    </span>
-                ) : (
-                    location.pathname === '/' && (
-                        <>
-                            <span onClick={() => navigate('/register')} className="header-text-button">
-                                회원 가입
-                            </span>
-                            <span 
-                                onClick={() => navigate('/login')} 
-                                className="header-text-button" 
-                                style={{ marginLeft: '10px' }} 
-                            >
-                                로그인
-                            </span>
-                        </>
-                    )
+            <nav className="header-nav">
+                {!isLoggedIn && (
+                    <Link to="/register" className="nav-link">회원가입</Link>
                 )}
-            </div>
+                {isLoggedIn ? (
+                    <span onClick={handleLogout} className="nav-link logout-link">로그아웃</span>
+                ) : (
+                    <Link to="/login" className="nav-link" style={{marginLeft: '10px'}}>로그인</Link>
+                )}
+            </nav>
         </header>
     );
 }
