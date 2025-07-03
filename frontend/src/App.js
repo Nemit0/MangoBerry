@@ -24,8 +24,7 @@ import NotFoundPage from './pages/NotFoundPage';
 function App() {
   return (
     <>
-      <Header />
-      <main style={{ paddingTop: '10px' }}>
+      
         <Routes>
           <Route path='/' element={<HomePage />}/>
           <Route path='/login' element={<LoginPage />}/>
@@ -39,7 +38,7 @@ function App() {
           <Route path='/map' element={<MapPage />}/>
           <Route path='*' element={<NotFoundPage />}/>
         </Routes>
-      </main>
+      
     </>
   );
 }
