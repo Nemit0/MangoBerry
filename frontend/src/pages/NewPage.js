@@ -1,4 +1,4 @@
-// src/pages/NewPage.js (업데이트)
+// src/pages/NewPage.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -7,20 +7,20 @@ import Header from '../components/Header';
 import LeftSidebar from '../components/LeftSidebar';
 import RightSidebar from '../components/RightSidebar';
 import Button from '../components/Button'; // Button 컴포넌트 임포트
-import { TbPhotoPlus } from "react-icons/tb"; // <--- 변경: 사진 추가 아이콘 임포트
+import { TbPhotoPlus } from "react-icons/tb"; // 사진 추가 아이콘 임포트
 
 // 공통 레이아웃 CSS 재활용
 import '../pages/HomePage.css'; 
-import './NewPage.css'; // <--- 변경: NewPage 전용 CSS 임포트 (아래에 생성)
+import './NewPage.css';
 
 function NewPage() {
     const navigate = useNavigate();
     const [title, setTitle] = useState('');
-    const [restaurantName, setRestaurantName] = useState(''); // <--- 변경: 식당 이름 상태
-    const [oneLiner, setOneLiner] = useState(''); // <--- 변경: 한줄평 상태
-    const [content, setContent] = useState(''); // <--- 변경: 내용 입력칸 상태
+    const [restaurantName, setRestaurantName] = useState(''); //  식당 이름 상태
+    const [oneLiner, setOneLiner] = useState(''); //  한줄평 상태
+    const [content, setContent] = useState(''); // 내용 입력칸 상태
     const [image, setImage] = useState(null);
-    const [isAnalyzing, setIsAnalyzing] = useState(false); // <--- 변경: '분석 시작/완료' 버튼 상태
+    const [isAnalyzing, setIsAnalyzing] = useState(false); // '분석 시작/완료' 버튼 상태
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -49,16 +49,16 @@ function NewPage() {
     };
 
     return (
-        <div className="homepage-layout">
+        <div className="newpage-layout">
             <Header searchTerm="" onSearchChange={() => {}} />
 
             <div className="main-content-wrapper">
-                <aside className="left-sidebar">
+                <aside className="newpage-left-sidebar">
                     <LeftSidebar />
                 </aside>
 
                 {/* 중앙 콘텐츠 영역: 리뷰 작성 폼 */}
-                <main className="middle-posts-area">
+                <main className="newpage-middle-area">
                     {/* <--- 변경: "글쓰기" 제목과 경계선 */}
                     <div className="write-section-header">
                         <h2>글쓰기</h2>
@@ -121,9 +121,9 @@ function NewPage() {
                             </div>
                         </div>
 
-                        {/* <--- 변경: 분석 시작/완료 버튼 (아래에 CSS 추가) */}
+                        {/* 분석 시작/완료 버튼 (아래에 CSS 추가) */}
                         <Button
-                            type="button" // 폼 제출이 아니라 별도의 클릭 이벤트이므로 type="button"
+                            type="button" 
                             onClick={handleAnalyzeClick}
                             className={`analysis-button ${isAnalyzing ? 'analyzing' : ''}`}
                         >
@@ -132,7 +132,7 @@ function NewPage() {
                     </form>
                 </main>
 
-                <aside className="right-sidebar">
+                <aside className="newpage-right-sidebar">
                     <RightSidebar />
                 </aside>
             </div>
