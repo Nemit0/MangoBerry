@@ -1,29 +1,34 @@
 // src/components/RightSidebar.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './RightSidebar.css';
 import './RightSidebarMap.css'; // 지도 검색 탭 관련 스타일 임포트
 
+import Button from '../components/Button';
+import { TbMapSearch } from "react-icons/tb";
+import { TbMap2 } from "react-icons/tb"
+import { BiMap } from "react-icons/bi";
+
 function RightSidebar({ isMapPage, isSearchTabOpen, toggleSearchTab, onSearch, searchResults, currentKeyword, onResultItemClick }) {
     const [searchInputValue, setSearchInputValue] = useState(currentKeyword || '');
 
-    const { isLoggedIn } = useAuth(); // 로그인 상태와 함수 가져오기
-    const location = useLocation(); // 현재 경로 정보 가져오기
-    const navigate = useNavigate(); // 페이지 이동 함수 가져오기
+    // const { isLoggedIn } = useAuth(); // 로그인 상태와 함수 가져오기
+    // const location = useLocation(); // 현재 경로 정보 가져오기
+    // const navigate = useNavigate(); // 페이지 이동 함수 가져오기
 
     // 버튼을 보여줄 페이지 경로 정의
-    const allowedPaths = ['/', '/my']; // HomePage는 '/', MyPage는 '/my'
+    // const allowedPaths = ['/', '/my']; // HomePage는 '/', MyPage는 '/my'
 
     // 현재 경로가 허용된 경로 중 하나인지 확인
-    const shouldShowButton = isLoggedIn && allowedPaths.includes(location.pathname);
+    // const shouldShowButton = isLoggedIn && allowedPaths.includes(location.pathname);
 
-    const handleNewPageClick = () => {
-        navigate('/new'); // NewPage 경로로 이동
-    };
+    // const handleNewPageClick = () => {
+    //     navigate('/new'); // NewPage 경로로 이동
+    // };
 
     // currentKeyword가 변경될 때마다 searchInputValue 동기화
-    React.useEffect(() => {
+    useEffect(() => {
         setSearchInputValue(currentKeyword || '');
     }, [currentKeyword]);
 
@@ -47,10 +52,14 @@ function RightSidebar({ isMapPage, isSearchTabOpen, toggleSearchTab, onSearch, s
             {isMapPage ? (
                 <div className="map-search-controls">
                     {/* "지도 내 검색" 버튼 */}
-                    <button className="map-search-toggle-button" onClick={toggleSearchTab}>
-                        지도 내 검색 <span className="icon">🔍</span>
-                    </button>
+                    <Button
+                        className='icon-button map-search-toggle-button'
+                        icon={BiMap}
+                        onClick={toggleSearchTab}
+                        ariaLabel='지도 내 검색'
+                    >
 
+                    </Button>
                     {/* 검색 탭 (isSearchTabOpen 상태에 따라 조건부 렌더링) */}
                     {isSearchTabOpen && (
                         <div className="map-search-tab">
@@ -98,7 +107,7 @@ function RightSidebar({ isMapPage, isSearchTabOpen, toggleSearchTab, onSearch, s
                     {/* 기존 HomePage에서 보여주던 RightSidebar 내용 */}
                 </>
             )}
-            <div className='right-sidebar-content-top'>
+            {/* <div className='right-sidebar-content-top'>
                 
             </div>
             {shouldShowButton && (
@@ -108,7 +117,7 @@ function RightSidebar({ isMapPage, isSearchTabOpen, toggleSearchTab, onSearch, s
                 >
                     새로운 페이지로 이동
                 </button>
-            )}
+            )} */}
         </div>
     );
 }

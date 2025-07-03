@@ -1,11 +1,13 @@
 .left-sidebar-container {
     padding: 20px 15px;
-    background-color: #979797;
-    height: 100%; /* 부모로부터 높이 상속 */
+    background-color: #b6b6b6;
+    height: calc(100vh - 60px); /* Header 높이를 제외한 뷰포트 높이 */; /* 부모로부터 높이 상속 */
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    flex-basis: 500px;
+    position: sticky;
+    overflow-y: auto;
+    top: 0px;
 }
 
 .hamburger-menu {
