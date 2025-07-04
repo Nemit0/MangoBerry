@@ -15,7 +15,7 @@ if not OPENAI_API_KEY:
 
 openai.api_key = OPENAI_API_KEY
 
-router = APIRouter()
+router = APIRouter( )
 
 # 리뷰 데이터 입력 포맷
 class Review(BaseModel):
