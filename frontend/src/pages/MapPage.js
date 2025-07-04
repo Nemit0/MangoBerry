@@ -6,7 +6,7 @@ import RightSidebar from '../components/RightSidebar';
 import '../pages/HomePage.css';
 import './MapPage.css';
 
-const KAKAO_MAP_APP_KEY = process.env.REACT_APP_KAKAO_MAP_APP_KEY; // ⭐⭐ 실제 키로 교체 ⭐⭐
+const KAKAO_MAP_APP_KEY = process.env.REACT_APP_KAKAO_MAP_APP_KEY;
 
 function MapPage() {
     const mapContainer = useRef(null);
