@@ -8,3 +8,7 @@ pymysql
 pymongo
 boto3
 cryptography
+tqdm
+openai
+scipy
+cryptography

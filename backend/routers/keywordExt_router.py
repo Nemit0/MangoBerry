@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import os
 import openai
 
-from MangoBerry.backend.keyword_extract import extract_keyword_from_review
+from ..keyword_extract import extract_keyword_from_review
 
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
