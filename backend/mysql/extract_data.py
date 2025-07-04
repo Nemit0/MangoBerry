@@ -1,3 +1,6 @@
+'''
+Retrieve restaurant data from clean_copy.sqlite and save it on MySQL
+'''
 import sqlite3
 from pathlib import Path
 from dotenv import load_dotenv

@@ -8,14 +8,10 @@ from dotenv import load_dotenv
 import boto3
 from botocore.exceptions import ClientError
 from tqdm import tqdm
+import sys
+from typing import Optional
 
 load_dotenv()
-
-
-import sys
-print("Python being used:", sys.executable)
-print(os.getcwd())
-from typing import Optional
 
 BUCKET_NAME: str = "mangoberry-bucket"
 REGION_NAME: Optional[str] = os.getenv("AWS_DEFAULT_REGION", "ap-northeast-2")
@@ -42,7 +38,7 @@ def upload_single_file(local_path: Path, key: str) -> None:
         Key=key,
         ExtraArgs=extra_args,
     )
-    print("✓ done")
+    print("done")
 # ---------------------------------------------------------------------------#
 # 2. Big file (≥5 GB) – multipart + tqdm progress bar                         #
 # ---------------------------------------------------------------------------#
@@ -70,10 +66,10 @@ def upload_large_file_multipart(local_path: Path, key: str, part_size_mb: int = 
         Config=config,
     )
     progress.close()
-    print("✓ done")
+    print("done")
 
 # ---------------------------------------------------------------------------#
-# 4. Generate a pre-signed URL so someone else can PUT without credentials    #
+# 3. Generate a pre-signed URL so someone else can PUT without credentials    #
 # ---------------------------------------------------------------------------#
 def generate_presigned_url(key: str, expires_in: int = 3600) -> str:
     """
