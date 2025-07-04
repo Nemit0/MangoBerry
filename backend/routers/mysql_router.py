@@ -22,11 +22,6 @@ def read_users_sql(db: Session = Depends(get_db)):
     users = db.query(models.Users).all()
     return users
 
-@router.get("/restaurant_sql")
-def read_restaurant_sql(db: Session = Depends(get_db)):
-    restaurant = db.query(models.Restaurant).all()
-    return restaurant
-
 @router.get("/review_sql")
 def read_review_sql(db: Session = Depends(get_db)):
     review = db.query(models.Review).all()
