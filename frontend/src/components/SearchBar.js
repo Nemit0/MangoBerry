@@ -1,5 +1,6 @@
 import React from 'react';
 import './SearchBar.css';
+import { IoSearch } from "react-icons/io5";
 
 function SearchBar({ searchTerm, onSearchChange, placeholder }) {
     return (
@@ -11,7 +12,7 @@ function SearchBar({ searchTerm, onSearchChange, placeholder }) {
                 onChange={(e) => onSearchChange(e.target.value)}
                 className="search-bar-input"
             />
-            <button className="search-bar-button">🔍</button>
+            <button className="search-bar-button"><IoSearch/></button>
         </div>
     );
 }
