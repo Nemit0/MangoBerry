@@ -1,3 +1,8 @@
 # All Test and temporary files and directories
 *.test
 *.tmp
+.venv
+venv
+__pycache__
+*.pyc
+*.pyo

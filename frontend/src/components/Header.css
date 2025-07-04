@@ -1,158 +1,120 @@
-.header-container {
-  position: fixed; /* 뷰포트에 고정 */
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 60px; /* 헤더 높이 */
-  background-color: #fff;
-  border-bottom: 1px solid #e0e0e0;
-  z-index: 1000; /* 다른 요소 위에 표시 */
-  box-sizing: border-box; /* 패딩, 보더 포함 높이 계산 */
+/* src/components/Header.css */
 
+/* 헤더 전체를 감싸는 최상위 컨테이너 스타일 */
+.main-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
-  gap: 20px; /* 요소들 간의 간격 */
+  padding: 30px 20px;    /*순서대로 상하 10px, 좌우 20px*/
+  background-color: #fff;
+  border-bottom: 1px solid #eee;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  position: fixed;
+  width: 50%; /*전체 화면 너비의 50%만 사용*/
+  left: 50%;  /*왼쪽에서 50% 지점으로 이동*/
+  transform: translateX(50%); /*자신의 너비의 절반만큼 왼쪽으로 이동하여 정확히 가운데 정렬 */
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  box-sizing: border-box;
 }
 
-.logo {
-  font-size: 28px; /* 로고 크기 조정 */
-  font-weight: bold;
-  color: #333;
-  white-space: nowrap; /* 줄바꿈 방지 */
-}
-
-.header-search-area {
-  flex-grow: 1; /* 남은 공간을 SearchBar가 차지하도록 */
-  display: flex; /* SearchBar 내부 정렬을 위해 */
-  justify-content: center; /* SearchBar를 중앙으로 정렬 */
-}
-
-.header-nav {
-  display: flex;
-  gap: 15px; /* 네비게이션 링크 간격 */
-  white-space: nowrap; /* 줄바꿈 방지 */
-}
-
-.nav-link {
-  text-decoration: none;
-  color: #555;
-  font-size: 16px;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.nav-link:hover {
-  color: #007bff;
-}
-
-.logout-link {
-  color: #dc3545; /* 로그아웃 링크 색상 */
-}
-.logout-link:hover {
-  color: #b02a37;
-}
-
-
-/* ↓여기 아래는 민희님이 하신 것 ↓*/
-
-/* .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 1920px;
-    height: 200px;
-    background-color: #f8f9fa;
-    border-bottom: 0px solid #ddd;
-  }
-  
-  .logo {
-    background-color: white;
-    color: #96466E;
-    width: 224px;
-    height: 106px;
-    cursor: default;
-    font-size: 100px;
-  } */
-
-  /* 검색창 전체 바탕 */
-  .search-bar {
+/* 로고와 검색창을 포함하는 왼쪽 섹션 */
+.header-left {
   display: flex;
   align-items: center;
-  gap: 8px;
-  width: 800px;
-  height: 50px;
-  background-color: #E6E6E6; /* 회색 바탕 */
-  border-radius: 10px;        /* 모서리 둥글게 */
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 바깥 그림자 */
-  padding: 0 12px;
-  margin: 0 24px;
+  flex-shrink: 0;
 }
 
-/* 입력창 */
-.search-bar input {
-  flex: 1;
-  width: 190px;
-  height: 26px;
+/* 로고 텍스트 스타일 */
+.logo {
+  font-family: 'Bangers';
+  font-size: 5em;
+  font-weight: bold;
+  color: #96466E;
+  cursor: pointer;
+  margin: 0;
+}
+
+/* 검색창 컨테이너 스타일 */
+.search-bar-container {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 8px; /* <--- 변경: 모서리 둥글기 조절 (더 네모지게) */
+  padding: 8px 15px;
+  background-color: #f5f5f5;
+  flex-grow: 1;
+  max-width: 400px;
+  margin: 0 auto;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* 검색어 입력창 스타일 */
+.search-input {
   border: none;
-  font-size: 20px;
-  color: #AAAAAA;                    /* 입력 텍스트 색 */
-  background-color:#E6E6E6;       /* 회색 바탕 */
   outline: none;
+  background: transparent;
+  flex-grow: 1;
+  font-size: 1em;
+  padding-right: 10px;
+  color: #333;
 }
 
-  /* placeholder 색 지정 */
-.search-bar input::placeholder {
-  color: #AAAAAA; /* 연한 회색 */
+/* 검색어 입력창의 플레이스홀더(기본 안내 문구) 스타일 */
+.search-input::placeholder {
+  color: #aaa;
 }
 
-/* 돋보기 버튼 */
-.search-bar button {
-  background-color: transparent;   /* 배경 투명 */
+/* 검색 버튼(돋보기 아이콘) 스타일 */
+.search-button {
+  background: none;
   border: none;
   cursor: pointer;
-  padding: 2px;
-  width: 24px;
-  height: 24px;
+  color: #555;
+  font-size: 1.2em;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #212121; /* 진한 회색 */
-  font-size: 24px;
 }
 
-/* .auth-buttons {
+
+/* 로그인, 회원가입 버튼 등을 포함하는 오른쪽 섹션 */
+.header-right {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  flex-shrink: 0;
+  padding-top: 10px;
 }
 
-.signup {
-  background-color: white;
-  color: #000000;
-  width: 56px;
-  height: 19px;
-} */
-
-/* .login {
-  background-color: white;
-  color: #000000;
-  width: 42px;
-  height: 19px;
-}
-
-.logout {
-  background-color: white;
-  color: #000000;
-  width: 56px;
-  height: 19px;
-}
-
-.nav-icon {
-  border-radius: 50%;
-  background-color: #9A4A6E;
-  color: #FAF0D2;
-  width:  60px;
-  height: 60px;
+/* '로그인', '회원가입' 같은 텍스트 버튼 스타일 */
+.header-text-button { 
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.85em;
+  color: #888;
   cursor: pointer;
-} */
+  text-decoration: none;
+  line-height: 1;
+  outline: none;
+} 
+
+/* Header.js에서 사용하는 Link와 span 공통 스타일 */
+.nav-link {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.85em;
+  color: #888;
+  cursor: pointer;
+  text-decoration: none;
+  line-height: 1;
+  outline: none;
+}
+
+.logout-link {
+  color: #333;
+}

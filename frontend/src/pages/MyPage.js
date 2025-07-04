@@ -1,26 +1,52 @@
-// src/pages/MyPage.js
+// src/pages/MyPage.js (최소 변경)
 import React from 'react';
-import Header from '../components/Header'; // 헤더도 포함하는 것이 일반적
+import { useNavigate } from 'react-router-dom';
+import Header from '../components/Header';
 import LeftSidebar from '../components/LeftSidebar';
 import RightSidebar from '../components/RightSidebar';
-import '../pages/HomePage.css'; // HomePage의 레이아웃 CSS 재활용 (간단한 예시)
+import Button from '../components/Button';
+
+import '../pages/HomePage.css';
 
 function MyPage() {
-    // MyPage는 검색 기능이 없다고 가정하여 searchTerm과 onSearchChange는 전달하지 않습니다.
-    // 만약 MyPage에도 헤더가 필요하다면, Header를 임포트하고 레이아웃을 구성합니다.
-    // 여기서는 HomePage의 레이아웃을 재활용하는 방식으로 구성합니다.
+    const navigate = useNavigate();
+    const goToEditPage = () => { // postId 인자 제거
+        navigate('/edit'); // <--- 변경: /edit 경로로만 이동
+    };
+
     return (
         <div className="homepage-layout">
-            <Header searchTerm="" onSearchChange={() => {}} /> {/* 검색 기능 없는 더미 Header */}
+            <Header searchTerm="" onSearchChange={() => {}} />
 
             <div className="main-content-wrapper">
                 <aside className="left-sidebar">
                     <LeftSidebar />
                 </aside>
 
-                <main className="middle-posts-area" style={{ textAlign: 'center', paddingTop: '50px' }}>
-                    <h2>마이 페이지</h2>
-                    <p>여기에 사용자 정보, 활동 내역 등이 표시됩니다.</p>
+                <main className="middle-posts-area">
+                    <h1>마이 페이지</h1>
+                    <p>내 프로필 정보와 내가 작성한 게시물들을 볼 수 있는 페이지입니다.</p>
+                    
+                    {/* <--- 변경: 편집 버튼 예시 (실제로는 게시물별로 있어야 함) */}
+                    <div style={{ marginTop: '30px', padding: '20px', border: '1px solid #ddd', borderRadius: '5px' }}>
+                        <h3>내 게시물 #1 </h3>
+                        <p> 첫 번째 게시물 </p>
+                        {/* <--- 변경: onClick 함수에 postId 인자 제거 */}
+                        <Button onClick={goToEditPage} className="custom-button primary">
+                            편집
+                        </Button>
+                    </div>
+
+                    <div style={{ marginTop: '20px', padding: '20px', border: '1px solid #ddd', borderRadius: '5px' }}>
+                        <h3>내 게시물 #2 </h3>
+                        <p> 두 번째 게시물 </p>
+                        {/* <--- 변경: onClick 함수에 postId 인자 제거 */}
+                        <Button onClick={goToEditPage} className="custom-button primary">
+                            편집
+                        </Button>
+                    </div>
+
+                    {/* 마이페이지 다른 내용들... */}
                 </main>
 
                 <aside className="right-sidebar">

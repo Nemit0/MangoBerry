@@ -1,6 +1,8 @@
 import json
 from collections import Counter
 from konlpy.tag import Okt
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
 
 # 파일 경로 설정
 json_file = r"C:\Users\hi\Downloads\unique_words (1).json"
@@ -9,7 +11,7 @@ json_file = r"C:\Users\hi\Downloads\unique_words (1).json"
 stopwords = [
     "요", "먹음", "골목", "산", "때", "주먹", "임", "해먹", "직", "지인", "이자", "도", "듯", "왕","랍니", "뭐",
     "복식", "마을", "대국", "보고", "날", "손", "데", "보기", "먹보", "먹이", "고요", "이기", "은", "거",
-    "대표", "인", "사진", "다가", "때문", "중간", "오늘", "산이", "공원", "디지털", "한번", "정도"
+    "대표", "인", "사진", "다가", "때문", "중간", "오늘", "산이", "공원", "디지털", "한번", "정도", "인지", "드릴"
 ]
 
 # 서울 제외 지역
@@ -55,7 +57,7 @@ filtered_counter = Counter({
 })
 
 # 5. 상위 N개만 추출 (ex. 500개)
-TOP_N = 500
+TOP_N = 1000
 top_menus = filtered_counter.most_common(TOP_N)
 
 # 6. (1) (단어, 개수) 튜플 리스트 저장
@@ -68,7 +70,7 @@ with open("top_menu_words.json", "w", encoding="utf-8") as f:
     json.dump(menu_list, f, ensure_ascii=False, indent=2)
 
 print(f"\n상위 {TOP_N}개 메뉴/음식 후보:")
-print(menu_list[:30])  # 상위 30개 미리보기
+print(menu_list[:100])  # 상위 n개 미리보기
 
 print("\n저장 파일: top_menu_candidates.json (튜플 리스트), top_menu_words.json (단어 리스트)")
 

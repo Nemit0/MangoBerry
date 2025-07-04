@@ -1,3 +1,7 @@
+'''
+Routers for searching restaurants
+'''
+
 import os
 import sys
 import requests
@@ -21,9 +25,6 @@ print("ES_USER:", os.getenv("ES_USER"))
 print("ES_PASS:", os.getenv("ES_PASS"))
 
 router = APIRouter()
-# es = Elasticsearch("https://2ae07f7bf36d47cc9da14549c264281b.us-central1.gcp.cloud.es.io:443",
-#     api_key=(os.getenv("API_KEY_ID"), os.getenv("API_KEY"))
-# )
 
 
 es = Elasticsearch(
@@ -87,8 +88,8 @@ def search_restaurant_es(
             "error": str(e)
         }
 
-@router.get("/nearby_from_ip")
-def nearby_from_ip(request: Request, distance: str = "5km", size: int = 10):
+@router.get("/nearby_restaurant_es")
+def nearby_restaurant_es(request: Request, distance: str = "5km", size: int = 10):
     ip = request.client.host
 
     # Localhost fallback for development

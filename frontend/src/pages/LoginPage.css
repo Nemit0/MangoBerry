@@ -1,0 +1,161 @@
+.loginpage-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;  /* 뷰포트 높이 100%를 차지 */
+    overflow: hidden;
+}
+
+.main-content-wrapper {
+    display: flex; /* 하단 3개 영역(좌, 중, 우)을 가로로 정렬 */
+    flex-grow: 1; /* Header를 제외한 남은 세로 공간을 모두 차지 */
+    
+    /* Header의 높이(60px)만큼 위에서 시작하도록 마진 */
+    /* calc를 사용하여 정확한 높이를 계산 */
+    height: calc(100vh - 60px); /* 뷰포트 높이 - 헤더 높이 */
+    margin-top: 60px; /* 헤더 아래에서 시작 */
+    box-sizing: border-box;
+}
+
+/* 좌측 사이드바 */
+.left-sidebar {
+    flex-basis: 220px; /* 고정 너비 설정 (이미지 기준) */
+    flex-shrink: 0; /* 내용이 많아도 줄어들지 않도록 */
+    background-color: #f0f2f5;
+    box-sizing: border-box;
+    /* overflow-y: auto; 는 LeftSidebar.css에서 관리 */
+}
+
+/* 우측 사이드바 */
+.right-sidebar {
+    flex-basis: 250px; /* 고정 너비 설정 (이미지 기준) */
+    flex-shrink: 0;
+    background-color: #f0f2f5;
+    box-sizing: border-box;
+    /* overflow-y: auto; 는 RightSidebar.css에서 관리 */
+}
+
+/* 중간 로그인 영역 (login이 들어갈 곳) */
+.middle-login-area {
+    flex-grow: 1; /* 남은 수평 공간을 모두 차지하도록 */
+    background-color: #ffffff;
+    padding: 20px; /* PostList 컴포넌트 주변 여백 */
+    box-sizing: border-box;
+
+    /* **게시물 영역 스크롤 설정 (핵심)** */
+    overflow-y: auto; /* 내용이 넘칠 때 세로 스크롤바 생성 */
+    max-height: 100%; /* 부모(main-content-wrapper)의 높이를 넘지 않도록 */
+}
+
+
+.login-container {
+    display: flex;
+    justify-content: center; /* 수평 중앙 정렬 */
+    align-items: center; /* 수직 중앙 정렬 */
+    min-height: 100%; /* 부모(content-area)의 높이를 꽉 채우도록 */
+    width: 100%;
+    /* background-color: #f0f2f5; */ /* 로그인 페이지 배경색 (선택 사항) */
+}
+
+.login-box {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 8px;
+    /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); */
+    text-align: center;
+    width: 100%;
+    max-width: 400px; /* 로그인 박스 최대 너비 */
+    margin-bottom: auto;
+}
+
+.login-title {
+    font-size: 2em;
+    color: #333;
+    margin-bottom: 30px;
+    font-weight: bold;
+}
+
+.login-form {
+    margin-bottom: 20px;
+}
+
+.login-input-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+/* .login-input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+} */
+
+.login-input-group input[type='text'],
+.login-input-group input[type="password"] {
+    width: calc(100% - 22px); /* 패딩과 보더 고려 */
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1.1em;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.login-input-group input[type="text"]:focus,
+.login-input-group input[type="password"]:focus {
+    border-color: #007bff;
+}
+
+.login-error {
+    color: #dc3545;
+    font-size: 0.9em;
+    margin-top: -10px;
+    margin-bottom: 15px;
+}
+
+.login-button,
+.register-button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-weight: bold;
+}
+
+.login-button {
+    background-color: #007bff;
+    color: white;
+    margin-bottom: 1px; /* 로그인 버튼 아래 여백 */
+}
+
+.login-button:hover {
+    background-color: #0056b3;
+}
+
+.register-button {
+    background-color: #6c757d;
+    color: white;
+}
+
+.register-button:hover {
+    background-color: #5a6268;
+}
+
+.register-nav {
+    text-align: left;
+}
+
+.register-nav-link {
+    text-decoration: none;
+    color: #555;
+    font-size: 16px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.register-nav-link:hover {
+    color: #007bff;
+}
