@@ -1,0 +1,245 @@
+/* src/pages/RegisterPage.css */
+
+.registerpage-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;  /* 뷰포트 높이 100%를 차지 */
+    overflow: hidden;
+}
+
+.main-content-wrapper {
+    display: flex; /* 하단 3개 영역(좌, 중, 우)을 가로로 정렬 */
+    flex-grow: 1; /* Header를 제외한 남은 세로 공간을 모두 차지 */
+    
+    /* Header의 높이(60px)만큼 위에서 시작하도록 마진 */
+    /* calc를 사용하여 정확한 높이를 계산 */
+    height: calc(100vh - 60px); /* 뷰포트 높이 - 헤더 높이 */
+    margin-top: 60px; /* 헤더 아래에서 시작 */
+    box-sizing: border-box;
+}
+
+/* 좌측 사이드바 */
+.left-sidebar {
+    flex-basis: 220px; /* 고정 너비 설정 (이미지 기준) */
+    flex-shrink: 0; /* 내용이 많아도 줄어들지 않도록 */
+    background-color: #f0f2f5;
+    box-sizing: border-box;
+    /* overflow-y: auto; 는 LeftSidebar.css에서 관리 */
+}
+
+/* 중간 회원가입 영역 (register가 들어갈 곳) */
+.middle-register-area {
+    flex-grow: 1; /* 남은 수평 공간을 모두 차지하도록 */
+    background-color: #ffffff;
+    padding: 20px; /* PostList 컴포넌트 주변 여백 */
+    box-sizing: border-box;
+
+    /* **게시물 영역 스크롤 설정 (핵심)** */
+    overflow-y: auto; /* 내용이 넘칠 때 세로 스크롤바 생성 */
+    max-height: 100%; /* 부모(main-content-wrapper)의 높이를 넘지 않도록 */
+}
+
+
+/* 우측 사이드바 */
+.right-sidebar {
+    flex-basis: 250px; /* 고정 너비 설정 (이미지 기준) */
+    flex-shrink: 0;
+    background-color: #f0f2f5;
+    box-sizing: border-box;
+    /* overflow-y: auto; 는 RightSidebar.css에서 관리 */
+}
+
+.register-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100%; /* 부모(content-area)의 높이를 꽉 채우도록 */
+    width: 100%;
+    /* background-color: #f0f2f5; */ /* 배경색 (선택 사항) */
+}
+
+.register-box {
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); */
+    text-align: center;
+    width: 100%;
+    max-width: 500px; /* 로그인 박스보다 조금 더 넓게 */
+    margin-bottom: auto;
+}
+
+.register-title {
+    font-size: 2em;
+    color: #333;
+    margin-bottom: 30px;
+    font-weight: bold;
+}
+
+.register-form {
+    display: flex;
+    flex-direction: column;
+    gap: 30px; /* 입력 그룹 사이 간격 */
+}
+
+.register-input-group {
+    text-align: left;
+}
+
+.form-row {
+    display: flex; /* 자식 요소들을 수평으로 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    gap: 15px; /* label과 input-with-button 사이 간격 */
+    margin-bottom: 5px; /* form-row 아래 여백 조정 (전체 input-group의 여백과 조화) */
+}
+
+.register-input-group label {
+    /* flex 컨테이너 내에서 label의 너비를 고정하거나 최소 너비를 설정 */
+    flex-shrink: 0; /* 라벨이 줄어들지 않도록 */
+    width: 100px; /* 예시: 라벨의 고정 너비 (필요에 따라 조정) */
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 0; /* display: flex 적용으로 인해 기존 margin-bottom 제거 */
+}
+
+/* .input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+} */
+
+.register-input-group input[type='text'],
+.register-input-group input[type="password"],
+.register-input-group input[type="date"] {
+    width: calc(100% - 22px); /* 패딩과 보더 고려 */
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1.1em;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.register-input-group input[type='text'] {
+    width: 270px;
+}
+
+.input-group input[type="text"]:focus,
+.input-group input[type="password"]:focus,
+.input-group input[type="date"]:focus {
+    border-color: #007bff;
+}
+
+/* 중복확인 버튼이 있는 입력칸 스타일 */
+.input-with-button {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* 입력창과 버튼 사이 간격 */
+}
+
+.input-with-button input {
+    flex-grow: 1; /* 입력창이 남은 공간을 차지 */
+    width: auto; /* flex-grow와 함께 사용 */
+}
+
+.duplicate-check-button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #28a745;
+    color: white;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+    white-space: nowrap; /* 버튼 텍스트 줄바꿈 방지 */
+}
+
+.duplicate-check-button:hover {
+    background-color: #218838;
+}
+
+.duplicate-check-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* 메시지 스타일 (중복 확인 결과 등) */
+.message {
+    font-size: 0.9em;
+    margin-top: 5px;
+    padding-left: 5px; /* 입력 필드와 정렬 */
+}
+
+.message.success {
+    color: #28a745;
+}
+
+.message.error {
+    color: #dc3545;
+}
+
+/* 성별 선택 라디오 버튼 */
+.gender-options {
+    display: flex;
+    gap: 20px; /* 남/여 라디오 버튼 사이 간격 */
+    margin-top: 5px;
+}
+
+.gender-options .radio-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    color: #555;
+    font-weight: normal; /* 라벨 텍스트 굵기 기본으로 */
+}
+
+.gender-options input[type="radio"] {
+    margin-right: 8px;
+    transform: scale(1.2); /* 라디오 버튼 크기 약간 키움 */
+}
+
+
+/* 가입하기 버튼 */
+.register-submit-button {
+    width: 100%;
+    padding: 15px;
+    margin-top: 20px; /* 폼 아래 여백 */
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    font-size: 1.2em;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+
+.register-submit-button:hover {
+    background-color: #0056b3;
+}
+
+/* 유저 캐릭터 선택 (보류) 스타일 (필요시 주석 해제 후 수정) */
+/* .character-selection {
+    margin-bottom: 20px;
+}
+
+.character-options {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.character-button {
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #eee;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.character-button:hover {
+    background-color: #ddd;
+} */

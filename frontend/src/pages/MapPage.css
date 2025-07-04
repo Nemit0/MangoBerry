@@ -1,0 +1,13 @@
+/* src/pages/MapPage/MapPage.css */
+
+.middle-map-area {
+    flex-grow: 1;
+    padding: 0;
+    overflow: hidden;
+    background-color: #e9ebee;
+    box-sizing: border-box;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

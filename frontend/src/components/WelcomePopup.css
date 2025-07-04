@@ -1,0 +1,122 @@
+/* src/components/WelcomePopup.css */
+
+.welcome-popup-overlay {
+    position: fixed; /* 뷰포트에 고정 */
+    top: 0;
+    left: 0;
+    width: 100vw; /* 뷰포트 전체 너비 */
+    height: 100vh; /* 뷰포트 전체 높이 */
+    background-color: rgba(0, 0, 0, 0.7); /* 반투명 배경 */
+    display: flex;
+    justify-content: center; /* 수평 중앙 정렬 */
+    align-items: center; /* 수직 중앙 정렬 */
+    z-index: 1000; /* 다른 콘텐츠 위에 표시 */
+}
+
+.welcome-popup-content {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 90%; /* 팝업 너비 */
+    max-width: 500px; /* 최대 너비 제한 */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative; /* 자식 요소의 absolute 포지셔닝을 위해 */
+}
+
+.popup-main-title {
+    text-align: center;
+    color: #333;
+    margin-bottom: 25px;
+    font-size: 1.8em;
+    text-align: left; /* 왼쪽 정렬 */
+}
+
+.popup-page h3 {
+    text-align: center;
+    color: #555;
+    margin-bottom: 20px;
+    font-size: 1.2em;
+    text-align: left;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #666;
+}
+
+.input-group input[type="text"],
+.input-group textarea {
+    width: calc(100% - 20px); /* 패딩 고려 */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    resize: none; /* textarea의 크기 조절 불가 */
+}
+
+.input-group textarea {
+    height: 300px;
+}
+
+.restaurant-address {
+    font-size: 0.9em;
+    color: #888;
+    margin-top: 5px;
+    word-break: break-all; /* 주소가 길 경우 줄바꿈 */
+}
+
+.popup-navigation {
+    display: flex;
+    justify-content: space-between; /* 버튼과 페이지 표시를 양 끝으로 정렬 */
+    align-items: center;
+    margin-top: 20px;
+}
+
+.page-indicator {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #444;
+}
+
+.popup-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+
+.popup-button.prev-button {
+    background-color: #6c757d;
+    color: white;
+}
+.popup-button.prev-button:hover {
+    background-color: #5a6268;
+}
+
+.popup-button.next-button {
+    background-color: #007bff;
+    color: white;
+}
+.popup-button.next-button:hover {
+    background-color: #0056b3;
+}
+
+.popup-button.submit-button {
+    background-color: #28a745;
+    color: white;
+}
+.popup-button.submit-button:hover {
+    background-color: #218838;
+}

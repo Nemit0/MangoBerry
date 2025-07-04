@@ -1,0 +1,28 @@
+.search-bar-container {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 5px 10px;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    flex-grow: 1; /* 부모 컨테이너 내에서 사용 가능한 공간을 차지 */
+    max-width: 500px; /* 최대 너비 제한 (선택 사항) */
+}
+
+.search-bar-input {
+    border: none;
+    outline: none;
+    flex-grow: 1;
+    padding: 5px 0;
+    font-size: 16px;
+}
+
+.search-bar-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #555;
+    margin-left: 10px;
+}

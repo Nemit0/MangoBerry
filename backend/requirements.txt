@@ -1,0 +1,10 @@
+requests
+fastapi
+uvicorn
+elasticsearch~=9.0.2
+python-dotenv
+sqlalchemy
+pymysql
+pymongo
+boto3
+cryptography

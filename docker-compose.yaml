@@ -1,0 +1,22 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    networks:
+      - mangoberry-net
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    networks:
+      - mangoberry-net
+networks:
+    mangoberry-net:
+      driver: bridge
