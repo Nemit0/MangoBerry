@@ -1,17 +1,10 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from connection.database import SessionLocal, engine
+from connection.database import get_db
 from mysql import models
 
 router = APIRouter()
 
-# Dependency to get DB session
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.get("/people_sql")
 def read_people_sql(db: Session = Depends(get_db)):
