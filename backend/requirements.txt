@@ -6,4 +6,5 @@ python-dotenv
 sqlalchemy
 pymysql
 pymongo
+boto3
 cryptography
