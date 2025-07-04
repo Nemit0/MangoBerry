@@ -4,7 +4,7 @@ Retrieve tables from MySQL
 
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
-from connection.database import SessionLocal, engine
+from ..connection.database import SessionLocal, engine
 
 # Reflect the existing database
 Base = automap_base()

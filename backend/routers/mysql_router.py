@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, Query
 from typing import Optional, List
 from sqlalchemy.orm import Session
-from connection.database import get_db
-from mysql import models
-from mysql.models import Users
+from ..connection.database import get_db
+from ..mysql import models
+from ..mysql.models import Users
 
 router = APIRouter()
 

@@ -7,11 +7,11 @@ from sqlalchemy.orm import Session
 import os
 from dotenv import load_dotenv
 
-from connection.database import get_db
-from connection.mongodb import collection as photo_collection 
+from ..connection.database import get_db
+from ..connection.mongodb import collection as photo_collection 
 
-from schemas.review import ReviewCreate, ReviewUpdate
-from mysql.models import Review  # from automap Base.classes
+from ..schemas.review import ReviewCreate, ReviewUpdate
+from ..mysql.models import Review  # from automap Base.classes
 
 from elasticsearch import Elasticsearch
 

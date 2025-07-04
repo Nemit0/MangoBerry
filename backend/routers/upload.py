@@ -7,7 +7,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 import os
 import sys
-from services.s3 import generate_presigned_url
+from ..services.s3 import generate_presigned_url
 
 router = APIRouter()
 
