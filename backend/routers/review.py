@@ -1,12 +1,19 @@
-from fastapi import APIRouter, Depends, HTTPException
+'''
+Creates and updates reviews in MySQL and Elasticsearch
+
+'''
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from elasticsearch import Elasticsearch
-from mysql.models import Review, Users, Restaurant
-from schemas.review import ReviewCreate, ReviewUpdate, ReviewResponse
-from connection.database import get_db
 import os
 from dotenv import load_dotenv
 
+from connection.database import get_db
+from connection.mongodb import collection as photo_collection 
+
+from schemas.review import ReviewCreate, ReviewUpdate
+from mysql.models import Review  # from automap Base.classes
+
+from elasticsearch import Elasticsearch
 
 load_dotenv()
 es = Elasticsearch(os.getenv("ES_HOST"),
@@ -14,45 +21,104 @@ es = Elasticsearch(os.getenv("ES_HOST"),
 
 router = APIRouter()
 
-@router.post("/reviews", response_model=ReviewResponse)
-def create_review(review: ReviewCreate, db: Session = Depends(get_db)):
+@router.post("/reviews")
+def create_review(payload: ReviewCreate, db: Session = Depends(get_db)):
 
-    user = db.query(Users).filter(Users.user_id == review.user_id).first()
+    filenames_str = ",".join(payload.photo_filenames) if payload.photo_filenames else None
 
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    try:
+        new_review = Review(
+            user_id=payload.user_id,
+            restaurant_id=payload.restaurant_id,
+            comments=payload.comments,
+            photo_filenames=filenames_str,
+            state_id=1
+        )
+        db.add(new_review)
+        db.commit()
+        db.refresh(new_review)
+        review_id = new_review.review_id
+
+        # Save photo URLs in Mongo
+        if payload.photo_urls:
+            photo_collection.insert_one({
+                "review_id": review_id,
+                "photo_urls": payload.photo_urls
+            })
+
+        # Index in Elasticsearch
+        es.index(index="user_review", id=review_id, document={
+            "review_id": review_id,
+            "user_id": payload.user_id,
+            "restaurant_id": payload.restaurant_id,
+            "comments": payload.comments
+        })
+
+        return {"message": "Review created", "review_id": review_id}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
     
-    restaurant = db.query(Restaurant).filter(Restaurant.restaurant_id == review.restaurant_id).first()
-    if not restaurant:
-        raise HTTPException(status_code=404, detail="Restaurant not found")
 
-    db_review = Review(**review.dict())
-    db.add(db_review)
-    db.commit()
-    db.refresh(db_review)
+@router.put("/reviews/{review_id}")
+def update_review(review_id: int, payload: ReviewUpdate, db: Session = Depends(get_db)):
+    try:
+        review = db.query(Review).filter(Review.review_id == review_id).first()
+        if not review:
+            raise HTTPException(status_code=404, detail="Review not found")
 
-    es.index(index="user_review", id=db_review.review_id, body={
-        "review_id": db_review.review_id,
-        "user_id": db_review.user_id,
-        "restaurant_id": db_review.restaurant_id,
-        "restaurant_name": restaurant.name,
-        "comments": db_review.comments,
-        "photo_link": db_review.photo_link,
-        "created_at": db_review.created_at.isoformat(),
-    })
-    
-    return db_review 
+        # Update MySQL fields if provided
+        if payload.comments is not None:
+            review.comments = payload.comments
+        if payload.photo_filenames is not None:
+            review.photo_filenames = ",".join(payload.photo_filenames)
+        if payload.state_id is not None:
+            review.state_id = payload.state_id
 
-@router.put("/reviews/{review_id}", response_model=ReviewResponse)
-def update_review(review_id: int, update: ReviewUpdate, db: Session = Depends(get_db)):
-    db_review = db.query(Review).filter(Review.review_id == review_id).first()
-    if not db_review:
-        raise HTTPException(status_code=404, detail="Review not found")
-    
-    for key, value in update.dict(exclude_unset=True).items():
-        setattr(db_review, key, value)
+        db.commit()
 
-    db.commit()
-    db.refresh(db_review)
-    return db_review 
+        # Update MongoDB photo URLs
+        if payload.photo_urls is not None:
+            photo_collection.update_one(
+                {"review_id": review_id},
+                {"$set": {"photo_urls": payload.photo_urls}},
+                upsert=True
+            )
 
+        # Update Elasticsearch
+        es.update(index="user_review", id=review_id, body={
+            "doc": {
+                "comments": payload.comments,
+                "photo_filenames": review.photo_filenames  # optional if you're indexing that
+            }
+        })
+
+        return {"message": "Review updated", "review_id": review_id}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/reviews/{review_id}")
+def delete_review(review_id: int, db: Session = Depends(get_db)):
+    try:
+        # Step 1: Delete from MySQL
+        review = db.query(Review).filter(Review.review_id == review_id).first()
+        if not review:
+            raise HTTPException(status_code=404, detail="Review not found")
+
+        db.delete(review)
+        db.commit()
+
+        # Step 2: Delete from MongoDB
+        photo_collection.delete_one({"review_id": review_id})
+
+        # Step 3: Delete from Elasticsearch
+        es.delete(index="user_review", id=review_id)
+
+        return {"message": f"Review {review_id} deleted successfully"}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))

@@ -4,30 +4,19 @@ to validate, serialize, and deserialize review data when working with my API
 '''
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
-# common fields for reviews
-class ReviewBase(BaseModel):
+
+class ReviewCreate(BaseModel):
     user_id: int
     restaurant_id: int
     comments: str
-    photo_link: Optional[str] = None
-    state_id: Optional[int] = 1
+    photo_filenames: Optional[List[str]] = None  # for MySQL
+    photo_urls: Optional[List[str]] = None       # for MongoDB
+    state_id: int = 1
 
-# what clients send to create
-class ReviewCreate(ReviewBase):
-    pass
-
-# what clients send to update
 class ReviewUpdate(BaseModel):
     comments: Optional[str] = None
-    photo_link: Optional[str] = None
+    photo_filenames: Optional[List[str]] = None
+    photo_urls: Optional[List[str]] = None
     state_id: Optional[int] = None
-
-# what server returns to clients
-class ReviewResponse(ReviewBase):
-    review_id: int
-    created_at: datetime
-
-    class Config:
-        orm_mode = True
