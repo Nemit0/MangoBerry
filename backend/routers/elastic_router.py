@@ -28,7 +28,7 @@ router = APIRouter()
 
 
 es = Elasticsearch(
-    os.getenv("ES_HOST"),
+    hosts=os.getenv("ES_HOST"),
     basic_auth=(os.getenv("ES_USER"), os.getenv("ES_PASS"))
 )
 
