@@ -147,7 +147,7 @@
     padding: 10px 15px;
     border: none;
     border-radius: 5px;
-    background-color: #28a745;
+    background-color: #000000;
     color: white;
     cursor: pointer;
     font-size: 0.9em;
@@ -157,7 +157,8 @@
 }
 
 .duplicate-check-button:hover {
-    background-color: #218838;
+    background-color: rgba(150, 70, 110, 1);
+    color: rgba(250, 240, 210, 1);
 }
 
 .duplicate-check-button:disabled {
@@ -200,6 +201,10 @@
     transform: scale(1.2); /* 라디오 버튼 크기 약간 키움 */
 }
 
+.radio-gender{
+    accent-color: rgba(150, 70, 110, 1);
+}
+
 
 /* 가입하기 버튼 */
 .register-submit-button {
@@ -208,7 +213,7 @@
     margin-top: 20px; /* 폼 아래 여백 */
     border: none;
     border-radius: 5px;
-    background-color: #007bff;
+    background-color: #000000;
     color: white;
     cursor: pointer;
     font-size: 1.2em;
@@ -217,7 +222,8 @@
 }
 
 .register-submit-button:hover {
-    background-color: #0056b3;
+    background-color: rgba(150, 70, 110, 1);
+    color: rgba(250, 240, 210, 1);
 }
 
 /* 유저 캐릭터 선택 (보류) 스타일 (필요시 주석 해제 후 수정) */
