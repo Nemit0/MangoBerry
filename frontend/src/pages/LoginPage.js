@@ -12,17 +12,34 @@ function LoginPage() {
     const [error, setError] = useState(''); 
     const navigate = useNavigate();
     const { login } = useAuth(); // AuthContext의 login 함수 가져오기
-    
 
-    const handleLogin = (e) => {
-        e.preventDefault(); // 폼 제출 시 페이지 새로고침 방지
+    const API_URL = '/api';
 
-        // 간단한 로그인 로직 (하드코딩된 아이디/비밀번호)
-        if (username === 'test' && password === 'password') {
-            login(); // AuthContext를 통해 로그인 상태 변경
-            navigate('/'); // 로그인 성공 시 HomePage로 이동
-        } else {
-            setError('아이디 또는 비밀번호가 올바르지 않습니다.');
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        setError('');
+
+        try {
+            const response = await fetch(`${API_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: username, password }),
+            });
+
+            if (!response.ok) {
+                throw new Error('HTTP status ' + response.status);
+            }
+            const data = await response.json();
+
+            if (data.login && data.verified) {
+                login();
+                navigate('/');
+            } else {
+                alert('Incorrect credentials or user not verified.');
+            }
+        } catch (err) {
+            console.error(err);
+            setError('로그인 중 오류가 발생했습니다.');
         }
     };
 
@@ -82,8 +99,6 @@ function LoginPage() {
 
             </div>
         </div>
-
-        
     );
 }
 
