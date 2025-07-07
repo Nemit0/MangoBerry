@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Query, HTTPException, Form
+from pydantic import BaseModel
 from typing import Optional, List
 from sqlalchemy.orm import Session
 from ..connection.database import get_db
@@ -66,24 +67,31 @@ def read_users(
         for user, person in results
     ]
 
+class LoginInput(BaseModel):
+    email: str
+    password: str  # Placeholder for future password handling
 
 @router.post("/login")
 def login(
-    email: str = Form(...),
-    password: str = Form(...),  # Placeholder
+    creds: LoginInput,
     db: Session = Depends(get_db)
-):
+):  
+    
     # Step 1: Find person by email (regardless of verified)
-    person = db.query(People).filter(People.email == email).first()
+    person = db.query(People).filter(People.email == creds.email).first()
 
-    if not person or person.verified != 1:
+    # Password verification not implemented.
+    login = True
+
+    if not person or person.verified != 1 or login is False:
         raise HTTPException(
             status_code=404,
             detail="Login Unsuccessful."
         )
-
+    
     return {
         "user_id": person.user_id,
+        "login": login, 
         "verified": bool(person.verified)
     }
 

@@ -11,3 +11,4 @@ cryptography
 tqdm
 openai
 scipy
+python-multipart
