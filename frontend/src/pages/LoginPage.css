@@ -103,7 +103,7 @@
 
 .login-input-group input[type="text"]:focus,
 .login-input-group input[type="password"]:focus {
-    border-color: #007bff;
+    border-color: rgba(150, 70, 110, 1);
 }
 
 .login-error {
@@ -126,13 +126,14 @@
 }
 
 .login-button {
-    background-color: #007bff;
+    background-color: #000000;
     color: white;
     margin-bottom: 1px; /* 로그인 버튼 아래 여백 */
 }
 
 .login-button:hover {
-    background-color: #0056b3;
+    background-color: rgba(150, 70, 110, 1);
+    color: rgba(250, 240, 210, 1);
 }
 
 .register-button {

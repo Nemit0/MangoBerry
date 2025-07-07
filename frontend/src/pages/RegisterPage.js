@@ -299,6 +299,7 @@ function RegisterPage() {
                                                     name='gender'
                                                     value='male'
                                                     checked={gender === 'male'}
+                                                    className='radio-gender'
                                                     onChange={(e) => setGender(e.target.value)}
                                                     required
                                                 /> 남자
@@ -309,6 +310,7 @@ function RegisterPage() {
                                                     name='gender'
                                                     value='female'
                                                     checked={gender === 'female'}
+                                                    className='radio-gender'
                                                     onChange={(e) => setGender(e.target.value)}
                                                     required
                                                 /> 여자
