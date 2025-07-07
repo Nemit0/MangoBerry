@@ -12,3 +12,4 @@ tqdm
 openai
 scipy
 python-multipart
+passlib[bcrypt]
