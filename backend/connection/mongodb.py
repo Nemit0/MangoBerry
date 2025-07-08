@@ -19,4 +19,6 @@ client = MongoClient(uri)
 
 db = client["customer_info"]
 #collection = db["words"]
-collection = db["review_photos"]
+words_collection = db["words"]
+photo_collection = db["review_photos"]
+follow_collection = db["follow"]

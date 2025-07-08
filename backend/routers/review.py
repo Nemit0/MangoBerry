@@ -8,7 +8,7 @@ import os
 from dotenv import load_dotenv
 
 from ..connection.database import get_db
-from ..connection.mongodb import collection as photo_collection 
+from ..connection.mongodb import photo_collection 
 
 from ..schemas.review import ReviewCreate, ReviewUpdate
 from ..mysql.models import Review  # from automap Base.classes
