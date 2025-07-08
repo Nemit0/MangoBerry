@@ -1,10 +1,14 @@
 import hashlib
+from random import randint
 from typing import List, Optional
+from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from passlib.context import CryptContext
+from email_validator import validate_email, EmailNotValidError
 
 from ..connection.database import get_db
 from ..mysql import models
@@ -86,7 +90,6 @@ class LoginInput(BaseModel):
     email: str
     password: str
 
-
 @router.post("/login")
 def login(creds: LoginInput, db: Session = Depends(get_db)):
     """bcrypt-based login verification."""
@@ -100,6 +103,89 @@ def login(creds: LoginInput, db: Session = Depends(get_db)):
     return {"user_id": person.user_id,
             "login": True,
             "verified": True}
+
+# User Registration api
+
+class RegisterInput(BaseModel):
+    """Incoming JSON for /register."""
+    email:       EmailStr                 # use Pydantic's validated e-mail type
+    password:    str
+    display_name:str
+    bday:        date | None = None       # let Pydantic parse 'YYYY-MM-DD'
+    gender:      str | None = Field(
+        default=None,
+        pattern=r"^(M|F|O)$"               # optional simple validation
+    )
+    verified:    bool | None = False      # ignored on creation
+
+@router.post("/register")
+def register_user(creds: RegisterInput, db: Session = Depends(get_db)):
+    """Create a People + Users record; e-mail must be unique."""
+    # Check uniqueness
+    if db.query(People).filter(People.email == creds.email).first():
+        raise HTTPException(400, "E-mail already registered")
+
+    # Validate e-mail format (email-validator raises on error)
+    try:
+        validate_email(creds.email)
+    except EmailNotValidError as e:
+        raise HTTPException(400, str(e))
+
+    # Insert into People
+    person = People(
+        email     = creds.email,
+        passwd    = hash_password(creds.password),
+        bday      = creds.bday,           # already a date-object (or None)
+        gender    = creds.gender,
+        nickname  = creds.display_name,
+        verified  = False                 # ← TODO: flip after out-of-band confirmation
+    )
+    db.add(person)
+    db.commit()           # flushes & assigns auto-inc PK
+    db.refresh(person)    # populate person.user_id
+
+    # Insert into Users (depends on People PK)
+    user = Users(
+        user_id         = person.user_id,
+        word_cloud      = "[]",
+        profile_image   = "",
+        follower_count  = 0,
+        following_count = 0,
+        state_id        = randint(231, 10_000)
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    # Return payload
+    return {
+        "user_id"     : person.user_id,
+        "email"       : person.email,
+        "verified"    : person.verified,
+        "display_name": person.nickname,
+    }
+
+# API to delete a user
+@router.delete("/delete_user/{user_id}")
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    """
+    Delete a user by user_id.
+    This will delete both People and Users records.
+    """
+    person = db.query(People).filter(People.user_id == user_id).first()
+    if not person:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Delete the associated Users record
+    user = db.query(Users).filter(Users.user_id == user_id).first()
+    if user:
+        db.delete(user)
+
+    # Delete the People record
+    db.delete(person)
+    db.commit()
+
+    return {"detail": "User deleted successfully"}
 
 @router.get("/review_sql")
 def read_review_sql(db: Session = Depends(get_db)):
