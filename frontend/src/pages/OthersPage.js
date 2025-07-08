@@ -68,5 +68,4 @@ const OthersPage = () => {
         </div>
     );
 };
-
 export default OthersPage;

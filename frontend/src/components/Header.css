@@ -48,7 +48,7 @@
 }
 
 .logout-link {
-  color: #dc3545; /* 로그아웃 링크 색상 */
+  color: #555; /* 로그아웃 색상 */
 }
 .logout-link:hover {
   color: #b02a37;
