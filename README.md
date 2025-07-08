@@ -37,7 +37,7 @@ IBM x RedHat 1기 4조 프로젝트 리포지토리.
 │   └── src
 ├── README.md
 └── run.sh
-
+```
 
 frontend는 하나의 react 프로젝트로 구성되어 있고 backend는 하나의 파이썬 모듈로 구성이 되어있음. 고로 react의 build context는 ./frontend이지만 backend는 프로젝트 루트 디렉토리로 잡혀서 uvicorn 실행 위치 또한 프로젝트 루트 디렉토리임.
 
