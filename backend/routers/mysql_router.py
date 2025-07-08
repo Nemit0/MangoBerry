@@ -2,6 +2,7 @@ import hashlib
 from random import randint
 from typing import List, Optional
 from datetime import date
+from warnings import warn
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, EmailStr, Field
@@ -120,6 +121,24 @@ class RegisterInput(BaseModel):
     )
     verified:    bool | None = False      # ignored on creation
 
+@router.post("/register/check_nickname")
+def check_nickname(nickname: str, db: Session = Depends(get_db)):
+    """
+    Check if the nickname is already taken.
+    Returns True if available, False if taken.
+    """
+    exists = db.query(People).filter(People.nickname == nickname).first()
+    return {"available": exists is None}
+
+@router.post("/register/check_email")
+def check_email(email: EmailStr, db: Session = Depends(get_db)):
+    """
+    Check if the email is already registered.
+    Returns True if available, False if taken.
+    """
+    exists = db.query(People).filter(People.email == email).first()
+    return {"available": exists is None}
+
 @router.post("/register")
 def register_user(creds: RegisterInput, db: Session = Depends(get_db)):
     """Create a People + Users record; e-mail must be unique."""
@@ -142,6 +161,12 @@ def register_user(creds: RegisterInput, db: Session = Depends(get_db)):
         nickname  = creds.display_name,
         verified  = False                 # ← TODO: flip after out-of-band confirmation
     )
+
+    # flip verified to True as verification is not implemented
+    person.verified = True
+    warn("User email verification is not implemented yet, setting verified to True by default.",
+         DeprecationWarning, stacklevel=2)
+
     db.add(person)
     db.commit()           # flushes & assigns auto-inc PK
     db.refresh(person)    # populate person.user_id

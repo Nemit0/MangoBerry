@@ -110,6 +110,7 @@
 } */
 
 .register-input-group input[type='text'],
+.register-input-group input[type='email'],
 .register-input-group input[type="password"],
 .register-input-group input[type="date"] {
     width: calc(100% - 22px); /* 패딩과 보더 고려 */
@@ -122,6 +123,10 @@
 }
 
 .register-input-group input[type='text'] {
+    width: 270px;
+}
+
+.register-input-group input[type='email'] {
     width: 270px;
 }
 
