@@ -13,3 +13,4 @@ openai
 scipy
 python-multipart
 passlib[bcrypt]
+email-validator
