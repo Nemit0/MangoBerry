@@ -82,6 +82,8 @@ def read_users(user_id: Optional[int] = Query(None), db: Session = Depends(get_d
         {
             "user_id": u.user_id,
             "email": p.email,
+            "follower_count": u.follower_count,
+            "following_count": u.following_count,
             "verified": bool(p.verified),
         }
         for u, p in rows
