@@ -1,34 +1,53 @@
-/* src/pages/NewPage.css 와 동일*/
-
 .middle-posts-area {
     padding: 20px; /* 기존 상단 패딩 유지 및 전체적인 패딩 */
     margin-top: 80px; /* Header 높이만큼 아래로 내림 */
     box-sizing: border-box;
-    width: 100%; /* 전체 너비 사용 */
-    display: flex;
-    flex-direction: column; /* 내부 요소 세로 정렬 */
+    display: flex; 
+    flex-direction: column; /* 자식 요소 수직으로 */  
     align-items: center; /* 중앙 정렬 */
+    width: 100%;
 }
 
-/* 글쓰기 섹션 헤더 (글쓰기 텍스트와 아래 경계선) */
+/*글편집 제목과 삭제 버튼을 위한 컨테이너*/
 .write-section-header {
-    width: 100%;
+    display: flex; /* 내부 요소들을 가로로 배치*/
+    justify-content: space-between; /* <h2>(글편집)과 .delete-button(삭제)을 양 끝으로 분리 */
     max-width: 800px; /* 폼과 동일한 너비 */
-    text-align: left;
+    width: 100%;
     margin-bottom: 20px; /* 폼과의 간격 */
 }
 
+/*글편집 태그에 대한 스타일*/
 .write-section-header h2 {
     font-size: 1.8em;
     color: #473232;
     margin-bottom: 5px; /* 선과의 간격 */
+    margin: 0; /* flex 컨테이너이므로 마진 제거 */
+    font-weight: bold;
+    flex-shrink: 0; /* 내용이 많아도 줄어들지 않도록 설정 */
+    width: auto;
 }
 
-.write-section-header .line {
-    border-bottom: 1px solid #ccc; /* 경계선 */
-    width: 100%;
+/* 삭제 버튼 (NewPage랑 다른 부분)*/
+.delete-button {
+    background: none;         
+    border: none;             
+    color: #473232;            
+    cursor: pointer;           
+    font-size: 14px;
+    font-weight: bold;
+    padding: 2px 4px;                            
+    height: auto;             
+    white-space: nowrap;
+    display: inline-block; 
+    vertical-align: middle; 
 }
 
+.delete-button:hover {
+    background: none; 
+    color: #9A4A6E;
+}
+  
 /* 리뷰 작성 폼 전체 */
 .review-form {
     display: flex;
@@ -119,6 +138,23 @@
     color: #aaa;
 }
 
+.page-layout {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.page-content-wrapper {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+.page-left-sidebar,
+.page-right-sidebar {
+    width: 15%;
+}
+
 /* 분석 시작/완료 버튼 */
 .analysis-button {
     background-color: black;
@@ -130,12 +166,10 @@
     cursor: pointer;
     transition: background-color 0.3s ease;
     width: 100%;
-
-    /* <--- 변경: 텍스트 중앙 정렬 강화 */
-    display: flex; /* 내부 아이템을 Flexbox로 정렬 */
-    justify-content: center; /* 가로 중앙 정렬 */
-    align-items: center; /* 세로 중앙 정렬 */
-    text-align: center; /* 혹시 모를 상황 대비 */
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    text-align: center; 
 }
 
 .analysis-button.analyzing {

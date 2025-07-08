@@ -1,0 +1,116 @@
+.mypage-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+.mypage-main-wrapper {
+  display: flex;
+  flex-grow: 1;
+  height: calc(100vh - 60px);
+  margin-top: 60px;
+  box-sizing: border-box;
+}
+/* 좌측 사이드바 */
+.my-left-sidebar {
+  flex-basis: 250px;
+  flex-shrink: 0;
+  background-color: #003585;
+  box-sizing: border-box;
+}
+/* 우측 사이드바 */
+.my-right-sidebar {
+  flex-basis: 250px;
+  flex-shrink: 0;
+  background-color: #003481;
+  box-sizing: border-box;
+}
+.mypage-middle-area {
+  flex-grow: 1;
+  background-color: #FFFFFF;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  max-height: 100%;
+}
+.my-user-info {
+  display: flex;
+  justify-content: space-between; /* 좌우 정렬 */
+  align-items: center; /* 수직 가운데 정렬 */
+  margin-bottom: 20px;
+  padding: 30px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+.user-info-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.user-image {
+  width: 60px; /* 이미지 크기 조정 */
+  height: 60px;
+  border-radius: 50%;
+  background-color: #eee; /* 임시 배경색 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.user-nickname {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+.user-info-right {
+  display: flex;
+  align-items: center;
+  gap: 80px;
+}
+.user-info-item {
+  text-align: center;
+}
+.info-label {
+  font-size: 0.9rem;
+  color: #555;
+}
+.info-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+.edit-button button {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #555;
+  color: white;
+  cursor: pointer;
+  min-width: 150px;
+  font-size: 1rem;
+  text-align: center;
+}
+.edit-button button:hover {
+  background-color: #9A4A6E;
+}
+.other-user-post {
+  display: flex;
+  gap: 20px;
+}
+.post-left-part {
+  flex: 2; /* 왼쪽 부분이 더 넓게 */
+}
+.post-right-part {
+  flex: 1; /* 오른쪽 부분이 더 좁게 */
+}
+.word-cloud-container {
+  border: 2px dashed #ccc; /* 공간을 나타내는 점선 테두리 */
+  border-radius: 8px;
+  padding: 20px;
+  height: 300px; /* 높이 지정 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #F9F9F9;
+}
+.word-cloud-container p {
+  color: #888;
+  font-size: 1.2rem;
+}
