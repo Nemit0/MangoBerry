@@ -1,13 +1,22 @@
-/* src/pages/MapPage/MapPage.css */
+/* src/pages/MapPage.css */
 
-.middle-map-area {
-    flex-grow: 1;
-    padding: 0;
-    overflow: hidden;
-    background-color: #e9ebee;
-    box-sizing: border-box;
-
+.map-page-layout {
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
+    height: 100vh; /* 전체 뷰포트 높이 */
+    overflow: hidden; /* 스크롤 방지 */
+}
+
+.map-content-wrapper {
+    display: flex;
+    height: calc(100vh-60px);
+    flex-grow: 1; /* Header를 제외한 나머지 공간을 모두 차지 */
+    margin-top: 60px;
+    position: relative; /* 사이드바 토글 버튼 위치 기준 */
+}
+
+.map-area {
+    flex-grow: 1; /* 남은 공간을 모두 차지 */
+    height: 100%;
+    background-color: #f0f0f0; /* 지도 로딩 전 배경색 */
 }
