@@ -94,11 +94,8 @@ def login(creds: LoginInput, db: Session = Depends(get_db)):
                                .filter(People.email == creds.email)
                                .first())
 
-    if not person or person.verified != 1:
-        raise HTTPException(404, "Invalid credentials")
-
-    if not verify_password(creds.password, person.passwd):
-        raise HTTPException(404, "Invalid credentials")
+    if (not person or person.verified != 1) or (not verify_password(creds.password, person.passwd)):
+        raise HTTPException(401, "Invalid credentials")
 
     return {"user_id": person.user_id,
             "login": True,
