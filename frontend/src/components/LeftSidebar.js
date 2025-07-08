@@ -55,15 +55,7 @@ function LeftSidebar() {
                 {/* <--- 변경: 로그인 상태일 때 렌더링되던 '마이 페이지' 텍스트 버튼을 제거합니다. */}
                 {/* {isLoggedIn && <Button onClick={goToMyPage}>👤 마이 페이지</Button>} */}
 
-                <div style={{
-                    marginTop: '20px',
-                    padding: '10px',
-                    borderTop: '1px solid #eee',
-                    position: 'fixed',
-                    top: '120px',
-                    left: '20px',
-                    zIndex: 1000
-                }}>
+                <div className='three-way-button'>
                     <IconButtonGroup buttons={currentIconButtons} />
                 </div>
             </div>

@@ -33,6 +33,10 @@
     padding-right: 5px; /* 스크롤바가 생길 경우 내용을 가리지 않도록 여백 추가 */
 }
 
+.three-way-button {
+    display: inline-block;
+}
+
 /* 폰트, 여백 등 미세 조정 (선택 사항) */
 .left-sidebar-container h3 {
     margin-top: 0;

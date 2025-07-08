@@ -12,6 +12,7 @@ import FollowingPage from './pages/FollowingPage';
 import OthersPage from './pages/OthersPage';
 import MapPage from './pages/MapPage';
 import NotFoundPage from './pages/NotFoundPage';
+import RestaurantInfoPage from './pages/RestaurantInfoPage';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path='/following' element={<FollowingPage />}/>
           <Route path='/others' element={<OthersPage />}/>
           <Route path='/map' element={<MapPage />}/>
+          <Route path='/restaurantInfo' element={<RestaurantInfoPage />}/>
           <Route path='*' element={<NotFoundPage />}/>
         </Routes>
       </AuthProvider>

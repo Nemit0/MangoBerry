@@ -1,0 +1,127 @@
+.restaurantInfopage-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.main-content-wrapper {
+    display: flex;
+    flex-grow: 1;
+    height: calc(100vh - 60px);
+    margin-top: 60px;
+    box-sizing: border-box;
+}
+
+/* 좌측 사이드바 */
+.rIpage-left-sidebar {
+    flex-basis: 250px; /* 고정 너비 설정 (이미지 기준) */
+    flex-shrink: 0; /* 내용이 많아도 줄어들지 않도록 */
+    background-color: #003585;
+    box-sizing: border-box;
+    /* overflow-y: auto; 는 LeftSidebar.css에서 관리 */
+}
+
+/* 우측 사이드바 */
+.rIpage-right-sidebar {
+    flex-basis: 250px; /* 고정 너비 설정 (이미지 기준) */
+    flex-shrink: 0;
+    background-color: #003481;
+    box-sizing: border-box;
+    /* overflow-y: auto; 는 RightSidebar.css에서 관리 */
+}
+
+.rIpage-middle-area {
+    flex-grow: 1; /* 남은 수평 공간을 모두 차지하도록 */
+    background-color: #ffffff;
+    padding: 20px; /* PostList 컴포넌트 주변 여백 */
+    box-sizing: border-box;
+
+    /* **게시물 영역 스크롤 설정 (핵심)** */
+    overflow-y: auto; /* 내용이 넘칠 때 세로 스크롤바 생성 */
+    max-height: 100%; /* 부모(main-content-wrapper)의 높이를 넘지 않도록 */
+    padding-top: 0%;
+    display: flex; /* rIpage-left-part와 rIpage-right-part를 옆으로 나란히 배치 */
+}
+
+.rIpage-left-part {
+    width: 50%;
+    padding-right: 20px; /* 오른쪽 부분과 간격 추가 */
+    box-sizing: border-box;
+}
+
+.rIpage-right-part {
+    width: 50%;
+}
+
+.restaurant-info-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 가운데 정렬 */
+    text-align: center;
+    margin-top: 10px;
+}
+
+.restaurant-image {
+    width: 100%;
+    max-width: 400px; /* 이미지 최대 너비 설정 */
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.restaurant-name {
+    font-size: 2rem; /* 폰트 크기 키움 */
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: left;
+    width: 100%;
+    max-width: 400px;
+}
+
+.restaurant-address {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 20px;
+    text-align: left;
+    width: 100%;
+    max-width: 400px;
+}
+
+.keyword-section {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 20px;
+}
+
+.keyword-section h3 {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 5px;
+    text-align: left;
+}
+
+.keywords {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap; /* 키워드가 많으면 다음 줄로 넘김 */
+    justify-content: center; /* 왼쪽 정렬 */
+    gap: 10px; /* 키워드 사이 간격 */
+}
+
+.keywords li {
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.keywords.positive li { /* 긍정 키워드 배경색 */
+    color: #00796b;
+}
+
+.keywords.negative li {/* 부정 키워드 배경색 */
+    color: #c62828;
+}

@@ -1,4 +1,4 @@
-// src/components/PostItem/PostItem.js
+// src/components/PostItem.js
 import React from 'react';
 import './PostItem.css';
 // import { BiUser } from "react-icons/bi";
@@ -22,7 +22,7 @@ function PostItem({ post, onClick }) { // <-- onClick prop 추가
             {/* <div className="post-rating">
                     {'⭐'.repeat(post.rating)}
             </div> */}
-            <img src={post.image} alt={post.title} className="post-image" />
+            <img src={post.images[0]} alt={post.title} className="post-image" />
             <div className="post-info">
                 <div className="post-header-meta">
                     {/*<BiUser className="post-user-icon"/> */}
