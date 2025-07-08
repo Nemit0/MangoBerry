@@ -90,7 +90,7 @@
 .edit-button button:hover {
   background-color: #9A4A6E;
 }
-.other-user-post {
+.my-user-post {
   display: flex;
   gap: 20px;
 }
