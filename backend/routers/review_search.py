@@ -13,7 +13,7 @@ es = Elasticsearch(
 )
 
 
-@router.get("/reviews/search")
+@router.get("/reviews/search", tags=["Reviews"])
 def search_reviews(
     review_id: Optional[int] = Query(None),
     user_id: Optional[int] = Query(None),

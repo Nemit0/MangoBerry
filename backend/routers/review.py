@@ -21,7 +21,7 @@ es = Elasticsearch(os.getenv("ES_HOST"),
 
 router = APIRouter()
 
-@router.post("/reviews")
+@router.post("/reviews", tags=["Reviews"])
 def create_review(payload: ReviewCreate, db: Session = Depends(get_db)):
 
     filenames_str = ",".join(payload.photo_filenames) if payload.photo_filenames else None
@@ -61,7 +61,7 @@ def create_review(payload: ReviewCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
     
 
-@router.put("/reviews/{review_id}")
+@router.put("/reviews/{review_id}", tags=["Reviews"])
 def update_review(review_id: int, payload: ReviewUpdate, db: Session = Depends(get_db)):
     try:
         review = db.query(Review).filter(Review.review_id == review_id).first()
@@ -100,7 +100,7 @@ def update_review(review_id: int, payload: ReviewUpdate, db: Session = Depends(g
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/reviews/{review_id}")
+@router.delete("/reviews/{review_id}", tags=["Reviews"])
 def delete_review(review_id: int, db: Session = Depends(get_db)):
     try:
         # Step 1: Delete from MySQL

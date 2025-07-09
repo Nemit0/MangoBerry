@@ -21,7 +21,7 @@ def serialize_doc(doc):
     return doc
 
 # Get a user's followers & followings
-@router.get("/social/{user_id}")
+@router.get("/social/{user_id}", tags=["Social"])
 def get_user_social(user_id: int, db: Session = Depends(get_db)):
     user = db.query(Users).filter(Users.user_id == user_id).first()
     if not user:
@@ -47,7 +47,7 @@ def get_user_social(user_id: int, db: Session = Depends(get_db)):
         "following_ids": following_ids,
     }
 
-@router.post("/follow/{user_id}/{target_id}")
+@router.post("/follow/{user_id}/{target_id}", tags=["Social"])
 def follow_user(user_id: int, target_id: int, db: Session = Depends(get_db)):
     if user_id == target_id:
         raise HTTPException(status_code=400, detail="Cannot follow yourself")
@@ -84,7 +84,7 @@ def follow_user(user_id: int, target_id: int, db: Session = Depends(get_db)):
     return {"message": "Followed successfully"}
 
 
-@router.post("/unfollow/{user_id}/{target_id}")
+@router.post("/unfollow/{user_id}/{target_id}", tags=["Social"])
 def unfollow_user(user_id: int, target_id: int, db: Session = Depends(get_db)):
     if user_id == target_id:
         raise HTTPException(status_code=400, detail="Cannot unfollow yourself")
@@ -121,7 +121,7 @@ def unfollow_user(user_id: int, target_id: int, db: Session = Depends(get_db)):
 
 # Get a user's followers
 # collection.find_one(filter, projection)
-@router.get("/followers/{user_id}")
+@router.get("/followers/{user_id}", tags=["Social"])
 def get_followers(user_id: int):
     doc = follow_collection.find_one({"user_id": user_id}, {"_id": 0, "follower_ids": 1})
     if not doc:
@@ -130,7 +130,7 @@ def get_followers(user_id: int):
 
 
 # Get users a user is following
-@router.get("/following/{user_id}")
+@router.get("/following/{user_id}", tags=["Social"])
 def get_following(user_id: int):
     doc = follow_collection.find_one({"user_id": user_id}, {"_id": 0, "following_ids": 1})
     if not doc:
