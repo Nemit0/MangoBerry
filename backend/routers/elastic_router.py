@@ -1,54 +1,9 @@
-'''
-Routers for searching restaurants
-'''
-
-import os
-import sys
-import requests
-
-from dotenv import load_dotenv
 from fastapi import APIRouter, Query, Request
-from elasticsearch import Elasticsearch
 
-sys.stdout.reconfigure(encoding='utf-8')
-
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
-
-id = os.getenv("API_KEY_ID")
-key = os.getenv("API_KEY")
-print("ES_ID:", id)
-print("ES_KEY:", key)
-
-
-print("ES_HOST:", os.getenv("ES_HOST"))
-print("ES_USER:", os.getenv("ES_USER"))
-print("ES_PASS:", os.getenv("ES_PASS"))
+from ..connection.elasticdb import es_client as es
+from ..services.utilities import get_location_from_ip
 
 router = APIRouter()
-
-
-es = Elasticsearch(
-    hosts=os.getenv("ES_HOST"),
-    basic_auth=(os.getenv("ES_USER"), os.getenv("ES_PASS"))
-)
-
-
-es.search(index="full_restaurant", query={"match_all": {}})
-
-def get_location_from_ip(ip: str):
-    try:
-        response = requests.get(f"http://ip-api.com/json/{ip}")
-        data = response.json()
-        print("GeoIP response:", data) 
-
-        if data.get("status") == "success":
-            return {"lat": data["lat"], "lon": data["lon"]}
-        else:
-            print("GeoIP failed:", data.get("message"))
-    except Exception as e:
-        print("GeoIP exception:", e)
-
-    return None
 
 @router.get("/search_restaurant_es", tags=["Restaurant"])
 def search_restaurant_es(

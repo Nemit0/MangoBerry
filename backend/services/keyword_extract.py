@@ -1,25 +1,9 @@
-import sys
-import os
 import json
 
-from openai import OpenAI
-
-from scipy.spatial.distance import cosine
-from scipy.stats import percentileofscore
-from openai import OpenAI
-from dotenv import load_dotenv
 from typing import List, Dict, Any
-from pathlib import Path
 
-load_dotenv()
-if not os.getenv("OPENAI_API_KEY"):
-    raise EnvironmentError("OPENAI_API_KEY not set in environment variables.")
+from ..connection.openai_client import openai_client
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-MAX_TOKEN_FOR_MINI_MODEL: int = 10000000
-MAX_TOKEN_FOR_REGULAR_MODEL: int = 1000000
-    
 def extract_keyword_from_review(review:Dict[str, Any]) -> List[str]:
     """
     review schema:
@@ -89,7 +73,7 @@ Task:
         "content": json.dumps(input, ensure_ascii=False)
     })
 
-    response = client.chat.completions.create(
+    response = openai_client.chat.completions.create(
         model="gpt-4.1-mini",
         messages=messages
     )

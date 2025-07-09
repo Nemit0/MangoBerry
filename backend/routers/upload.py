@@ -1,12 +1,6 @@
-'''
-Generate presigned URL before actual upload
-User selects a file and frontend calls this route
-'''
-
+from PIL import Image
 from fastapi import APIRouter
 from pydantic import BaseModel
-import os
-import sys
 from ..services.s3 import generate_presigned_url
 
 router = APIRouter()
@@ -20,3 +14,6 @@ def get_upload_url(request: UploadURLRequest):
     url = generate_presigned_url(key)
     return {"upload_url": url, "key": key}
 
+@router.post("/upload_img", tags=["Helpers"])
+def upload_img(request: UploadURLRequest):
+    pass

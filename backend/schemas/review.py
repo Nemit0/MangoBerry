@@ -1,11 +1,11 @@
-'''
-Defines Pydantic models that I use with FastAPI
-to validate, serialize, and deserialize review data when working with my API
-'''
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List
 
+class Review(BaseModel):
+    name: str
+    one_liner: str
+    text: str
 
 class ReviewCreate(BaseModel):
     user_id: int
