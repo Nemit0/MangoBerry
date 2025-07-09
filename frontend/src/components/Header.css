@@ -1,3 +1,8 @@
+@font-face {
+  font-family: 'Bangers';
+  src: url(../assets/fonts/Bangers/Bangers-Regular.ttf);
+}
+
 .header-container {
   position: fixed; /* 뷰포트에 고정 */
   top: 0;
@@ -17,10 +22,10 @@
 }
 
 .logo {
-  font-size: 28px; /* 로고 크기 조정 */
-  font-weight: bold;
-  color: #333;
+  font-size: 40px; /* 로고 크기 조정 */
+  color: rgba(150, 70, 110, 1);
   white-space: nowrap; /* 줄바꿈 방지 */
+  font-family: 'Bangers';
 }
 
 .header-search-area {

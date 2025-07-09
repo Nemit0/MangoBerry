@@ -1,8 +1,9 @@
 // src/components/Modal.js
 import React from 'react';
 import './Modal.css';
+import PostDetailModalContent from './PostDetailModalContent';
 
-function Modal({ isOpen, onClose, children }) {
+function Modal({ isOpen, onClose, selectedPost, isMyPage }) {
     if (!isOpen) return null; // 모달이 닫혀있으면 아무것도 렌더링하지 않음
 
     return (
@@ -11,7 +12,7 @@ function Modal({ isOpen, onClose, children }) {
                 <button className="modal-close-button" onClick={onClose}>
                     &times;
                 </button>
-                {children} {/* 모달 내부에 표시할 내용을 children으로 받음 */}
+                <PostDetailModalContent selectedPost={selectedPost} isMyPage={isMyPage} />
             </div>
         </div>
     );

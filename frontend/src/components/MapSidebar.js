@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import './MapSidebar.css';
 import { FaSearch, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
-const categories = ['한식', '중식', '일식', '양식', '아시안', '씨푸드', '글로벌', '분식', '치킨/햄버거/피자'];
 const preferenceFilters = ['취향률 90% 이상', '취향률 80% 이상', '취향률 70% 이상', '취향률 60% 이상'];
 
 const followingList = [
@@ -96,14 +95,7 @@ const MapSidebar = ({ onSearch, searchResults, currentKeyword, onResultItemClick
                         )
                     ))}
                 </div>
-
-                <h3 className="sidebar-subtitle">카테고리</h3>
-                <div className="sidebar-filter-group">
-                    {categories.map(category => (
-                        <button key={category} className="sidebar-custom-button">{category}</button>
-                    ))}
-                </div>
-
+                
                 <h3 className="sidebar-subtitle">취향률</h3>
                 <div className="sidebar-filter-group">
                     {preferenceFilters.map(filter => (
