@@ -50,7 +50,7 @@ def get_location_from_ip(ip: str):
 
     return None
 
-@router.get("/search_restaurant_es")
+@router.get("/search_restaurant_es", tags=["Restaurant"])
 def search_restaurant_es(
     name: str = Query(None),
     category: str = Query(None),
@@ -88,7 +88,7 @@ def search_restaurant_es(
             "error": str(e)
         }
 
-@router.get("/nearby_restaurant_es")
+@router.get("/nearby_restaurant_es", tags=["Restaurant"])
 def nearby_restaurant_es(request: Request, distance: str = "5km", size: int = 10):
     ip = request.client.host
 

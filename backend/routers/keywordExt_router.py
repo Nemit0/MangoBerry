@@ -24,7 +24,7 @@ class Review(BaseModel):
     text: str
 
 
-@router.post("/api/keywords")
+@router.post("/api/keywords", tags=["Keyword"])
 def get_keywords(review: Review):
-    keywords = extract_keyword_from_review(review.dict())
+    keywords = extract_keyword_from_review(review.model_dump())
     return keywords

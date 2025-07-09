@@ -33,7 +33,7 @@ def _sha256_hex(password: str) -> bytes:
     """
     return hashlib.sha256(password.encode("utf-8")).hexdigest().encode("ascii")
 
-@router.get("/admin_sql")
+@router.get("/admin_sql", tags=["Admin"])
 def admin_people_sql(db: Session = Depends(get_db)):
     people = db.query(People).all()
     return [
@@ -45,7 +45,7 @@ def admin_people_sql(db: Session = Depends(get_db)):
         for p in people
     ]
 
-@router.get("/people_sql")
+@router.get("/people_sql", tags=["Admin"])
 def read_people(user_id: Optional[int] = Query(None), db: Session = Depends(get_db)):
     if user_id is not None:
         person = db.query(People).filter(People.user_id == user_id).first()
@@ -67,7 +67,7 @@ def read_people(user_id: Optional[int] = Query(None), db: Session = Depends(get_
         for p in db.query(People).all()
     ]
 
-@router.get("/users_sql")
+@router.get("/users_sql", tags=["Admin"])
 def read_users(user_id: Optional[int] = Query(None), db: Session = Depends(get_db)):
     qry = (
         db.query(Users, People)
@@ -93,7 +93,7 @@ class LoginInput(BaseModel):
     email: str
     password: str
 
-@router.post("/login")
+@router.post("/login", tags=["Auth"])
 def login(creds: LoginInput, db: Session = Depends(get_db)):
     """bcrypt-based login verification."""
     person: People | None = (db.query(People)
@@ -121,7 +121,7 @@ class RegisterInput(BaseModel):
     )
     verified:    bool | None = False      # ignored on creation
 
-@router.post("/register/check_nickname")
+@router.post("/register/check_nickname", tags=["Registration"])
 def check_nickname(nickname: str, db: Session = Depends(get_db)):
     """
     Check if the nickname is already taken.
@@ -130,7 +130,7 @@ def check_nickname(nickname: str, db: Session = Depends(get_db)):
     exists = db.query(People).filter(People.nickname == nickname).first()
     return {"available": exists is None}
 
-@router.post("/register/check_email")
+@router.post("/register/check_email", tags=["Registration"])
 def check_email(email: EmailStr, db: Session = Depends(get_db)):
     """
     Check if the email is already registered.
@@ -139,7 +139,7 @@ def check_email(email: EmailStr, db: Session = Depends(get_db)):
     exists = db.query(People).filter(People.email == email).first()
     return {"available": exists is None}
 
-@router.post("/register")
+@router.post("/register", tags=["Registration"])
 def register_user(creds: RegisterInput, db: Session = Depends(get_db)):
     """Create a People + Users record; e-mail must be unique."""
     # Check uniqueness
@@ -193,7 +193,7 @@ def register_user(creds: RegisterInput, db: Session = Depends(get_db)):
     }
 
 # API to delete a user
-@router.delete("/delete_user/{user_id}")
+@router.delete("/delete_user/{user_id}", tags=["Admin"])
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     """
     Delete a user by user_id.
@@ -214,8 +214,9 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
 
     return {"detail": "User deleted successfully"}
 
-@router.get("/review_sql")
+@router.get("/review_sql", tags=["Reviews"])
 def read_review_sql(db: Session = Depends(get_db)):
+    warn("This should recieve additional arguments to filter reviews, such as user_id or restaurant_ids",)
     return db.query(models.Review).all()
 
 # ──────────────────────────────────────────────────────────────────────────
