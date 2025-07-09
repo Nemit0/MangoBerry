@@ -1,7 +1,7 @@
 from elasticsearch import Elasticsearch
 import os
 
-import backend.connection.load_env
+from . import load_env
 
 es_client = Elasticsearch(
     hosts=os.getenv("ES_HOST"),
