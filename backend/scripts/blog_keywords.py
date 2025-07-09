@@ -4,23 +4,18 @@ import sqlite3
 import pandas as pd
 from collections import defaultdict, Counter
 from pymongo import MongoClient
-from dotenv import load_dotenv
 
-load_dotenv()
 MONGO_URI = os.getenv("MONGO_URI")
-
 
 client = MongoClient(MONGO_URI)
 db = client["customer_info"]
 collection = db["keywords"]
-
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sqlite_path = os.path.join(BASE_DIR, "routers", "clean_copy.sqlite")
 conn = sqlite3.connect(sqlite_path)
 df = pd.read_sql_query("SELECT r_id, keywords FROM keywords", conn)
 conn.close()
-
 
 freq_by_restaurant = defaultdict(Counter)
 for _, row in df.iterrows():

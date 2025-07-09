@@ -1,17 +1,9 @@
 from fastapi import APIRouter, Query, HTTPException
-from elasticsearch import Elasticsearch
 from typing import Optional
-from dotenv import load_dotenv
-import os
 
-load_dotenv()
+from ..connection.elasticdb import es_client as es
+
 router = APIRouter()
-
-es = Elasticsearch(
-    os.getenv("ES_HOST"),
-    basic_auth=(os.getenv("ES_USER"), os.getenv("ES_PASS"))
-)
-
 
 @router.get("/reviews/search", tags=["Reviews"])
 def search_reviews(

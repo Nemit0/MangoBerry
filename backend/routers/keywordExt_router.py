@@ -1,28 +1,9 @@
-from fastapi import APIRouter, HTTPException, Request
-from pydantic import BaseModel
-from typing import List, Dict, Any
-from dotenv import load_dotenv
-import os
-import openai
+from fastapi import APIRouter
 
-from ..keyword_extract import extract_keyword_from_review
+from ..services.keyword_extract import extract_keyword_from_review
+from ..schemas.review import Review
 
-load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-if not OPENAI_API_KEY:
-    raise Exception("OPENAI_API_KEY not set in .env")
-
-openai.api_key = OPENAI_API_KEY
-
-router = APIRouter( )
-
-# 리뷰 데이터 입력 포맷
-class Review(BaseModel):
-    name: str
-    one_liner: str
-    text: str
-
+router = APIRouter()
 
 @router.post("/api/keywords", tags=["Keyword"])
 def get_keywords(review: Review):

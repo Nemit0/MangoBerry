@@ -1,26 +1,15 @@
 from fastapi import APIRouter, HTTPException, Depends
-from pymongo import MongoClient
-from bson import ObjectId
-import os
-from dotenv import load_dotenv
 
+from ..connection.mysqldb import get_db, People, Users
 from ..connection.mongodb import follow_collection
-
-from ..mysql.models import People, Users
-from ..connection.database import get_db
 from sqlalchemy.orm import Session
-
-load_dotenv()
 
 router = APIRouter()
 
-
-# Serialize ObjectId
 def serialize_doc(doc):
     doc["_id"] = str(doc["_id"])
     return doc
 
-# Get a user's followers & followings
 @router.get("/social/{user_id}", tags=["Social"])
 def get_user_social(user_id: int, db: Session = Depends(get_db)):
     user = db.query(Users).filter(Users.user_id == user_id).first()

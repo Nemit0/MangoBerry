@@ -1,23 +1,11 @@
-'''
-Creates and updates reviews in MySQL and Elasticsearch
-
-'''
 from fastapi import APIRouter, HTTPException, Depends
-from sqlalchemy.orm import Session
-import os
-from dotenv import load_dotenv
+from sqlalchemy.orm import create_session, Session
 
-from ..connection.database import get_db
+from ..connection.mysqldb import get_db, Review
 from ..connection.mongodb import photo_collection 
+from ..connection.elasticdb import es_client as es
 
 from ..schemas.review import ReviewCreate, ReviewUpdate
-from ..mysql.models import Review  # from automap Base.classes
-
-from elasticsearch import Elasticsearch
-
-load_dotenv()
-es = Elasticsearch(os.getenv("ES_HOST"),
-    basic_auth=(os.getenv("ES_USER"), os.getenv("ES_PASS")))  
 
 router = APIRouter()
 

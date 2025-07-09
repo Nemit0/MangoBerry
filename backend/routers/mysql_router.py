@@ -1,19 +1,16 @@
 import hashlib
 from random import randint
-from typing import List, Optional
-from datetime import date
+from typing import Optional
 from warnings import warn
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import EmailStr
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
 from passlib.context import CryptContext
 from email_validator import validate_email, EmailNotValidError
 
-from ..connection.database import get_db
-from ..mysql import models
-from ..mysql.models import People, Users
+from ..connection.mysqldb import get_db, People, Users
+from ..schemas.user import LoginInput, RegisterInput
 
 router = APIRouter()
 pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -31,6 +28,9 @@ def _sha256_hex(password: str) -> bytes:
     Returns the lowercase hex digest of SHA-256 as *bytes* (64 bytes long),
     matching the BINARY(64) storage format.
     """
+    raise DeprecationWarning(
+        "Using SHA-256 is deprecated; use hash_password instead."
+    )
     return hashlib.sha256(password.encode("utf-8")).hexdigest().encode("ascii")
 
 @router.get("/admin_sql", tags=["Admin"])
@@ -89,10 +89,6 @@ def read_users(user_id: Optional[int] = Query(None), db: Session = Depends(get_d
         for u, p in rows
     ]
 
-class LoginInput(BaseModel):
-    email: str
-    password: str
-
 @router.post("/login", tags=["Auth"])
 def login(creds: LoginInput, db: Session = Depends(get_db)):
     """bcrypt-based login verification."""
@@ -106,20 +102,6 @@ def login(creds: LoginInput, db: Session = Depends(get_db)):
     return {"user_id": person.user_id,
             "login": True,
             "verified": True}
-
-# User Registration api
-
-class RegisterInput(BaseModel):
-    """Incoming JSON for /register."""
-    email:       EmailStr                 # use Pydantic's validated e-mail type
-    password:    str
-    display_name:str
-    bday:        date | None = None       # let Pydantic parse 'YYYY-MM-DD'
-    gender:      str | None = Field(
-        default=None,
-        pattern=r"^(M|F|O)$"               # optional simple validation
-    )
-    verified:    bool | None = False      # ignored on creation
 
 @router.post("/register/check_nickname", tags=["Registration"])
 def check_nickname(nickname: str, db: Session = Depends(get_db)):
@@ -218,27 +200,3 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
 def read_review_sql(db: Session = Depends(get_db)):
     warn("This should recieve additional arguments to filter reviews, such as user_id or restaurant_ids",)
     return db.query(models.Review).all()
-
-# ──────────────────────────────────────────────────────────────────────────
-# One-shot maintenance script
-# ──────────────────────────────────────────────────────────────────────────
-def _reset_all_passwords(db: Session,
-                         new_plaintext: str = "mangoberry") -> int:
-    """Bulk-update all People.passwd to bcrypt(new_plaintext)."""
-    new_hash = hash_password(new_plaintext)
-    rows = db.query(People).all()
-    for row in rows:
-        row.passwd = new_hash
-    db.commit()
-    return len(rows)
-
-if __name__ == "__main__":
-    """
-    Run directly:
-    $ python -m backend.routers.mysql_router
-    All passwords => "mangoberry" (bcrypt).
-    """
-    from ..connection.database import SessionLocal  # avoid circular import
-    with SessionLocal() as session:
-        n = _reset_all_passwords(session)
-        print(f"Updated {n} passwords → bcrypt('mangoberry')")
