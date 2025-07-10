@@ -5,38 +5,43 @@ from ..connection.elasticdb import es_client as es
 
 router = APIRouter()
 
-@router.get("/reviews/search", tags=["Reviews"])
-def search_reviews(
-    review_id: Optional[int] = Query(None),
-    user_id: Optional[int] = Query(None),
-    restaurant_id: Optional[int] = Query(None),
-    comment_query: Optional[str] = Query(None)
+@router.get("/search_review_es", tags=["Reviews"])
+def search_review_es(
+    review: str = Query(None),
+    comments: str = Query(None),
+    user_id: int = Query(None),
+    restaurant_id: int = Query(None),
+    size: int = Query(10)
 ):
-    try:
-        if review_id is not None:
-            # Directly fetch by document ID
-            result = es.get(index="user_review", id=review_id)
-            return {"results": [{"id": result["_id"], **result["_source"]}]}
+    must = []
 
-        # Build a query if no specific review_id is provided
-        query = {"bool": {"must": []}}
+    if review:
+        must.append({"match_phrase_prefix": {"review": review}})
+    if comments:
+        must.append({"match_phrase_prefix": {"comments": comments}})
+    if user_id:
+        must.append({"term": {"user_id": user_id}})
+    if restaurant_id:
+        must.append({"term": {"restaurant_id": restaurant_id}})
 
-        if user_id is not None:
-            query["bool"]["must"].append({"match": {"user_id": user_id}})
-        if restaurant_id is not None:
-            query["bool"]["must"].append({"match": {"restaurant_id": restaurant_id}})
-        if comment_query is not None:
-            query["bool"]["must"].append({"match": {"comments": comment_query}})
-
-        res = es.search(index="user_review", query=query)
-        results = [
-            {
-                "id": hit["_id"],
-                **hit["_source"]
+    query = {
+        "_source": ["review_id", "restaurant_id", "user_id", "comments", "review", "created_at"],
+        "query": {
+            "bool": {
+                "must": must if must else [{"match_all": {}}]
             }
-            for hit in res["hits"]["hits"]
-        ]
-        return {"results": results}
+        },
+        "size": size
+    }
 
+    try:
+        response = es.search(index="user_review", body=query)
+        return {
+            "success": True,
+            "result": [hit["_source"] for hit in response["hits"]["hits"]]
+        }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return {
+            "success": False,
+            "error": str(e)
+        }

@@ -16,18 +16,19 @@ router = APIRouter()
 def create_review(payload: ReviewCreate, db: Session = Depends(get_db)):
 
     filenames_str = ",".join(payload.photo_filenames) if payload.photo_filenames else None
-    
-    # first get user state_id and restaurant state_id
+
+    # Get user and restaurant state_id
     u_state_id = db.query(Users.state_id).filter(Users.user_id == payload.user_id).first()
     r_state_id = db.query(Restaurant.state_id).filter(Restaurant.restaurant_id == payload.restaurant_id).first()
 
     print(f"User state_id: {u_state_id}, Restaurant state_id: {r_state_id}")
 
-    # Then multiply them to get the new state_id
+    # Calculate combined state_id
     if u_state_id and r_state_id:
         state_id = u_state_id[0] * r_state_id[0]
 
     try:
+        # Save to MySQL
         new_review = Review(
             user_id=payload.user_id,
             restaurant_id=payload.restaurant_id,
@@ -41,19 +42,20 @@ def create_review(payload: ReviewCreate, db: Session = Depends(get_db)):
         db.refresh(new_review)
         review_id = new_review.review_id
 
-        # Save photo URLs in Mongo
+        # Save photo URLs to MongoDB
         if payload.photo_urls:
             photo_collection.insert_one({
                 "review_id": review_id,
                 "photo_urls": payload.photo_urls
             })
 
-        # Index in Elasticsearch
-        es.index(index="user_review", id=review_id, document={
+        # Index in Elasticsearch (new index name + add review field)
+        es.index(index="user_review_kor", id=review_id, document={
             "review_id": review_id,
             "user_id": payload.user_id,
             "restaurant_id": payload.restaurant_id,
-            "comments": payload.comments
+            "comments": payload.comments,
+            "review": payload.review  # ✅ Add the new review field
         })
 
         return {
@@ -65,6 +67,7 @@ def create_review(payload: ReviewCreate, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
     
 
 @router.put("/reviews/{review_id}", tags=["Reviews"])
@@ -103,7 +106,7 @@ def update_review(review_id: int, payload: ReviewUpdate, db: Session = Depends(g
             )
 
         # Update Elasticsearch
-        es.update(index="user_review", id=review_id, body={
+        es.update(index="user_review_kor", id=review_id, body={
             "doc": {
                 "comments": payload.comments,
                 "photo_filenames": review.photo_filenames  # optional if you're indexing that

@@ -19,7 +19,6 @@ MAX_SIZE_BYTES = 10 * 1024 * 1024          # 10 MB hard limit
 ALLOWED_MIME_PREFIX = "image/"             # simple guard
 # ────────────────────────────────────────────────────────────
 
-
 @router.post("/reviews/{user_id}/images", tags=["Reviews"])
 async def upload_review_image(                     # noqa: D401
     user_id: int,

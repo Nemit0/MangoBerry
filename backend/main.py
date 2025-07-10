@@ -3,7 +3,7 @@ import sys
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import elastic_router, mysql_router, mongo_router, review, upload, keywordExt_router
+from .routers import elastic_router, mysql_router, mongo_router, review, review_search, upload, keywordExt_router
 
 
 sys.stdout.reconfigure(encoding='utf-8')
@@ -38,5 +38,6 @@ app.include_router(mysql_router.router)
 app.include_router(mongo_router.router)
 
 app.include_router(review.router)
+app.include_router(review_search.router)
 app.include_router(upload.router)
 app.include_router(keywordExt_router.router)
