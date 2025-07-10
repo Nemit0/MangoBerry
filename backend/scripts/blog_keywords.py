@@ -26,7 +26,6 @@ for _, row in df.iterrows():
     except Exception:
         continue
 
-
 docs = []
 for rid, counter in freq_by_restaurant.items():
     docs.append({
