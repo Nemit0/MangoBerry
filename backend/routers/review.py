@@ -136,7 +136,7 @@ def delete_review(review_id: int, db: Session = Depends(get_db)):
         photo_collection.delete_one({"review_id": review_id})
 
         # Step 3: Delete from Elasticsearch
-        es.delete(index="user_review", id=review_id)
+        es.delete(index="user_review_kor", id=review_id)
 
         return {"message": f"Review {review_id} deleted successfully"}
 
