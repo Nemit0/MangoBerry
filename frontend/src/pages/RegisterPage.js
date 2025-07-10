@@ -141,36 +141,6 @@ function RegisterPage() {
               <h2 className='register-title'>회원가입</h2>
 
               <form onSubmit={handleSubmit} className='register-form'>
-                {/* ─── 닉네임 입력 + 중복확인 ─── */}
-                <div className='register-input-group'>
-                  <div className='form-row'>
-                    <label htmlFor='nickname'>닉네임</label>
-                    <div className='input-with-button'>
-                      <input
-                        type='text'
-                        id='nickname'
-                        value={nickname}
-                        onChange={(e) => { setNickname(e.target.value); setNicknameChecked(false); setNicknameMsg(''); }}
-                        placeholder='닉네임을 입력하세요 (2자 이상)'
-                        required
-                      />
-                      <button
-                        type='button'
-                        onClick={handleNicknameCheck}
-                        className='duplicate-check-button'
-                        disabled={nickname.trim().length < 2}
-                      >
-                        중복확인
-                      </button>
-                    </div>
-                  </div>
-                  {nicknameMsg && (
-                    <p className={`message ${nicknameAvailable ? 'success' : 'error'}`}>
-                      {nicknameMsg}
-                    </p>
-                  )}
-                </div>
-
                 {/* ─── 이메일 입력 + 중복확인 ─── */}
                 <div className='register-input-group'>
                   <div className='form-row'>
@@ -197,6 +167,36 @@ function RegisterPage() {
                   {emailMsg && (
                     <p className={`message ${emailAvailable ? 'success' : 'error'}`}>
                       {emailMsg}
+                    </p>
+                  )}
+                </div>
+
+                {/* ─── 닉네임 입력 + 중복확인 ─── */}
+                <div className='register-input-group'>
+                  <div className='form-row'>
+                    <label htmlFor='nickname'>닉네임</label>
+                    <div className='input-with-button'>
+                      <input
+                        type='text'
+                        id='nickname'
+                        value={nickname}
+                        onChange={(e) => { setNickname(e.target.value); setNicknameChecked(false); setNicknameMsg(''); }}
+                        placeholder='닉네임을 입력하세요 (2자 이상)'
+                        required
+                      />
+                      <button
+                        type='button'
+                        onClick={handleNicknameCheck}
+                        className='duplicate-check-button'
+                        disabled={nickname.trim().length < 2}
+                      >
+                        중복확인
+                      </button>
+                    </div>
+                  </div>
+                  {nicknameMsg && (
+                    <p className={`message ${nicknameAvailable ? 'success' : 'error'}`}>
+                      {nicknameMsg}
                     </p>
                   )}
                 </div>

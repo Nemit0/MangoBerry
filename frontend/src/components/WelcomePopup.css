@@ -24,20 +24,22 @@
     flex-direction: column;
     gap: 20px;
     position: relative; /* 자식 요소의 absolute 포지셔닝을 위해 */
+    height: 610px;
 }
 
 .popup-main-title {
     text-align: center;
     color: #333;
-    margin-bottom: 25px;
+    margin-bottom: 0px;
     font-size: 1.8em;
     text-align: left; /* 왼쪽 정렬 */
 }
 
-.popup-page h3 {
+.popup-sub-title {
     text-align: center;
     color: #555;
-    margin-bottom: 20px;
+    margin-top: 0px;
+    margin-bottom: 10px;
     font-size: 1.2em;
     text-align: left;
 }
@@ -76,9 +78,11 @@
 
 .popup-navigation {
     display: flex;
-    justify-content: space-between; /* 버튼과 페이지 표시를 양 끝으로 정렬 */
+    justify-content: center; /* 페이지 표시를 중앙에 고정 */
     align-items: center;
-    margin-top: 20px;
+    margin-top: 0px;
+    position: relative; /* 자식 요소의 absolute 포지셔닝을 위해 */
+    width: 100%; /* 부모 너비에 맞춤 */
 }
 
 .page-indicator {
@@ -119,4 +123,31 @@
 }
 .popup-button.submit-button:hover {
     background-color: #218838;
+}
+
+.left-nav-group {
+    position: absolute;
+    left: 0;
+}
+
+.right-nav-group {
+    position: absolute;
+    right: 0;
+    display: flex;
+    gap: 10px; /* Space between buttons */
+}
+
+.popup-skip {
+    padding: 0px;
+    margin: 0px;
+    text-align: right;
+    
+}
+
+.skip-button {
+    padding: 0px;
+    margin: 0px;
+    font-size: 15px;
+    color: gray;
+    text-decoration: underline;
 }

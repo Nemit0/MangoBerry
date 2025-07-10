@@ -34,9 +34,7 @@ export const AuthProvider = ({ children }) => {
 
   // ─── welcome-popup state ─────────────────────────────────
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
-  const [hasSeenWelcomePopup, setHasSeenWelcomePopup] = useState(() => {
-    return localStorage.getItem("hasSeenWelcomePopup") === "true";
-  });
+  const [hasSeenWelcomePopup, setHasSeenWelcomePopup] = useState(false);
 
   // ─── side-effects to keep localStorage in sync ───────────
   useEffect(() => {
@@ -48,18 +46,39 @@ export const AuthProvider = ({ children }) => {
     else localStorage.removeItem("user");
   }, [user]);
 
-  useEffect(() => {
-    localStorage.setItem("hasSeenWelcomePopup", hasSeenWelcomePopup);
-  }, [hasSeenWelcomePopup]);
-
   // ─── auth helpers ────────────────────────────────────────
   const login = useCallback(
     (userData) => {
       setIsLoggedIn(true);
       setUser(userData); // { user_id, email, … }
-      if (!hasSeenWelcomePopup) setShowWelcomePopup(true);
+
+      // TODO: 백엔드에서 사용자 키워드 유무를 확인하는 API 호출 (나중에 구현)
+      // 예시:
+      // fetch(`/api/user/${userData.user_id}/keywords`)
+      //   .then(response => response.json())
+      //   .then(data => {
+      //     if (data.keywords && data.keywords.length > 0) {
+      //       // 키워드가 있으면 웰컴 팝업을 띄우지 않음
+      //       setShowWelcomePopup(false);
+      //       setHasSeenWelcomePopup(true); // 웰컴 팝업을 본 것으로 처리
+      //     } else {
+      //       // 키워드가 없으면 웰컴 팝업을 띄움
+      //       setShowWelcomePopup(true);
+      //       setHasSeenWelcomePopup(false);
+      //     }
+      //   })
+      //   .catch(error => {
+      //     console.error("Error fetching user keywords:", error);
+      //     // 에러 발생 시 기본적으로 웰컴 팝업을 띄움
+      //     setShowWelcomePopup(true);
+      //     setHasSeenWelcomePopup(false);
+      //   });
+
+      // 임시: 키워드 API 구현 전까지는 항상 웰컴 팝업을 띄우도록 설정
+      setShowWelcomePopup(true);
+      setHasSeenWelcomePopup(false);
     },
-    [hasSeenWelcomePopup]
+    []
   );
 
   const logout = useCallback(() => {
@@ -71,7 +90,6 @@ export const AuthProvider = ({ children }) => {
 
   const closeWelcomePopUp = () => {
     setShowWelcomePopup(false);
-    setHasSeenWelcomePopup(true);
   };
 
   return (
