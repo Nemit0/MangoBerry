@@ -28,32 +28,6 @@ export default function NewPage() {
     /* ───────────────────────── event handlers ───────────────────────── */
     const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-    const [positiveKeywords, setPositiveKeywords] = useState([]);
-    const [negativeKeywords, setNegativeKeywords] = useState([]);
-    const [selectedKeywords, setSelectedKeywords] = useState([]);
-
-    const r_id = 1; // hardcoded for now
-
-    // guard: force-login
-    if (!isLoggedIn) {
-        navigate("/login"); // or render a <Navigate> element
-        return null;
-    }
-
-    
-    const toggleKeyword = (word) => {
-        setSelectedKeywords((prev) =>
-          prev.includes(word)
-            ? prev.filter((w) => w !== word)
-            : [...prev, word]
-        );
-      };
-    
-      const splitIntoTwoRows = (arr) => {
-        const mid = Math.ceil(arr.length / 2);
-        return [arr.slice(0, mid), arr.slice(mid)];
-      };
-
     const handleImageChange = (e) => {
         if (e.target.files?.[0]) setImage(e.target.files[0]);
     };
