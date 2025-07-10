@@ -123,6 +123,7 @@
     display: flex;
     flex-direction: column;
     width: 100%;
+    margin-top: 60px;
 }
 
 .page-content-wrapper {
@@ -157,3 +158,80 @@
 .analysis-button.analyzing {
     background-color: #96466E;
 }
+
+.keyword-result-container {
+    display: flex;
+    gap: 40px;
+    margin-top: 30px;
+    justify-content: center;
+  }
+  
+  /* 제목을 박스 밖에 */
+  .keyword-title {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    text-align: left;
+  }
+  
+  .keyword-box {
+    border: 0.5px solid black;
+    padding: 20px;
+    border-radius: 6px;
+    width: 200px;
+  }
+  
+  .keyword-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .keyword-button {
+    border: 1px solid;
+    padding: 6px 12px;
+    border-radius: 5px;
+    background-color: white;
+    font-size: 0.95em;
+    cursor: pointer;
+  }
+  
+  .keyword-positive {
+    color: green;
+    border-color: green;
+  }
+  
+  .keyword-negative {
+    color: red;
+    border-color: red;
+  }
+  
+  .keyword-button.selected {
+    color: black;
+    border-color: black;
+  }
+  
+  /* 취소/등록 버튼 */
+  .keyword-action-wrapper {
+    position: absolute;
+    right: 0;             /* 부모 기준으로 오른쪽 정렬 */
+    top: 100%;            /* 박스 아래에 위치하도록 */
+    margin-top: 10px;     /* 간격 */
+    display: flex;
+    gap: 10px;
+  }
+  
+  .keyword-action-button {
+    padding: 8px 16px;
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .keyword-action-button:hover {
+    background-color: #96466E;
+    color: white;
+  }
+  
