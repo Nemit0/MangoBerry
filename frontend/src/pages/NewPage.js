@@ -1,4 +1,3 @@
-// src/pages/NewPage.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,7 +9,6 @@ import Button from '../components/Button';
 import { TbPhotoPlus } from "react-icons/tb";
 
 // 공통 레이아웃 CSS 재활용
-
 import './NewPage.css';
 
 function NewPage() {
@@ -21,6 +19,24 @@ function NewPage() {
     const [content, setContent] = useState('');
     const [image, setImage] = useState(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+    const [positiveKeywords, setPositiveKeywords] = useState([]);
+    const [negativeKeywords, setNegativeKeywords] = useState([]);
+    const [selectedKeywords, setSelectedKeywords] = useState([]);
+    
+    const toggleKeyword = (word) => {
+        setSelectedKeywords((prev) =>
+          prev.includes(word)
+            ? prev.filter((w) => w !== word)
+            : [...prev, word]
+        );
+      };
+    
+      const splitIntoTwoRows = (arr) => {
+        const mid = Math.ceil(arr.length / 2);
+        return [arr.slice(0, mid), arr.slice(mid)];
+      };
+    
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -36,7 +52,12 @@ function NewPage() {
     };
 
     const handleAnalyzeClick = () => {
-        setIsAnalyzing(prev => !prev); 
+        setIsAnalyzing(true);
+        /*모두 긍정/부정으로 똑같이 지정하면 4개 한꺼번에 눌림*/
+        const dummyPositive = ['긍정1', '긍정2', '긍정3', '긍정4'];
+        const dummyNegative = ['부정1', '부정2', '부정3', '부정4'];
+        setPositiveKeywords(dummyPositive);
+        setNegativeKeywords(dummyNegative);
     };
 
     return (
@@ -56,12 +77,15 @@ function NewPage() {
 
                     <form onSubmit={handleSubmit} className="review-form">
                         <div className="form-content-area">
-
                             <div className="image-upload-area">
                                 <label htmlFor="image-upload" className="image-placeholder">
                                     {image ? (
-                                        <img src={URL.createObjectURL(image)} alt="Preview" className="uploaded-image-preview" />
-                                    ) : (
+                                        <img 
+                                          src={URL.createObjectURL(image)} 
+                                          alt="Preview" 
+                                          className="uploaded-image-preview" 
+                                          />
+                                        ) : (
                                         <>
                                             <TbPhotoPlus className="photo-icon" />
                                             <span>사진 +</span>
@@ -113,14 +137,78 @@ function NewPage() {
                             {isAnalyzing ? '분석 완료' : '분석 시작'}
                         </Button>
                     </form>
-                </main>
 
-                <aside className="page-right-sidebar">
-                    <RightSidebar />
-                </aside>
+          {/* 분석 결과 박스 - form 밖에 위치 */}
+          {isAnalyzing && (
+            <div className="keyword-result-container">
+              <div className="keyword-section">
+                <h4 className="keyword-title">긍정 키워드</h4>
+                <div className="keyword-box">
+                  {splitIntoTwoRows(positiveKeywords).map((row, rowIdx) => (
+                    <div key={rowIdx} className="keyword-row">
+                      {row.map((word, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => toggleKeyword(word)}
+                          className={`keyword-button keyword-positive ${
+                            selectedKeywords.includes(word) ? 'selected' : ''
+                          }`}
+                        >
+                          {word}
+                        </button>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="keyword-section">
+                <h4 className="keyword-title">부정 키워드</h4>
+                <div className="keyword-box">
+                  {splitIntoTwoRows(negativeKeywords).map((row, rowIdx) => (
+                    <div key={rowIdx} className="keyword-row">
+                      {row.map((word, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => toggleKeyword(word)}
+                          className={`keyword-button keyword-negative ${
+                            selectedKeywords.includes(word) ? 'selected' : ''
+                          }`}
+                        >
+                          {word}
+                        </button>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {/* 취소 / 등록 버튼 */}
+              <div className="keyword-action-wrapper">
+                <button
+                  type="button"
+                  className="keyword-action-button"
+                  onClick={() => setIsAnalyzing(false)}
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  className="keyword-action-button"
+                  onClick={handleSubmit}
+                >
+                  등록
+                </button>
+              </div>
             </div>
-        </div>
-    );
+          )}
+        </main>
+
+        <aside className="page-right-sidebar">
+          <RightSidebar />
+        </aside>
+      </div>
+    </div>
+  );
 }
 
 export default NewPage;

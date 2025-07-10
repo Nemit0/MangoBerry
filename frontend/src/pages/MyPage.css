@@ -76,6 +76,9 @@
   font-size: 1.2rem;
   font-weight: bold;
 }
+
+/*편집 버튼 안 보이게*/
+/*
 .edit-button button {
   padding: 8px 20px;
   border: none;
@@ -90,6 +93,8 @@
 .edit-button button:hover {
   background-color: #9A4A6E;
 }
+  */
+
 .my-user-post {
   display: flex;
   gap: 20px;

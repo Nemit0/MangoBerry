@@ -1,0 +1,84 @@
+/* src/pages/FollowingPage.css */
+
+.following-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+
+  html, body {
+    height: 100%;
+    overflow-y: auto;
+  }
+  
+  .following-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #999;
+    display: inline-block;
+  }
+  
+  .keyword-result-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .keyword-box {
+    width: 800px;
+    background-color: #f6f6f6;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .profile-icon {
+    font-size: 28px;
+    background-color: #eee;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .name-and-bar {
+    flex: 1;
+    font-family: Bangers;
+  }
+  
+  .info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .user-name {
+    flex: 1;
+    text-align: left;
+  }
+  
+  .progress-bar-fill {
+    background-color: #96466E;
+    height: 12px;
+    border-radius: 8px;
+  }
+  
+  .percent-text {
+    flex-shrink: 100;
+    margin-left: 80px;
+    font-weight: bold;
+    font-family: Bangers;
+    color: #96466E;
+    text-align: right;
+    position: absolute;
+    top: -20px; /* 이 값을 조절하여 텍스트를 위/아래로 움직일 수 있습니다. */
+    right: 0; /* 바의 오른쪽 끝에 정렬 */
+    width: 100%; /* 부모 컨테이너의 너비에 맞게 설정 */
+}
+  
