@@ -3,7 +3,7 @@ import io
 from pathlib import Path
 from botocore.exceptions import ClientError
 from typing import Optional
-from ..connection.mysqldb import get_db
+from ..connection.mysqldb import get_db, People
 from ..connection.s3 import s3, s3_client, STORAGE_CLASS, BUCKET_NAME, ACL
 
 def guess_content_type(filename_or_key: str | None, default: str = "application/octet-stream") -> str:

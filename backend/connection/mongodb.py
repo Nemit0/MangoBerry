@@ -1,7 +1,7 @@
 import os
 from pymongo import MongoClient
 
-import backend.connection.load_env
+from . import load_env
 
 uri = os.getenv("MONGO_URI")
 

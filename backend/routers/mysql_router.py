@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from email_validator import validate_email, EmailNotValidError
 
-from ..connection.mysqldb import get_db, People, Users
+from ..connection.mysqldb import get_db, People, Users, Review
 from ..schemas.user import LoginInput, RegisterInput
 
 router = APIRouter()
@@ -174,7 +174,6 @@ def register_user(creds: RegisterInput, db: Session = Depends(get_db)):
         "display_name": person.nickname,
     }
 
-# API to delete a user
 @router.delete("/delete_user/{user_id}", tags=["Admin"])
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     """
@@ -199,4 +198,4 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
 @router.get("/review_sql", tags=["Reviews"])
 def read_review_sql(db: Session = Depends(get_db)):
     warn("This should recieve additional arguments to filter reviews, such as user_id or restaurant_ids",)
-    return db.query(models.Review).all()
+    return db.query(Review).all()
