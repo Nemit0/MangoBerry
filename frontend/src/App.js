@@ -1,6 +1,8 @@
 import './App.css';
 import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -19,17 +21,22 @@ function App() {
     <div className="App">
       <AuthProvider>
         <Routes>
+          {/* 공개 라우트 */}
           <Route path='/' element={<HomePage />}/>
           <Route path='/login' element={<LoginPage />}/>
           <Route path="/register" element={<RegisterPage />} />
-          <Route path='/my' element={<MyPage />}/>
-          <Route path='/new' element={<NewPage />}/>
-          <Route path='/edit' element={<EditPage />}/>
-          <Route path='/follower' element={<FollowerPage />}/>
-          <Route path='/following' element={<FollowingPage />}/>
-          <Route path='/others' element={<OthersPage />}/>
           <Route path='/map' element={<MapPage />}/>
           <Route path='/restaurantInfo' element={<RestaurantInfoPage />}/>
+          <Route path='/others' element={<OthersPage />}/>
+
+          {/* 보호된 라우트 */}
+          <Route path='/my' element={<ProtectedRoute><MyPage /></ProtectedRoute>}/>
+          <Route path='/new' element={<ProtectedRoute><NewPage /></ProtectedRoute>}/>
+          <Route path='/edit' element={<ProtectedRoute><EditPage /></ProtectedRoute>}/>
+          <Route path='/follower' element={<ProtectedRoute><FollowerPage /></ProtectedRoute>}/>
+          <Route path='/following' element={<ProtectedRoute><FollowingPage /></ProtectedRoute>}/>          
+
+          {/* 404 Not Found */}
           <Route path='*' element={<NotFoundPage />}/>
         </Routes>
       </AuthProvider>

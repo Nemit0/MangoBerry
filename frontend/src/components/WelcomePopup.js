@@ -67,12 +67,18 @@ function WelcomePopup({ onClose }) {
         onClose(); // 팝업 닫기
     };
 
+    const handleSkip = () => {
+        if (currentPage < 3) {
+            setCurrentPage(prev => prev + 1);
+        }
+    };
+
     const renderPageContent = () => {
         switch (currentPage) {
             case 1:
                 return (
                     <div className="popup-page">
-                        <h3>인상 깊었거나 최근에 간 식당 3곳을 알려주세요</h3>
+                        {/* <h3>인상 깊었거나 최근에 간 식당 3곳을 알려주세요</h3> */}
                         <div className="input-group">
                             {/* <label htmlFor="restaurant1">식당명:</label> */}
                             <input
@@ -100,7 +106,7 @@ function WelcomePopup({ onClose }) {
             case 2:
                 return (
                     <div className="popup-page">
-                        <h3>인상 깊었거나 최근에 간 식당 3곳을 알려주세요</h3>
+                        {/* <h3>인상 깊었거나 최근에 간 식당 3곳을 알려주세요</h3> */}
                         <div className="input-group">
                             {/* <label htmlFor="restaurant2">식당명:</label> */}
                             <input
@@ -128,7 +134,7 @@ function WelcomePopup({ onClose }) {
             case 3:
                 return (
                     <div className="popup-page">
-                        <h3>인상 깊었거나 최근에 간 식당 3곳을 알려주세요</h3>
+                        {/* <h3>인상 깊었거나 최근에 간 식당 3곳을 알려주세요</h3> */}
                         <div className="input-group">
                             {/* <label htmlFor="restaurant3">식당명:</label> */}
                             <input
@@ -164,24 +170,33 @@ function WelcomePopup({ onClose }) {
         <div className="welcome-popup-overlay">
             <div className="welcome-popup-content">
                 <h2 className="popup-main-title">당신의 취향을 알려주세요</h2>
+                <h3 className='popup-sub-title'>해당 리뷰는 키워드 분석하는 데에만 사용됩니다.</h3>
                 
                 {renderPageContent()}
-
+                
                 <div className="popup-navigation">
-                    {/* 이전 버튼은 첫 페이지가 아닐 때만 표시 */}
-                    {currentPage > 1 && (
-                        <button onClick={handlePrev} className="popup-button prev-button">이전</button>
-                    )}
+                    <div className="left-nav-group">
+                        {currentPage > 1 && (
+                            <button onClick={handlePrev} className="popup-button prev-button">이전</button>
+                        )}
+                    </div>
                     
-                    <span className="page-indicator">{currentPage} / 3</span>
+                    <div className="center-nav-group">
+                        <span className="page-indicator">{currentPage} / 3</span>
+                    </div>
 
-                    {/* 다음 버튼은 마지막 페이지가 아닐 때만 표시 */}
+                    <div className="right-nav-group">
+                        {currentPage < 3 && (
+                            <button onClick={handleNext} className="popup-button next-button">다음</button>
+                        )}
+                        {currentPage === 3 && (
+                            <button onClick={handleSubmit} className="popup-button submit-button">완료</button>
+                        )}
+                    </div>
+                </div>
+                <div className='popup-skip'>
                     {currentPage < 3 && (
-                        <button onClick={handleNext} className="popup-button next-button">다음</button>
-                    )}
-                    {/* 완료 버튼은 마지막 페이지일 때만 표시 */}
-                    {currentPage === 3 && (
-                        <button onClick={handleSubmit} className="popup-button submit-button">완료</button>
+                        <p onClick={handleSkip} className="popup-button skip-button">건너뛰기</p>
                     )}
                 </div>
             </div>
