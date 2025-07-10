@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { TbPhotoPlus } from "react-icons/tb";
 
 // 페이지 레이아웃을 위한 컴포넌트 임포트
 import Header from '../components/Header';
 import LeftSidebar from '../components/LeftSidebar';
 import RightSidebar from '../components/RightSidebar';
 import Button from '../components/Button';
-import { TbPhotoPlus } from "react-icons/tb";
 import "./NewPage.css";
 
 // auth
@@ -23,10 +23,18 @@ export default function NewPage() {
     const [image, setImage] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [statusMsg, setStatusMsg] = useState("");
-
-    
-    /* ───────────────────────── event handlers ───────────────────────── */
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+    const [positiveKeywords, setPositiveKeywords] = useState([]);
+    const [negativeKeywords, setNegativeKeywords] = useState([]);
+    const [selectedKeywords, setSelectedKeywords] = useState([]);
+
+    const r_id = 1;
+    
+    if (!isLoggedIn) {
+      navigate("/login"); // or render a <Navigate> element
+      return null;
+  }
 
     const handleImageChange = (e) => {
         if (e.target.files?.[0]) setImage(e.target.files[0]);
@@ -105,8 +113,18 @@ export default function NewPage() {
         }
     };
 
-    
-    
+    const toggleKeyword = (word) => {
+      setSelectedKeywords((prev) =>
+        prev.includes(word)
+          ? prev.filter((w) => w !== word)
+          : [...prev, word]
+      );
+    };
+  
+    const splitIntoTwoRows = (arr) => {
+      const mid = Math.ceil(arr.length / 2);
+      return [arr.slice(0, mid), arr.slice(mid)];
+    };
 
     const handleAnalyzeClick = () => {
         setIsAnalyzing(true);
