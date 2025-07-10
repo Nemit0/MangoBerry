@@ -17,6 +17,7 @@ class ReviewCreate(BaseModel):
 
 class ReviewUpdate(BaseModel):
     comments: Optional[str] = None
+    review: Optional[str] = None
     photo_filenames: Optional[List[str]] = None
     photo_urls: Optional[List[str]] = None
     state_id: Optional[int] = None

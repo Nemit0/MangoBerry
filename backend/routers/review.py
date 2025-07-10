@@ -109,9 +109,11 @@ def update_review(review_id: int, payload: ReviewUpdate, db: Session = Depends(g
         es.update(index="user_review_kor", id=review_id, body={
             "doc": {
                 "comments": payload.comments,
-                "photo_filenames": review.photo_filenames  # optional if you're indexing that
+                "review": payload.review,
+                "photo_filenames": review.photo_filenames
             }
         })
+
 
         return {"message": "Review updated", "review_id": review_id}
 
