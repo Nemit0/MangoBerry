@@ -2,13 +2,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './PostDetailModalContent.css';
 
-// ⭐⭐ 쉼표로 구분된 문자열을 배열로 변환하고 공백을 제거하는 헬퍼 함수 ⭐⭐
-const parseTags = (tagString) => {
-    if (!tagString) return [];
-    return tagString.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
-};
-
 function PostDetailModalContent({ selectedPost, isMyPage }) {
+
+    // 긍정 및 부정 키워드 분리
+    const positiveKeywords = selectedPost.keywords ? selectedPost.keywords.filter(item => item.sentiment === 'positive').map(item => item.keyword) : [];
+    const negativeKeywords = selectedPost.keywords ? selectedPost.keywords.filter(item => item.sentiment === 'negative').map(item => item.keyword) : [];
+
     const navigate = useNavigate();
 
     if (!selectedPost) return null; // selectedPost가 없으면 렌더링하지 않음
@@ -21,7 +20,11 @@ function PostDetailModalContent({ selectedPost, isMyPage }) {
         <div className='post-detail-modal-content' style={{ display: 'flex' }}>
             {/* ⭐⭐ 좌측 영역: modal-left ⭐⭐ */}
             <div className="modal-left">
-                <p className="modal-user-name"><strong>작성자:</strong> {selectedPost.user}</p>
+                <div className='name-date'>
+                    <p className="modal-user-name">{selectedPost.user}</p>
+                    <p className="modal-date-posted">{selectedPost.datePosted}</p>
+                </div>
+                
                 <div className="modal-post-images">
                     {selectedPost.images.map((image, index) => (
                         <img key={index} src={image} alt={`${selectedPost.title}-${index}`} className="modal-post-image" />
@@ -47,19 +50,20 @@ function PostDetailModalContent({ selectedPost, isMyPage }) {
                     </div>
 
                 </div>
-                <h2 className="modal-post-title">{selectedPost.title}</h2>
-                <p className="modal-date-posted"><strong>작성일:</strong> {selectedPost.datePosted}</p>
+                <h2 className="modal-post-restaurant-name">{selectedPost.r_name}</h2>
+                
+                <h3 className='modal-post-title'>{selectedPost.title}</h3>
 
                 {/* post-positive-tags */}
                 <div className="modal-post-positive-tags">
-                    {parseTags(selectedPost.positive).map((tag, index) => (
+                    {positiveKeywords.map((tag, index) => (
                         <span key={index} className="modal-positive-tag-badge">{tag}</span>
                     ))}
                 </div>
 
                 {/* post-negative-tags */}
                 <div className="modal-post-negative-tags">
-                    {parseTags(selectedPost.negative).map((tag, index) => (
+                    {negativeKeywords.map((tag, index) => (
                         <span key={index} className="modal-negative-tag-badge">{tag}</span>
                     ))
                     }

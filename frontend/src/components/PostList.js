@@ -17,14 +17,31 @@ const allPosts = Array.from({ length: 50 }, (_, i) => {
         [porkCutlet, porkCutlet]
     ];
     return {
-        id: i + 1,
-        title: `정돈 강남점 일식 ${i + 1}`,
+        id: 1,
+        r_name: ['보영만두 강남점'],
+        title: ['가까이 있기에, 바로 옆에 있기에, 날이 덥기에, 멀리 나가기 싫기에'],
         user: ['NICK', 'BOB', 'STEVE', 'EMILY', 'JOHN'][i % 5],
         rating: [1, 3, 5, 2, 4, 2.5, 4.5, 1.5, 3.5][i % 9],
         images: imageSets[i % 5], // 다중 이미지를 위한 배열
-        positive: '부드럽다, 맛있다, 육즙, 싸다, 만족, 단축, 매콤, 고기가 꽉, 쫄깃한 면, 진한 국물, 뜨거운 국물',
-        negative: '비싸다, 눅눅하다, 늦게 나온다, 달다, 짜다, 너무 맵다, 아쉬운 면, 맛없다, 더럽다, 불친절, 딱딱하다',
-        content: `이것은 게시물 ${i + 1}의 상세 내용입니다. React 검색 기능 예시. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim minim minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.가나다라마바사아자차카타파하가나다라마바사아자차카타파하가나다라마바사아자차카타파하가나다라마바사아자차카타파하가나다라마바사아자차카타파하가나다라마바사아자차카타파하가나다라마바사아자차카타파하가나다라마바사아자차카타파하가나다라마바사아자차카타파하가나다라마바사아자차카타파하가나다라마바사아자차카타파하가나다라마바사아자차카타파하가나다라마바사아자차카타파하가나다라마바사아자차카타파하가나다라마바사아자차카타파하가나다라마바사아자차카타파하`, // 상세 내용을 더 길게
+        keywords: [
+            {
+              "keyword": "적당한 식당",
+              "sentiment": "positive"
+            },
+            {
+              "keyword": "무난함",
+              "sentiment": "positive"
+            },
+            {
+              "keyword": "냉면 면 딱딱함",
+              "sentiment": "negative"
+            },
+            {
+              "keyword": "만두 밀가루 맛",
+              "sentiment": "negative"
+            }
+          ],
+        content: '그냥 한 끼를 때우기에는 적당한 식당이다. 무난하다. 근데 냉면 면은 살짝 딱딱한 느낌이었고 만두는 피에서 밀가루 맛이 났다.', // 상세 내용을 더 길게
         datePosted: ["2025-06-23", "2025-06-24", "2025-06-25", "2025-06-26", "2025-06-27"][i % 5],
     }
 });

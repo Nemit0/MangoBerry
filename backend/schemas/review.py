@@ -14,6 +14,8 @@ class ReviewCreate(BaseModel):
     review: str
     photo_filenames: Optional[List[str]] = None  # for MySQL
     photo_urls: Optional[List[str]] = None       # for MongoDB
+    positive_keywords: Optional[List[str]] = []
+    negative_keywords: Optional[List[str]] = []
 
 class ReviewUpdate(BaseModel):
     comments: Optional[str] = None
@@ -21,3 +23,5 @@ class ReviewUpdate(BaseModel):
     photo_filenames: Optional[List[str]] = None
     photo_urls: Optional[List[str]] = None
     state_id: Optional[int] = None
+    positive_keywords: Optional[List[str]] = None
+    negative_keywords: Optional[List[str]] = None

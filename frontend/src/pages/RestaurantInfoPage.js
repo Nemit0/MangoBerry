@@ -7,6 +7,11 @@ import PostList from '../components/PostList';
 import pork from '../assets/photo/porkCutlet_width.jpg';
 import { useEffect, useState } from 'react';
 
+const parseTags = (tagString) => {
+    if (!tagString) return [];
+    return tagString.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+};
+
 function RestaurantInfoPage () {
     // DB에서 데이터를 가져오는 함수 (예시)
     // 실제로는 API 호출 코드가 들어갑니다.
@@ -23,8 +28,8 @@ function RestaurantInfoPage () {
             name: '맛있는 돈까스',
             address: '서울시 강남구 테헤란로 123',
             image: pork, // 실제로는 이미지 URL을 받아옵니다.
-            positiveKeywords: ['바삭바삭', '육즙가득', '친절한'],
-            negativeKeywords: ['웨이팅', '좁은 공간'],
+            positiveKeywords: '바삭바삭, 육즙가득, 친절한',
+            negativeKeywords: '웨이팅, 좁은 공간',
         };
     };
 
@@ -58,20 +63,20 @@ function RestaurantInfoPage () {
                             
                             <div className='keyword-section'>
                                 <h3>긍정 키워드</h3>
-                                <ul className='keywords positive'>
-                                    {restaurant.positiveKeywords.map((keyword, index) => (
-                                        <li key={index}>{keyword}</li>
+                                <div className='keywords-positive'>
+                                    {parseTags(restaurant.positiveKeywords).map((keyword, index) => (
+                                        <span key={index}>{keyword}</span>
                                     ))}
-                                </ul>
+                                </div>
                             </div>
 
                             <div className='keyword-section'>
                                 <h3>부정 키워드</h3>
-                                <ul className='keywords negative'>
-                                    {restaurant.negativeKeywords.map((keyword, index) => (
-                                        <li key={index}>{keyword}</li>
+                                <div className='keywords-negative'>
+                                    {parseTags(restaurant.negativeKeywords).map((keyword, index) => (
+                                        <span key={index}>{keyword}</span>
                                     ))}
-                                </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
