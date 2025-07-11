@@ -58,13 +58,25 @@
     margin-left: auto;
 }
 
-.post-title {
+.post-restaurant-name {
     margin-top: 0;
     margin-bottom: 10px;
     white-space: nowrap; /* 제목이 한 줄에 표시되도록 */
     overflow: hidden; /* 넘치는 부분 숨김 */
     text-overflow: ellipsis; /* 넘치는 부분 ...으로 표시 */
     font-size: 1.2em;
+    color: #333;
+    font-weight: bold;
+    text-align: left;
+}
+
+.post-title {
+    margin-top: 0;
+    margin-bottom: 10px;
+    white-space: nowrap; /* 제목이 한 줄에 표시되도록 */
+    overflow: hidden; /* 넘치는 부분 숨김 */
+    text-overflow: ellipsis; /* 넘치는 부분 ...으로 표시 */
+    font-size: 1em;
     color: #333;
     font-weight: bold;
     text-align: left;
@@ -126,18 +138,4 @@
     border-radius: 20px;
     font-size: 0.8em;
     white-space: nowrap; /* 태그 줄바꿈 방지 */
-}
-
-.post-content-preview {
-    font-size: 0.9em;
-    color: #777;
-    line-height: 1.4;
-    flex-grow: 1; /* 내용이 적어도 카드의 남은 공간을 채움 */
-    overflow: hidden; /* 넘치는 텍스트 숨김 */
-    text-overflow: ellipsis; /* ...으로 표시 */
-    display: -webkit-box;
-    line-clamp: 2; /* 2줄까지만 표시 */
-    -webkit-box-orient: vertical;
-    text-align: left;
-    word-break: break-word; /* 긴 단어 잘림 방지 */
 }

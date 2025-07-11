@@ -5,8 +5,10 @@ import './PostItem.css';
 
 // onClick prop을 추가하고, div에 연결
 function PostItem({ post, onClick }) { // <-- onClick prop 추가
-    const positiveParts = (post.positive || '').split(', ');
-    const negativeParts = (post.negative || '').split(', ');
+
+    // 긍정 및 부정 키워드 분리
+    const positiveKeywords = post.keywords ? post.keywords.filter(item => item.sentiment === 'positive').map(item => item.keyword) : [];
+    const negativeKeywords = post.keywords ? post.keywords.filter(item => item.sentiment === 'negative').map(item => item.keyword) : [];
 
     const gaugeWidth = (post.rating / 5) * 100; // 백분율로 계산
 
@@ -19,9 +21,6 @@ function PostItem({ post, onClick }) { // <-- onClick prop 추가
                 ></div>
             </div>
             
-            {/* <div className="post-rating">
-                    {'⭐'.repeat(post.rating)}
-            </div> */}
             <img src={post.images[0]} alt={post.title} className="post-image" />
             <div className="post-info">
                 <div className="post-header-meta">
@@ -30,26 +29,20 @@ function PostItem({ post, onClick }) { // <-- onClick prop 추가
                     <span className="post-user-name">{post.user}</span>
                     <span className="post-datePosted">{post.datePosted}</span>
                 </div>
-                <h3 className="post-title">{post.title}</h3>
+                <h3 className="post-restaurant-name">{post.r_name}</h3>
+                <h4 className="post-title">{post.title}</h4>
                 
                 <div className="post-positive-tags">
-                    {positiveParts[0] && <span className="positive-tag-badge">{positiveParts[0]}</span>}
-                    {positiveParts[1] && <span className="positive-tag-badge">{positiveParts[1]}</span>}
-                    {positiveParts[2] && <span className="positive-tag-badge">{positiveParts[2]}</span>}
-                    {/* {positiveParts.length > 1 && positiveParts[1] && (
-                        <span className="positive-tag-badge">{positiveParts[1]}</span>
-                    )} */}
+                    {positiveKeywords[0] && <span className="positive-tag-badge">{positiveKeywords[0]}</span>}
+                    {positiveKeywords[1] && <span className="positive-tag-badge">{positiveKeywords[1]}</span>}
+                    {positiveKeywords[2] && <span className="positive-tag-badge">{positiveKeywords[2]}</span>}
                 </div>
-                <div className="post-negative-tags">
-                    {negativeParts[0] && <span className="negative-tag-badge">{negativeParts[0]}</span>}
-                    {negativeParts[1] && <span className="negative-tag-badge">{negativeParts[1]}</span>}
-                    {negativeParts[2] && <span className="negative-tag-badge">{negativeParts[2]}</span>}
 
-                    {/* {negativeParts.length > 1 && negativeParts[1] && (
-                        <span className="negative-tag-badge">{negativeParts[1]}</span>
-                    )} */}
+                <div className="post-negative-tags">
+                    {negativeKeywords[0] && <span className="negative-tag-badge">{negativeKeywords[0]}</span>}
+                    {negativeKeywords[1] && <span className="negative-tag-badge">{negativeKeywords[1]}</span>}
+                    {negativeKeywords[2] && <span className="negative-tag-badge">{negativeKeywords[2]}</span>}
                 </div>
-                <p className="post-content-preview">{post.content.substring(0, 70)}...</p>
             </div>
         </div>
     );
