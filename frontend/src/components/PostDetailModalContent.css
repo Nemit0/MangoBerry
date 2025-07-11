@@ -40,12 +40,25 @@
     height: auto;
 }
 
+.name-date {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
+
 .modal-user-name {
     font-size: 1.1em;
     margin-bottom: 15px; /* 사용자 이름과 이미지 사이 간격 */
-    color: #333;
+    color: #000000;
     font-family: 'Bangers';
 }
+
+.modal-date-posted {
+    font-size: 1.0em;
+    color: #000000;
+    margin-bottom: 15px;
+}
+
 
 .modal-post-image {
     max-width: 100%; /* 부모 너비에 맞춤 */
@@ -107,17 +120,18 @@
     font-family: 'Bangers';
 }
 
-.modal-post-title {
+.modal-post-restaurant-name {
     font-size: 1.8em;
     font-weight: bold;
     margin-bottom: 15px;
     color: #222;
 }
 
-.modal-date-posted {
-    font-size: 0.9em;
-    color: #777;
+.modal-post-title {
+    font-size: 1.2em;
+    font-weight: bold;
     margin-bottom: 15px;
+    color: #222;
 }
 
 /* 태그를 담는 컨테이너 */
@@ -163,7 +177,7 @@
     margin-top: 20px;
     white-space: pre-wrap; /* 줄바꿈 유지 */
     overflow-y: auto; /* 내용이 길면 스크롤바 생성 */
-    max-height: 300px; /* 내용 영역의 최대 높이 (조정 가능) */
+    max-height: 350px; /* 내용 영역의 최대 높이 (조정 가능) */
 }
 
 .modal-edit-button {
