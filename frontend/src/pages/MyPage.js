@@ -54,7 +54,7 @@ const MyPage = () => {
 
           <div className="my-user-post">
             <div className="post-left-part">
-              <PostList />
+              <PostList isMyPage={true}/>
             </div>
             <div className="post-right-part">
               <div className="word-cloud-container">
