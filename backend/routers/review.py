@@ -47,7 +47,7 @@ def subtract_user_keywords(user_id: int, pos_keywords: list, neg_keywords: list)
         return
 
     # Create a dictionary from current keywords
-    keyword_map = {kw["name"]: kw for kw in doc["keywords"]}
+    keyword_map = {kw["name"]: kw for kw in doc.get("keywords", [])}
 
     # Subtract frequencies for positive keywords
     for kw in pos_keywords:
@@ -257,7 +257,7 @@ def delete_review(review_id: int, db: Session = Depends(get_db)):
         )
 
         # Step 6: Delete from Elasticsearch
-        es.delete(index="user_review_kor", id=review_id)
+        es.delete(index="user_review_kor", id=str(review_id), ignore=[404])
 
         return {"message": f"Review {review_id} deleted successfully"}
 
