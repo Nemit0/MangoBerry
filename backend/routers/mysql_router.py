@@ -6,6 +6,7 @@ from warnings import warn
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import EmailStr
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from passlib.context import CryptContext
 from email_validator import validate_email, EmailNotValidError
 
@@ -69,6 +70,42 @@ def read_people(user_id: Optional[int] = Query(None), db: Session = Depends(get_
 
 @router.get("/users_sql", tags=["Admin"])
 def read_users(user_id: Optional[int] = Query(None), db: Session = Depends(get_db)):
+    # Subquery: count reviews for each user
+    review_counts_subq = (
+        db.query(Review.user_id, func.count(Review.review_id).label("review_count"))
+        .group_by(Review.user_id)
+        .subquery()
+    )
+
+    # Join Users, People, and review count subquery
+    qry = (
+        db.query(Users, People, review_counts_subq.c.review_count)
+        .join(People, Users.user_id == People.user_id)
+        .outerjoin(review_counts_subq, Users.user_id == review_counts_subq.c.user_id)
+        .filter(Users.user_id == user_id if user_id is not None else True)
+    )
+
+    rows = qry.all()
+
+    if user_id is not None and not rows:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return [
+        {
+            "user_id": u.user_id,
+            "email": p.email,
+            "follower_count": u.follower_count,
+            "following_count": u.following_count,
+            "verified": bool(p.verified),
+            "review_count": rc if rc is not None else 0,
+        }
+        for u, p, rc in rows
+    ]
+
+
+'''
+@router.get("/users_sql", tags=["Admin"])
+def read_users(user_id: Optional[int] = Query(None), db: Session = Depends(get_db)):
     qry = (
         db.query(Users, People)
         .join(People, Users.user_id == People.user_id)
@@ -88,7 +125,7 @@ def read_users(user_id: Optional[int] = Query(None), db: Session = Depends(get_d
         }
         for u, p in rows
     ]
-
+'''
 @router.post("/login", tags=["Auth"])
 def login(creds: LoginInput, db: Session = Depends(get_db)):
     """bcrypt-based login verification."""
