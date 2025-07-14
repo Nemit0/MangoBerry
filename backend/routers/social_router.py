@@ -128,31 +128,3 @@ def get_following(user_id: int):
     if not doc:
         return {"following_ids": []}
     return doc
-
-
-async def get_keywords_collection() -> AsyncIOMotorCollection:
-    db = get_db()
-    return db["user_keywords"]
-
-
-@router.post("/keyword/{user_id}", tags=["Keyword"])
-async def upsert_keyword(user_id: int, item: KeywordItem, col: AsyncIOMotorCollection = Depends(get_keywords_collection)):
-    _id = f"{user_id}|{item.keyword}|{item.sentiment}"
-
-    result = await col.update_one(
-        {"_id": _id},
-        {
-            "$setOnInsert": {
-                "user_id": user_id,
-                "keyword": item.keyword,
-                "sentiment": item.sentiment,
-                "frequency": 1
-            },
-        },
-        upsert=True
-    )
-
-    if result.upserted_id:
-        return {"message": "New keyword-sentiment combination added", "frequency": 1}
-    else:
-        return {"message": "Frequency set to 1 for existing combination", "frequency": 1}
