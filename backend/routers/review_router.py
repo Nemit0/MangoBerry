@@ -69,6 +69,10 @@ def subtract_user_keywords(user_id: int, pos_keywords: list, neg_keywords: list)
         upsert=True
     )
 
+@router.get("/review_sql", tags=["Reviews"])
+def read_review_sql(db: Session = Depends(get_db)):
+    return db.query(Review).all()
+
 
 '''
 create, update, and delete review APIs

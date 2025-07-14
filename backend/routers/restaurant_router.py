@@ -15,11 +15,11 @@ def search_restaurant_es(
     must = []
 
     if name:
-        must.append({"match_phrase_prefix": {"name": name}})
+        must.append({"match": {"name": name}})
     if category:
         must.append({"term": {"categories": category}})
     if address:
-        must.append({"match_phrase_prefix": {"address": address}})
+        must.append({"match": {"address": address}})
 
     query = {
         "_source":["name", "categories", "r_id", "address"],
@@ -32,7 +32,7 @@ def search_restaurant_es(
     }
 
     try:
-        response = es.search(index="full_restaurant", body=query)
+        response = es.search(index="full_restaurant_kor", body=query)
         return {
             "success": True,
             "result": [hit["_source"] for hit in response["hits"]["hits"]]
@@ -89,7 +89,7 @@ def nearby_restaurant_es(request: Request, distance: str = "5km", size: int = 10
     }
 
     try:
-        response = es.search(index="full_restaurant", body=query)
+        response = es.search(index="full_restaurant_kor", body=query)
         return {
             "success": True,
             "location": {"lat": lat, "lon": lon},

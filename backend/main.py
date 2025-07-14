@@ -3,7 +3,7 @@ import sys
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import elastic_router, mysql_router, mongo_router, review, review_search, upload, keywordExt_router
+from .routers import admin_router, keyword_router, restaurant_router, review_image_router, review_router, review_search_router, social_router
 
 
 sys.stdout.reconfigure(encoding='utf-8')
@@ -33,11 +33,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(elastic_router.router)
-app.include_router(mysql_router.router)
-app.include_router(mongo_router.router)
+app.include_router(admin_router.router)
+app.include_router(restaurant_router.router)
+app.include_router(social_router.router)
 
-app.include_router(review.router)
-app.include_router(review_search.router)
-app.include_router(upload.router)
-app.include_router(keywordExt_router.router)
+app.include_router(review_router.router)
+app.include_router(review_search_router.router)
+app.include_router(review_image_router.router)
+app.include_router(keyword_router.router)

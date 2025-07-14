@@ -102,30 +102,6 @@ def read_users(user_id: Optional[int] = Query(None), db: Session = Depends(get_d
         for u, p, rc in rows
     ]
 
-
-'''
-@router.get("/users_sql", tags=["Admin"])
-def read_users(user_id: Optional[int] = Query(None), db: Session = Depends(get_db)):
-    qry = (
-        db.query(Users, People)
-        .join(People, Users.user_id == People.user_id)
-        .filter(Users.user_id == user_id if user_id is not None else True)
-    )
-    rows = qry.all()
-    if user_id is not None and not rows:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    return [
-        {
-            "user_id": u.user_id,
-            "email": p.email,
-            "follower_count": u.follower_count,
-            "following_count": u.following_count,
-            "verified": bool(p.verified),
-        }
-        for u, p in rows
-    ]
-'''
 @router.post("/login", tags=["Auth"])
 def login(creds: LoginInput, db: Session = Depends(get_db)):
     """bcrypt-based login verification."""
@@ -231,8 +207,3 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     db.commit()
 
     return {"detail": "User deleted successfully"}
-
-@router.get("/review_sql", tags=["Reviews"])
-def read_review_sql(db: Session = Depends(get_db)):
-    warn("This should recieve additional arguments to filter reviews, such as user_id or restaurant_ids",)
-    return db.query(Review).all()
