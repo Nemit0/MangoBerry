@@ -10,65 +10,44 @@ router = APIRouter()
 
 @router.get("/search_review_es", tags=["Reviews"])
 def search_review_es(
-    review: str = Query(None),
-    comments: str = Query(None),
+    text: str = Query(..., description="Search text in review, comments, or nickname"),
     user_id: int = Query(None),
     restaurant_id: int = Query(None),
-    nickname: str = Query(None),  # filter by nickname
     size: int = Query(10),
-    db: Session = Depends(get_db)
 ):
-    must = []
+    must_clauses = [
+        {
+            "simple_query_string": {
+                "query": text,
+                "fields": ["review", "comments", "nickname"],
+                "default_operator": "and"
+            }
+        }
+    ]
 
-    if review:
-        must.append({"match": {"review": review}})
-    if comments:
-        must.append({"match": {"comments": comments}})
-    if user_id:
-        must.append({"term": {"user_id": user_id}})
-    if restaurant_id:
-        must.append({"term": {"restaurant_id": restaurant_id}})
+    if user_id is not None:
+        must_clauses.append({"term": {"user_id": user_id}})
+    if restaurant_id is not None:
+        must_clauses.append({"term": {"restaurant_id": restaurant_id}})
 
     query = {
-        "_source": ["review_id", "restaurant_id", "user_id", "comments", "review", "created_at"],
+        "_source": ["review_id", "restaurant_id", "user_id", "comments", "review", "nickname"],
         "query": {
             "bool": {
-                "must": must if must else [{"match_all": {}}]
+                "must": must_clauses
             }
         },
         "size": size
     }
 
     try:
-        response = es.search(index="user_review_kor", body=query)
+        response = es.search(index="user_review_nickname", body=query)
         hits = response["hits"]["hits"]
-
-        # Get unique user_ids from results
-        user_ids = list(set(hit["_source"]["user_id"] for hit in hits))
-
-        # Query nickname info from People table
-        user_map = (
-            db.query(People.user_id, People.nickname)
-            .filter(People.user_id.in_(user_ids))
-            .all()
-        )
-        user_id_to_nickname = {u.user_id: u.nickname for u in user_map}
-
-        # Attach nickname and apply nickname filter (if needed)
-        results = []
-        for hit in hits:
-            doc = hit["_source"]
-            doc["nickname"] = user_id_to_nickname.get(doc["user_id"], None)
-
-            if nickname:
-                if doc["nickname"] != nickname:
-                    continue
-
-            results.append(doc)
+        result = [hit["_source"] for hit in hits]
 
         return {
             "success": True,
-            "result": results
+            "result": result
         }
 
     except Exception as e:
