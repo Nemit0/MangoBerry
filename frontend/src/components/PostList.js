@@ -1,113 +1,118 @@
-// src/components/PostList.js
 import React, { useState, useEffect } from 'react';
 import PostItem from '../components/PostItem';
-import Modal from '../components/Modal'; // Modal 컴포넌트 임포트
+import Modal from '../components/Modal';
 import './PostList.css';
-import porkCutlet from '../assets/photo/porkCutlet_width.jpg'
-import curry from '../assets/photo/curry_height.JPG'
 
-// 해결법 1: allPosts 배열을 컴포넌트 함수 바깥으로 이동
-// 이렇게 하면 컴포넌트가 리렌더링 되어도 allPosts는 새로 생성되지 않습니다.
-const allPosts = Array.from({ length: 50 }, (_, i) => {
-    const imageSets = [
-        [porkCutlet, curry],
-        [curry],
-        [porkCutlet],
-        [curry, porkCutlet, curry],
-        [porkCutlet, porkCutlet]
-    ];
-    return {
-        id: 1,
-        r_name: ['보영만두 강남점'],
-        title: ['가까이 있기에, 바로 옆에 있기에, 날이 덥기에, 멀리 나가기 싫기에'],
-        user: ['NICK', 'BOB', 'STEVE', 'EMILY', 'JOHN'][i % 5],
-        rating: [1, 3, 5, 2, 4, 2.5, 4.5, 1.5, 3.5][i % 9],
-        images: imageSets[i % 5], // 다중 이미지를 위한 배열
-        keywords: [
-            {
-              "keyword": "적당한 식당",
-              "sentiment": "positive"
-            },
-            {
-              "keyword": "무난함",
-              "sentiment": "positive"
-            },
-            {
-              "keyword": "냉면 면 딱딱함",
-              "sentiment": "negative"
-            },
-            {
-              "keyword": "만두 밀가루 맛",
-              "sentiment": "negative"
-            }
-          ],
-        content: '그냥 한 끼를 때우기에는 적당한 식당이다. 무난하다. 근데 냉면 면은 살짝 딱딱한 느낌이었고 만두는 피에서 밀가루 맛이 났다.', // 상세 내용을 더 길게
-        datePosted: ["2025-06-23", "2025-06-24", "2025-06-25", "2025-06-26", "2025-06-27"][i % 5],
-    }
-});
+const API_URL = '/api';
+const DEFAULT_IMAGE =
+  'https://mangoberry-bucket.s3.ap-northeast-2.amazonaws.com/test/single/final_logo.jpg';
 
 function PostList({ searchTerm, isMyPage }) {
+  /* ─────────────── state ─────────────── */
+  const [posts, setPosts]               = useState([]);     // 모든 포스트
+  const [filtered, setFiltered]         = useState([]);     // 검색 결과
+  const [isModalOpen, setIsModalOpen]   = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
 
-    const [filteredPosts, setFilteredPosts] = useState(allPosts);
-    const [isModalOpen, setIsModalOpen] = useState(false); // 모달 열림/닫힘 상태
-    const [selectedPost, setSelectedPost] = useState(null); // 선택된 게시물 데이터
+  /* ─────────────── initial fetch ───────────────
+     빈 text 인자로 /search_review_es 호출 → ES에서 freq 기준 정렬 */
+  useEffect(() => {
+    const fetchInitial = async () => {
+      try {
+        const resp = await fetch(`${API_URL}/search_review_es?size=50&sort=frequent`);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const json = await resp.json();
+        if (!json.success) throw new Error(json.error ?? 'Unknown error');
 
-    useEffect(() => {
-        if (!searchTerm || searchTerm.trim() === '') {
-            setFilteredPosts(allPosts);
-            return;
-        }
+        /* 1️⃣ 후처리: 빈 이미지 배열일 때 로고로 대체 */
+        const sanitized = json.result.map((raw, idx) => ({
+          id: raw.review_id ?? idx,                               // 안전용 id
+          r_name: raw.restaurant_name ? [raw.restaurant_name] : [],
+          title: raw.comments ? [raw.comments] : [],
+          user: raw.nickname ?? 'Unknown',
+          rating: raw.rating ?? 0,
+          content: raw.review ?? '',
+          datePosted: raw.created_at ?? '',
+          images:
+            Array.isArray(raw.images) && raw.images.length > 0
+              ? raw.images
+              : [DEFAULT_IMAGE],
+          keywords: raw.keywords ?? [],
+          restaurant_id: raw.restaurant_id,
+          user_id: raw.user_id,
+        }));
 
-        const lowercasedSearchTerm = searchTerm.toLowerCase();
-
-        const results = allPosts.filter(post => {
-            const titleMatch = (post.title || '').toLowerCase().includes(lowercasedSearchTerm);
-            const userMatch = (post.user || '').toLowerCase().includes(lowercasedSearchTerm);
-            const contentMatch = (post.content || '').toLowerCase().includes(lowercasedSearchTerm);
-            const positiveMatch = (post.positive || '').toLowerCase().includes(lowercasedSearchTerm);
-            const negativeMatch = (post.negative || '').toLowerCase().includes(lowercasedSearchTerm);
-
-            return titleMatch || userMatch || contentMatch || positiveMatch || negativeMatch;
-        });
-        setFilteredPosts(results);
-    // 해결법 2: useEffect 의존성 배열에서 allPosts 제거
-    // 이제 이 useEffect는 searchTerm이 변경될 때만 실행됩니다.
-    }, [searchTerm]);
-
-    // PostItem 클릭 시 호출될 함수
-    const handlePostClick = (post) => {
-        setSelectedPost(post); // 클릭된 게시물 데이터 저장
-        setIsModalOpen(true); // 모달 열기
+        setPosts(sanitized);
+        setFiltered(sanitized);
+      } catch (err) {
+        console.error('[PostList] 초기 데이터 로드 실패:', err);
+      }
     };
 
-    // 모달 닫기 함수
-    const handleCloseModal = () => {
-        setIsModalOpen(false); // 모달 닫기
-        setSelectedPost(null); // 선택된 게시물 초기화
-    };
+    fetchInitial();
+  }, []);
 
-    return (
-        <div className="post-list-wrapper">
-            <div className="post-grid-container">
-                {filteredPosts.length > 0 ? (
-                    filteredPosts.map(post => (
-                        <PostItem
-                            key={post.id}
-                            post={post}
-                            onClick={handlePostClick} // PostItem에 클릭 핸들러 전달
-                        />
-                    ))
-                ) : (
-                    <p className="no-results">"{searchTerm}"에 대한 검색 결과가 없습니다.</p>
-                )}
-            </div>
-            
-            {/* 모달 컴포넌트 렌더링 */}
-            {selectedPost && ( // selectedPost가 null이 아닐 때만 렌더링
-                <Modal isOpen={isModalOpen} onClose={handleCloseModal} selectedPost={selectedPost} isMyPage={isMyPage} />
-            )}
-        </div>
-    );
+  /* ─────────────── searchTerm 변경 시 필터 ─────────────── */
+  useEffect(() => {
+    if (!searchTerm || searchTerm.trim() === '') {
+      setFiltered(posts);
+      return;
+    }
+
+    const q = searchTerm.toLowerCase();
+    const res = posts.filter((p) => {
+      const title   = p.title.join(' ').toLowerCase();
+      const user    = p.user.toLowerCase();
+      const content = p.content.toLowerCase();
+      return title.includes(q) || user.includes(q) || content.includes(q);
+    });
+
+    setFiltered(res);
+  }, [searchTerm, posts]);
+
+  /* ─────────────── modal handlers ─────────────── */
+  const handlePostClick = (post) => {
+    setSelectedPost(post);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedPost(null);
+  };
+
+  /* ─────────────── render ─────────────── */
+  return (
+    <div className="post-list-wrapper">
+      <div className="post-grid-container">
+        {filtered.length > 0 ? (
+          filtered.map((post) => (
+            <PostItem
+              key={post.id}
+              post={post}
+              onClick={handlePostClick}
+              defaultImg={DEFAULT_IMAGE}   // 2️⃣ PostItem에 기본 이미지 전달
+            />
+          ))
+        ) : (
+          <p className="no-results">
+            {searchTerm
+              ? `"${searchTerm}"에 대한 검색 결과가 없습니다.`
+              : '게시물이 없습니다.'}
+          </p>
+        )}
+      </div>
+
+      {selectedPost && (
+        <Modal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          selectedPost={selectedPost}
+          isMyPage={isMyPage}
+        />
+      )}
+    </div>
+  );
 }
 
 export default PostList;

@@ -1,8 +1,19 @@
+import contextlib
+from typing import List, Dict, Union, Optional
+
 import numpy as np
-from typing import List, Dict, Union
+from fastapi import Depends
+from sqlalchemy.orm import Session
+
+from ..connection.mysqldb import Users, Restaurant, get_db
+from ..connection.mongodb import (
+    user_keywords_collection,
+    restaurant_keywords_collection,
+    user_rest_score,
+)
+from .utilities import random_prime_in_range, PRIME_LOWER_CAP, PRIME_UPPER_CAP
 
 THRESHOLD: float = 0.6 
-
 
 def skew_score(score: float, b: int = 15) -> float:
     """
@@ -11,7 +22,6 @@ def skew_score(score: float, b: int = 15) -> float:
     skewed values, keeping 0 → 0 and 1 → 1.
     """
     return np.log(1 + (b - 1) * score) / np.log(b)
-
 
 def cosine_similarity(vec_a: Union[List[float], np.ndarray],
                       vec_b: Union[List[float], np.ndarray]) -> float:
@@ -29,7 +39,6 @@ def cosine_similarity(vec_a: Union[List[float], np.ndarray],
         return 0.0
     return float(np.dot(a, b) / (norm_a * norm_b))
 
-
 def score_user_to_restaurant(
     user_keywords: List[Dict],
     restaurant_keywords: List[Dict],
@@ -40,7 +49,7 @@ def score_user_to_restaurant(
     Compare one user profile to a restaurant profile.
 
     * user_keywords   ‒ Each dict has keys:
-        {"keyword", "sentiment", "frequency", "embedding"}
+        {"name", "sentiment", "frequency", "embedding"}
     * restaurant_keywords ‒ Each dict has keys:
         {"keyword", "frequency", "embedding"}
 
@@ -49,7 +58,7 @@ def score_user_to_restaurant(
     """
 
     # Build fast lookup tables {keyword: vector}
-    u_vecs = {kw["keyword"]: np.asarray(kw["embedding"], dtype=np.float32)
+    u_vecs = {kw["name"]: np.asarray(kw["embedding"], dtype=np.float32)
               for kw in user_keywords}
     r_vecs = {kw["keyword"]: np.asarray(kw["embedding"], dtype=np.float32)
               for kw in restaurant_keywords}
@@ -58,7 +67,7 @@ def score_user_to_restaurant(
     matched_r_keys: set[str] = set()
 
     for u in user_keywords:
-        u_key   = u["keyword"]
+        u_key   = u["name"]
         u_vec   = u_vecs[u_key]
         u_sent  = u.get("sentiment", "positive")  # default → positive
         u_freq  = u.get("frequency", 1)
@@ -93,7 +102,6 @@ def score_user_to_restaurant(
     skewed = skew_score(raw_score, b=b)
 
     return min(max(skewed * 100.0, 0.0), 100.0)
-
 
 def score_user_to_user(
     userA_keywords: List[Dict],
@@ -161,19 +169,99 @@ def score_user_to_user(
 
     return min(max(skewed * 100.0, 0.0), 100.0)
 
+def _ensure_state_id(obj, attr: str, db: Session) -> int:
+    """Guarantee a prime-valued `state_id` on a SQLAlchemy row."""
+    val = getattr(obj, attr)
+    if val is None:
+        val = random_prime_in_range(PRIME_LOWER_CAP, PRIME_UPPER_CAP)
+        setattr(obj, attr, val)
+        db.add(obj)
+        db.flush()                  # caller commits
+    return val
 
-if __name__ == "__main__":
-    # Example usage
-    from backend.services.generate_embedding import embed_small
 
-    user_keywords = [
-        {"keyword": "pizza", "sentiment": "positive", "frequency": 3, "embedding": embed_small("pizza")[0]},
-        {"keyword": "pasta", "sentiment": "negative", "frequency": 1, "embedding": embed_small("pasta")[0]}
-    ]
-    restaurant_keywords = [
-        {"keyword": "pizza", "frequency": 2, "embedding": embed_small("pizza")[0]},
-        {"keyword": "salad", "frequency": 1, "embedding": embed_small("salad")[0]}
-    ]
+def _compute_score(u_id: int, r_id: int, db: Session) -> float:
+    """Core logic, split out so we can reuse it in two wrappers."""
+    # 1.  Load SQL rows and ensure version-tracking primes ---------------------
+    user_obj = db.query(Users).filter(Users.user_id == u_id).first()
+    rest_obj = db.query(Restaurant).filter(Restaurant.restaurant_id == r_id).first()
+    if user_obj is None or rest_obj is None:
+        raise ValueError("Invalid u_id or r_id supplied.")
 
-    score = score_user_to_restaurant(user_keywords, restaurant_keywords, threshold=0.9)
-    print(f"User to Restaurant Score: {score:.2f}")
+    uid_prime = _ensure_state_id(user_obj, "state_id", db)
+    rid_prime = _ensure_state_id(rest_obj, "state_id", db)
+
+    # 2.  Persist any new primes in a single commit ---------------------------
+    with contextlib.suppress(Exception):
+        db.commit()
+
+    current_hash: int = uid_prime * rid_prime
+
+    # 3.  Check MongoDB cache --------------------------------------------------
+    proj = {"scores.$": 1}
+    cached_parent = user_rest_score.find_one(
+        {"u_id": u_id, "scores.r_id": r_id, "scores.state_id": current_hash},
+        proj,
+    )
+    if cached_parent and cached_parent["scores"]:
+        return cached_parent["scores"][0]["score"]          # cache hit ✅
+
+    # 4.  Compute fresh score --------------------------------------------------
+    user_kw = (user_keywords_collection
+               .find_one({"user_id": u_id}) or {}).get("keywords", [])
+    rest_kw = (restaurant_keywords_collection
+               .find_one({"r_id": r_id}) or {}).get("keywords", [])
+    fresh_score: float = score_user_to_restaurant(user_kw, rest_kw)
+
+    # 5.  Upsert parent doc (no array manipulation yet) ---------------------------
+    user_rest_score.update_one(
+        {"u_id": u_id},
+        {"$setOnInsert": {"u_id": u_id, "scores": []}},
+        upsert=True,
+    )
+
+    # 6.  Remove any old snapshot for this restaurant -----------------------------
+    user_rest_score.update_one(
+        {"u_id": u_id},
+        {"$pull": {"scores": {"r_id": r_id}}},
+    )
+
+    # 7.  Push the fresh snapshot --------------------------------------------------
+    user_rest_score.update_one(
+        {"u_id": u_id},
+        {"$push": {"scores": {
+            "r_id": r_id,
+            "state_id": current_hash,
+            "score": fresh_score,
+        }}},
+    )
+
+    return fresh_score
+
+def update_user_to_restaurant_score(
+    u_id: int,
+    r_id: int,
+    db: Optional[Session] = Depends(get_db),
+) -> float:
+    """
+    Return a compatibility score between *user* and *restaurant*.
+
+    Works in three scenarios:
+    1. FastAPI route → FastAPI injects an open Session.
+    2. Plain script / REPL  → *db* is **None** or a Depends sentinel,
+       so we create and later close our own session.
+    3. Caller explicitly passes a Session → we just use it.
+    """
+    # Detect whether we must create/clean up our own session ------------------
+    needs_local_session = db is None or not isinstance(db, Session)
+    if needs_local_session:
+        db_gen = get_db()
+        db = next(db_gen)
+
+    try:
+        return _compute_score(u_id, r_id, db)
+    finally:
+        if needs_local_session:     # avoid leaking connections
+            db.close()
+            with contextlib.suppress(StopIteration):
+                next(db_gen)

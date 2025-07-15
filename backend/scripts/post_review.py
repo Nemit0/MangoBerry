@@ -95,8 +95,8 @@ REVIEWS: List[Dict] = [
     },
     {
         "user_id": 6,
-        "restaurant_id": 1,
-        "restaurant_name": "풀오브어스 역북 본점",
+        "restaurant_id": 669145,
+        "restaurant_name": "풀오브어스 역북",
         "one_liner": "샐러드 싫어하는 다이어터들도 부담없이 먹을 수 있는 포케",
         "review": """
 다른 지역에 사는 근처 친구들도 여기 포케가 제일 맛있다고 할 정도로 다양한 소스, 신선한 야채, 목살이나 연어 등 여러 메뉴가 있어서 자주 먹을 수 있다. 일단 가게 인테리어가 인스타 감성 카페 느낌이라 여자분들이 더 좋아하실 거 같다. 디저트로 그릭요거트나 과일도 있어서 즐겁게 다이어트할 수 있다. 이제까지 여러번 가봤는데 아쉬운 점은 발견하지 못했다.
@@ -150,9 +150,6 @@ REVIEWS: List[Dict] = [
     },
 ]
 
-# ───────────────────────────────────────────────────────────────────────────────
-# 3. HELPER FUNCTIONS
-# ───────────────────────────────────────────────────────────────────────────────
 def analyze_keywords(item: Dict, retry: int = 3) -> Dict[str, List[str]]:
     """
     Call /analyze_review and split returned keywords into positive / negative.
@@ -181,7 +178,7 @@ def analyze_keywords(item: Dict, retry: int = 3) -> Dict[str, List[str]]:
             if retry == 0:
                 return {"positive": [], "negative": []}
 
-    sentiments = resp.json()  # Expecting: [{"keyword":"...","sentiment":"positive"}, ...]
+    sentiments = resp.json()
     positive = [s["keyword"] for s in sentiments if s.get("sentiment") == "positive"]
     negative = [s["keyword"] for s in sentiments if s.get("sentiment") == "negative"]
     return {"positive": positive, "negative": negative}
@@ -217,10 +214,6 @@ def post_review(item: Dict, kws: Dict[str, List[str]]) -> None:
         f"uploaded → review_id={resp.json().get('review_id', 'N/A')}"
     )
 
-
-# ───────────────────────────────────────────────────────────────────────────────
-# 4. MAIN EXECUTION
-# ───────────────────────────────────────────────────────────────────────────────
 def main() -> None:
     print(f"Uploading {len(REVIEWS)} reviews to {BACKEND} …\n")
     for idx, review in enumerate(REVIEWS, start=1):
@@ -234,4 +227,3 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         sys.exit("\nInterrupted by user")
-
