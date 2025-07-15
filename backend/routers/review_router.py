@@ -1,9 +1,10 @@
+import datetime
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import create_session, Session
 from random import randint
 from collections import Counter
 
-from ..connection.mysqldb import get_db, Review, Restaurant, Users
+from ..connection.mysqldb import get_db, Review, Restaurant, Users, People
 from ..connection.mongodb import photo_collection, review_keywords_collection, user_keywords_collection
 from ..connection.elasticdb import es_client as es
 
@@ -127,13 +128,19 @@ def create_review(payload: ReviewCreate, db: Session = Depends(get_db)):
                 neg_keywords=payload.negative_keywords or []
             )
 
-        # Index in Elasticsearch
-        es.index(index="user_review_kor", id=review_id, document={
+        # Fetch nickname from People table
+        person = db.query(People).filter(People.user_id == payload.user_id).first()
+        nickname = person.nickname if person else None
+
+        # Index in Elasticsearch (with nickname)
+        es.index(index="user_review_nickname", id=review_id, document={
             "review_id": review_id,
             "user_id": payload.user_id,
+            "nickname": nickname, 
             "restaurant_id": payload.restaurant_id,
             "comments": payload.comments,
-            "review": payload.review 
+            "review": payload.review,
+            "created_at": new_review.created_at.isoformat()
         })
 
         return {
