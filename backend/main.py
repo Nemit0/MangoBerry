@@ -3,8 +3,15 @@ import sys
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import admin_router, keyword_router, restaurant_router, review_image_router, review_router, review_search_router, social_router
-
+from .routers import (
+    admin_router, 
+    keyword_router, 
+    restaurant_router, 
+    review_image_router, 
+    review_router, 
+    review_search_router, 
+    social_router
+)
 
 sys.stdout.reconfigure(encoding='utf-8')
 
