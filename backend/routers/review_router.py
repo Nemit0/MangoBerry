@@ -1,48 +1,210 @@
-import datetime
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import HTTPException, Depends
 from sqlalchemy.orm import create_session, Session
 from random import randint
 from collections import Counter
 
 from ..connection.mysqldb import get_db, Review, Restaurant, Users, People
-from ..connection.mongodb import photo_collection, review_keywords_collection, user_keywords_collection
+from ..connection.mongodb import photo_collection, review_keywords_collection, user_keywords_collection, user_rest_score
 from ..connection.elasticdb import es_client as es
 
 from ..schemas.review import ReviewCreate, ReviewUpdate
 
 from ..services.utilities import random_prime_in_range
+from ..services.generate_embedding import embed_small
+from ..services.calc_score import update_user_to_restaurant_score
+
+from .common_imports import *
 
 router = APIRouter()
 
 '''
 Helper functions
 '''
-def update_user_keywords(user_id: int, pos_keywords: list, neg_keywords: list):
-    keyword_doc = user_keywords_collection.find_one({"user_id": user_id}) or {"user_id": user_id, "keywords": []}
-    existing_keywords = {kw["name"]: kw for kw in keyword_doc["keywords"]}
+def update_user_keywords(
+        user_id: int, 
+        pos_keywords: list[str], 
+        neg_keywords: list[str],
+        db: Session
+        ) -> None:
+    """
+    Add new keyword occurrences to the user's keyword document.
 
-    pos_counter = Counter(pos_keywords)
-    neg_counter = Counter(neg_keywords)
+    Parameters
+    ----------
+    user_id : int
+        Target user.
+    pos_keywords : list[str]
+        Positive-sentiment keywords extracted from the review.
+    neg_keywords : list[str]
+        Negative-sentiment keywords extracted from the review.
+    """
+
+    pos_keywords = [kw.strip() for kw in pos_keywords if kw and kw.strip()]
+    neg_keywords = [kw.strip() for kw in neg_keywords if kw and kw.strip()]
+
+    pos_counter: Counter[str] = Counter(pos_keywords)
+    neg_counter: Counter[str] = Counter(neg_keywords)
+
+    keyword_doc = (
+        user_keywords_collection.find_one({"user_id": user_id})
+        or {"user_id": user_id, "keywords": []}
+    )
+
+    existing: dict[tuple[str, str], dict] = {
+        (kw["name"], kw["sentiment"]): kw for kw in keyword_doc["keywords"]
+    }
+
+    to_embed: set[str] = {
+        kw
+        for kw in set(pos_counter.keys()).union(neg_counter.keys())
+        if (kw, "positive") not in existing and (kw, "negative") not in existing
+    }
+
+    embedding_map: dict[str, list[float]] = {}
+    if to_embed:
+        try:
+            vectors = embed_small(list(to_embed))  # may raise
+            embedding_map = {kw: vectors[i] for i, kw in enumerate(to_embed)}
+        except Exception as exc:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Embedding service failed: {exc}",
+            ) from exc
+
+    def upsert_keyword(name: str, sentiment: str, delta_freq: int) -> None:
+        """
+        Insert or update a (name, sentiment) row in `existing`.
+        Re-use embedding from the opposite sentiment if present, otherwise
+        from `embedding_map`.
+        """
+        key = (name, sentiment)
+        if key in existing:
+            # Row already exists → accumulate frequency.
+            existing[key]["frequency"] += delta_freq
+        else:
+            # Need a new row → look for any existing embedding to re-use.
+            embed = (
+                existing.get((name, "positive"), {}).get("embedding")
+                or existing.get((name, "negative"), {}).get("embedding")
+                or embedding_map.get(name)
+            )
+
+            if embed is None:
+                # This should not happen, but fail loudly to keep the DB clean.
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"No embedding available for keyword '{name}'.",
+                )
+
+            existing[key] = {
+                "name": name,
+                "sentiment": sentiment,
+                "frequency": delta_freq,
+                "embedding": embed,
+            }
 
     for kw, freq in pos_counter.items():
-        if kw in existing_keywords and existing_keywords[kw]["sentiment"] == "positive":
-            existing_keywords[kw]["frequency"] += freq
-        else:
-            existing_keywords[kw] = {"name": kw, "sentiment": "positive", "frequency": freq}
+        upsert_keyword(kw, "positive", freq)
 
     for kw, freq in neg_counter.items():
-        if kw in existing_keywords and existing_keywords[kw]["sentiment"] == "negative":
-            existing_keywords[kw]["frequency"] += freq
-        else:
-            existing_keywords[kw] = {"name": kw, "sentiment": "negative", "frequency": freq}
+        upsert_keyword(kw, "negative", freq)
 
     user_keywords_collection.update_one(
         {"user_id": user_id},
-        {"$set": {"keywords": list(existing_keywords.values())}},
-        upsert=True
+        {"$set": {"keywords": list(existing.values())}},
+        upsert=True,
     )
 
-def subtract_user_keywords(user_id: int, pos_keywords: list, neg_keywords: list):
+    # Set a new state_id for the user
+    u_state_id = random_prime_in_range()
+    user_obj = db.query(Users).filter(Users.user_id == user_id).first()
+    if user_obj:
+        user_obj.state_id = u_state_id
+        db.add(user_obj)
+        db.flush()
+        db.commit()
+        db.refresh(user_obj)
+    else:
+        raise HTTPException(status_code=404, detail="User not found")
+
+def update_restaurant_keywords(
+        restaurant_id: int, 
+        keywords: list[str],
+        db: Session
+    ) -> None:
+    """
+    Update the restaurant's keyword document with new keywords.
+
+    Parameters
+    ----------
+    restaurant_id : int
+        Target restaurant.
+    keywords : list[str]
+        Keywords extracted from the review.
+    """
+    if not keywords:
+        return
+
+    # Count occurrences of each keyword
+    keyword_counter = Counter(keywords)
+
+    # Fetch existing keywords for this restaurant
+    existing_keywords = (
+        review_keywords_collection.find_one({"restaurant_id": restaurant_id})
+        or {"restaurant_id": restaurant_id, "keywords": []}
+    )
+
+    existing_map = [kw["keyword"] for kw in existing_keywords.get("keywords", [])]
+
+    new_keywords = set(keyword_counter.keys()) - set(existing_map)
+
+    if new_keywords:
+        try:
+            vectors = embed_small(list(new_keywords))
+            embedding_map = {kw: vectors[i] for i, kw in enumerate(new_keywords)}
+        except Exception as exc:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Embedding service failed: {exc}",
+            ) from exc
+
+    # Update or insert keywords
+    for name, freq in keyword_counter.items():
+        if name in existing_map:
+            existing_map[name]["frequency"] += freq
+        else:
+            existing_map[name] = {
+                "keyword": name,
+                "frequency": freq,
+                "embedding": embedding_map.get(name)
+            }
+
+    # Save updated keywords back to MongoDB
+    review_keywords_collection.update_one(
+        {"restaurant_id": restaurant_id},
+        {"$set": {"keywords": list(existing_map.values())}},
+        upsert=True,
+    )
+
+    # Set a new_state_id for the restaurant
+    r_state_id = random_prime_in_range()
+    rest_obj = db.query(Restaurant).filter(Restaurant.restaurant_id == restaurant_id).first()
+    if rest_obj:
+        rest_obj.state_id = r_state_id
+        db.add(rest_obj)
+        db.flush()
+        db.commit()
+        db.refresh(rest_obj)
+    else:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+
+
+def subtract_user_keywords(
+        user_id: int, 
+        pos_keywords: list, 
+        neg_keywords: list,
+        db: Session
+        ) -> None:
     doc = user_keywords_collection.find_one({"user_id": user_id})
     if not doc:
         return
@@ -69,6 +231,72 @@ def subtract_user_keywords(user_id: int, pos_keywords: list, neg_keywords: list)
         {"$set": {"keywords": updated_keywords}},
         upsert=True
     )
+
+    # Set a new state_id for the user
+    u_state_id = random_prime_in_range()
+    user_obj = db.query(Users).filter(Users.user_id == user_id).first
+    if user_obj:
+        user_obj.state_id = u_state_id
+        db.add(user_obj)
+        db.flush()
+        db.commit()
+        db.refresh(user_obj)
+    else:
+        raise HTTPException(status_code=404, detail="User not found")
+
+def subtract_restaurant_keywords(
+        restaurant_id: int, 
+        keywords: list[str],
+        db: Session
+        ) -> None:
+    """
+    Subtract keyword frequencies from the restaurant's keyword document.
+
+    Parameters
+    ----------
+    restaurant_id : int
+        Target restaurant.
+    keywords : list[str]
+        Keywords to subtract.
+    """
+    if not keywords:
+        return
+
+    # Fetch existing keywords for this restaurant
+    existing_keywords = (
+        review_keywords_collection.find_one({"restaurant_id": restaurant_id})
+        or {"restaurant_id": restaurant_id, "keywords": []}
+    )
+
+    existing_map = {kw["keyword"]: kw for kw in existing_keywords.get("keywords", [])}
+
+    # Subtract frequencies for each keyword
+    for kw in keywords:
+        if kw in existing_map:
+            existing_map[kw]["frequency"] -= 1
+
+            # Remove keyword if frequency <= 0
+            if existing_map[kw]["frequency"] <= 0:
+                del existing_map[kw]
+
+    # Save updated keywords back to MongoDB
+    review_keywords_collection.update_one(
+        {"restaurant_id": restaurant_id},
+        {"$set": {"keywords": list(existing_map.values())}},
+        upsert=True,
+    )
+
+    # Set a new state_id for the restaurant
+    r_state_id = random_prime_in_range()
+    rest_obj = db.query(Restaurant).filter(Restaurant.restaurant_id == restaurant_id).first
+    if rest_obj:
+        rest_obj.state_id = r_state_id
+        db.add(rest_obj)
+        db.flush()
+        db.commit()
+        db.refresh(rest_obj)
+    else:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
 
 @router.get("/review_sql", tags=["Reviews"])
 def read_review_sql(db: Session = Depends(get_db)):
@@ -125,7 +353,16 @@ def create_review(payload: ReviewCreate, db: Session = Depends(get_db)):
             update_user_keywords(
                 user_id=payload.user_id,
                 pos_keywords=payload.positive_keywords or [],
-                neg_keywords=payload.negative_keywords or []
+                neg_keywords=payload.negative_keywords or [],
+                db=db
+            )
+
+            unique_keywords = set(payload.positive_keywords + payload.negative_keywords)
+            
+            update_restaurant_keywords(
+                restaurant_id=payload.restaurant_id,
+                keywords=list(unique_keywords),
+                db=db
             )
 
         # Fetch nickname from People table
@@ -143,6 +380,13 @@ def create_review(payload: ReviewCreate, db: Session = Depends(get_db)):
             "created_at": new_review.created_at.isoformat()
         })
 
+        # Lastly, update the user-to-restaurant score
+        update_user_to_restaurant_score(
+            u_id=payload.user_id,
+            r_id=payload.restaurant_id,
+            db=db
+        )
+
         return {
             "message": "Review created", 
             "review_id": review_id,
@@ -151,9 +395,9 @@ def create_review(payload: ReviewCreate, db: Session = Depends(get_db)):
 
     except Exception as e:
         db.rollback()
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
-
-
 
 @router.put("/reviews/{review_id}", tags=["Reviews"])
 def update_review(review_id: int, payload: ReviewUpdate, db: Session = Depends(get_db)):
@@ -210,18 +454,40 @@ def update_review(review_id: int, payload: ReviewUpdate, db: Session = Depends(g
                 upsert=True
             )
 
-        # Update user_keywords collection
-        subtract_user_keywords(
-            review.user_id,
-            prev_keywords.get("positive_keywords", []),
-            prev_keywords.get("negative_keywords", [])
+            # Update user_keywords collection
+            subtract_user_keywords(
+                review.user_id,
+                prev_keywords.get("positive_keywords", []),
+                prev_keywords.get("negative_keywords", []),
+                db=db
+            )
+
+            # Update restaurant_keywords collection
+            subtract_restaurant_keywords(
+                restaurant_id=review.restaurant_id,
+                keywords=prev_keywords.get("positive_keywords", []) + prev_keywords.get("negative_keywords", []),
+                db=db
+            )
+
+            update_user_keywords(
+                user_id=review.user_id,
+                pos_keywords=payload.positive_keywords or [],
+                neg_keywords=payload.negative_keywords or [],
+                db=db
+            )
+
+            update_restaurant_keywords(
+                restaurant_id=review.restaurant_id,
+                keywords=payload.positive_keywords + payload.negative_keywords if payload.positive_keywords or payload.negative_keywords else [],
+                db=db
+            )
+
+        # Update score
+        update_user_to_restaurant_score(
+            u_id=review.user_id,
+            r_id=review.restaurant_id,
+            db=db
         )
-        update_user_keywords(
-            user_id=review.user_id,
-            pos_keywords=payload.positive_keywords or [],
-            neg_keywords=payload.negative_keywords or []
-        )
- 
 
         # Update Elasticsearch
         es.update(index="user_review_kor", id=review_id, body={
@@ -264,11 +530,26 @@ def delete_review(review_id: int, db: Session = Depends(get_db)):
         subtract_user_keywords(
             user_id=review.user_id,
             pos_keywords=pos_keywords,
-            neg_keywords=neg_keywords
+            neg_keywords=neg_keywords,
+            db=db
         )
 
         # Step 6: Delete from Elasticsearch
         es.delete(index="user_review_kor", id=str(review_id), ignore=[404])
+
+        # Step 7: Subtract keywords from restaurant_keywords
+        subtract_restaurant_keywords(
+            restaurant_id=review.restaurant_id,
+            keywords=pos_keywords + neg_keywords,
+            db=db
+        )
+
+        # Step 8: Update user-to-restaurant score
+        update_user_to_restaurant_score(
+            u_id=review.user_id,
+            r_id=review.restaurant_id,
+            db=db
+        )
 
         return {"message": f"Review {review_id} deleted successfully"}
 

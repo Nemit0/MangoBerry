@@ -2,6 +2,9 @@ import requests
 import random
 from typing import Tuple
 
+PRIME_LOWER_CAP: int = 1000
+PRIME_UPPER_CAP: int = 10000
+
 def get_location_from_ip(ip: str):
     try:
         response = requests.get(f"http://ip-api.com/json/{ip}")
@@ -65,7 +68,11 @@ def random_prime(*, bits: int = 256, rounds:int = 10) -> int:
             return candidate
 
 
-def random_prime_in_range(low: int, high: int, rounds: int = 10) -> int:
+def random_prime_in_range(
+        low: int = PRIME_LOWER_CAP, 
+        high: int = PRIME_UPPER_CAP,
+        rounds: int = 10
+    ) -> int:
     """
     Return a random prime in the half-open interval [low, high).
     """

@@ -1,7 +1,7 @@
-from fastapi import APIRouter
-
 from ..services.keyword_extract import extract_keyword_from_review
 from ..schemas.review import Review
+
+from .common_imports import *
 
 router = APIRouter()
 

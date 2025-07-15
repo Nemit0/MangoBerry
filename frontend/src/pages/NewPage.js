@@ -1,292 +1,162 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { TbPhotoPlus } from "react-icons/tb";
-
-// 페이지 레이아웃을 위한 컴포넌트 임포트
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import LeftSidebar from '../components/LeftSidebar';
 import RightSidebar from '../components/RightSidebar';
-import Button from '../components/Button';
-import "./NewPage.css";
-
-// auth
-import { useAuth } from "../contexts/AuthContext";
-
-export default function NewPage() {
-    const navigate = useNavigate();
-    const { isLoggedIn, user } = useAuth();
-
-    // local form state
-    const [restaurantName, setRestaurantName] = useState("");
-    const [oneLiner, setOneLiner] = useState("");
-    const [content, setContent] = useState("");
-    const [image, setImage] = useState(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [statusMsg, setStatusMsg] = useState("");
-    const [isAnalyzing, setIsAnalyzing] = useState(false);
-
-    const [positiveKeywords, setPositiveKeywords] = useState([]);
-    const [negativeKeywords, setNegativeKeywords] = useState([]);
-    const [selectedKeywords, setSelectedKeywords] = useState([]);
-
-    const r_id = 1;
-    
-    if (!isLoggedIn) {
-      navigate("/login"); // or render a <Navigate> element
-      return null;
-  }
-
-    const handleImageChange = (e) => {
-        if (e.target.files?.[0]) setImage(e.target.files[0]);
-    };
-    
-    // /* ──────────────────────────── render ───────────────────────────── */
-    // if (e.target.files && e.target.files[0]) {
-    //     setImage(e.target.files[0]);
-    // }
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (isSubmitting) return;
-
-        try {
-            setIsSubmitting(true);
-            setStatusMsg("⏳ 리뷰 저장 중…");
-
-            /* 1) create review (no picture yet) */
-            const reviewRes = await fetch("/api/reviews", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    user_id: user.user_id,
-                    restaurant_id: r_id,
-                    comments: oneLiner,
-                    review: content
-                }),
-            });
-
-            if (!reviewRes.ok) {
-                throw new Error(`리뷰 저장 실패 (${reviewRes.status})`);
-            }
-
-            const { review_id } = await reviewRes.json();
-
-            let imgRes = { public_url: null, object_key: null };
-
-            if (image) {
-                setStatusMsg("사진 업로드 중…");
-
-                const formData = new FormData();
-                formData.append("file", image);
-
-                imgRes = await fetch(
-                    `/api/reviews/${user.user_id}/${review_id}/images`,
-                    { method: "POST", body: formData }
-                );
-                if (!imgRes.ok)
-                    throw new Error(`사진 업로드 실패 (${imgRes.status})`);
-            }
-
-            const img_url = imgRes.public_url || null;
-            const img_key = imgRes.object_key || null;
-
-            /* Update the review with the image filename */
-            const updateRes = await fetch(`/api/reviews/${review_id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    photo_filenames: img_key ? [img_key] : [],
-                    photo_urls: img_url ? [img_url] : [],
-                }),
-            });
-
-            console.log("Update response:", updateRes);
-
-
-            /* success → home */
-            setStatusMsg("✅ 완료! 홈으로 이동합니다…");
-            navigate("/");
-        } catch (err) {
-            console.error(err);
-            setStatusMsg(`❌ ${err.message}`);
-            setIsSubmitting(false);
-        }
-    };
-
-    const toggleKeyword = (word) => {
-      setSelectedKeywords((prev) =>
-        prev.includes(word)
-          ? prev.filter((w) => w !== word)
-          : [...prev, word]
-      );
-    };
-  
-    const splitIntoTwoRows = (arr) => {
-      const mid = Math.ceil(arr.length / 2);
-      return [arr.slice(0, mid), arr.slice(mid)];
-    };
-
-    const handleAnalyzeClick = () => {
-        setIsAnalyzing(true);
-        /*모두 긍정/부정으로 똑같이 지정하면 4개 한꺼번에 눌림*/
-        const dummyPositive = ['긍정1', '긍정2', '긍정3', '긍정4'];
-        const dummyNegative = ['부정1', '부정2', '부정3', '부정4'];
-        setPositiveKeywords(dummyPositive);
-        setNegativeKeywords(dummyNegative);
-    };
-
-    return (
-    <div className="page-layout">
-        <Header searchTerm="" onSearchChange={() => {}} />
-
-        <div className="page-content-wrapper">
-        <aside className="page-left-sidebar">
+import { TbPhotoPlus } from "react-icons/tb";
+import './NewPage.css';
+const NewPage = () => {
+  const navigate = useNavigate();
+  const [analysisComplete, setAnalysisComplete] = useState(false);
+  const [images, setImages] = useState([]);
+  const [positiveKeywords, setPositiveKeywords] = useState({
+    '맛있어요': true,
+    '분위기가 좋아요': true,
+    '가성비가 좋아요': true,
+    '달다': true,
+    '짜다': true,
+    '달아서 좋아요': true,
+    '맵다': true,
+    '짜서 좋아요': true,
+    '매워서 좋아요': true,
+    '쫄깃해요': true,
+    '양이 많아 좋아요': true,
+    '밥이 무료여서 좋아요': true,
+  });
+  const [negativeKeywords, setNegativeKeywords] = useState({
+    '비싸요': true,
+    '불친절해요': true,
+    '맛없어요': true,
+    '양이 적어요': true,
+    '더러워요': true,
+    '음식을 재사용 해요': true,
+    '위치가 불편해요': true,
+    '싸가지없어요': true,
+    '돈 버려요': true,
+    '무맛이요': true,
+    '딱딱해요': true,
+    '없어요': true,
+  });
+  const handleAnalysis = () => {
+    setAnalysisComplete(true);
+  };
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    const newImages = files.map(file => URL.createObjectURL(file));
+    setImages(prevImages => [...prevImages, ...newImages]);
+  };
+  const toggleKeyword = (type, keyword) => {
+    if (type === 'positive') {
+      setPositiveKeywords(prev => ({ ...prev, [keyword]: !prev[keyword] }));
+    } else {
+      setNegativeKeywords(prev => ({ ...prev, [keyword]: !prev[keyword] }));
+    }
+  };
+  const handleCancel = () => {
+    if (window.confirm('해당 글이 저장되지 않습니다.')) {
+      navigate('/');
+    }
+  };
+  const handleSave = () => {
+    // 저장 로직 구현
+    console.log('저장되었습니다.');
+  };
+  return (
+    <div className="makepage-container">
+      <Header />
+      <div className="makepage-content">
+        <aside className="make-left-sidebar">
             <LeftSidebar />
         </aside>
-
-        <main className="middle-posts-area">
-            <h2 className="write-section-header">글쓰기</h2>
-
-            <form onSubmit={handleSubmit} className="review-form">
-              <div className="form-content-area">
-                  {/* ─── image uploader ─────────────────────────────── */}                <div className="image-upload-area">
-                  <label htmlFor="image-upload" className="image-placeholder">
-                  {image ? (
-                      <img
-                          src={URL.createObjectURL(image)}
-                          alt="Preview"
-                          className="uploaded-image-preview"
-                      />
-                      ) : (
-                      <>
-                          <TbPhotoPlus className="photo-icon" />
-                          <span>사진 +</span>
-                      </>
-                      )}
-                      <input
-                        id="image-upload"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        style={{ display: "none" }}
-                      />
-                  </label>
-                  </div>
-
-                  {/* ─── review text fields ─────────────────────────── */}
-                  <div className="text-input-area">
+        <main className="makepage-main">
+          <div className="makepage-wrapper">
+            <div className="makepage-top">
+              <h1>글쓰기</h1>
+            </div>
+            <div className="makepage-bottom">
+              <div className="makepage-left">
+                <div className="makepage-photo-upload"
+                     onClick={() => document.getElementById('imageInput').click()}>
+                  <TbPhotoPlus size={50} color="#aaa" />
                   <input
-                      type="text"
-                      placeholder="식당 이름"
-                      value={restaurantName}
-                      onChange={(e) => setRestaurantName(e.target.value)}
-                      className="form-input"
-                      required
+                    id="imageInput"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    style={{ display: 'none' }}
                   />
-                  <input
-                      type="text"
-                      placeholder='"한줄평"'
-                      value={oneLiner}
-                      onChange={(e) => setOneLiner(e.target.value)}
-                      className="form-input"
-                      required
-                  />
-                  <textarea
-                      placeholder="내용을 입력하세요"
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      rows={10}
-                      className="form-textarea"
-                      required
-                  />
+                  <div className="image-preview-container">
+                    {images.map((image, index) => (
+                      <img key={index} src={image} alt={`preview ${index}`} className="image-preview" />
+                    ))}
                   </div>
-              </div>
-
-              {/* ─── submit button ──────────────────────────────── */}
-              <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "처리 중…" : "저장"}
-              </Button>
-
-              {/* status message */}
-              {statusMsg && <p className="status-msg">{statusMsg}</p>}
-                <Button
-                    type="button"
-                    onClick={handleAnalyzeClick}
-                    className={`analysis-button ${isAnalyzing ? 'analyzing' : ''}`}
-                >
-                    {isAnalyzing ? '분석 완료' : '분석 시작'}
-                </Button>
-            </form>
-
-          {/* 분석 결과 박스 - form 밖에 위치 */}
-          {isAnalyzing && (
-            <div className="keyword-result-container">
-              <div className="keyword-section">
-                <h4 className="keyword-title">긍정 키워드</h4>
-                <div className="keyword-box">
-                  {splitIntoTwoRows(positiveKeywords).map((row, rowIdx) => (
-                    <div key={rowIdx} className="keyword-row">
-                      {row.map((word, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => toggleKeyword(word)}
-                          className={`keyword-button keyword-positive ${
-                            selectedKeywords.includes(word) ? 'selected' : ''
-                          }`}
-                        >
-                          {word}
-                        </button>
-                      ))}
-                    </div>
-                  ))}
                 </div>
               </div>
-
-              <div className="keyword-section">
-                <h4 className="keyword-title">부정 키워드</h4>
-                <div className="keyword-box">
-                  {splitIntoTwoRows(negativeKeywords).map((row, rowIdx) => (
-                    <div key={rowIdx} className="keyword-row">
-                      {row.map((word, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => toggleKeyword(word)}
-                          className={`keyword-button keyword-negative ${
-                            selectedKeywords.includes(word) ? 'selected' : ''
-                          }`}
-                        >
-                          {word}
-                        </button>
-                      ))}
-                    </div>
-                  ))}
+              <div className="makepage-right">
+                <div className="makepage-inputs">
+                  <input type="text" placeholder="식당이름" />
+                  <input type="text" placeholder="한줄평" />
+                  <textarea placeholder="리뷰"></textarea>
+                  <button
+                    onClick={handleAnalysis}
+                    className="analysis-button"
+                    disabled={analysisComplete}
+                  >
+                    {analysisComplete ? '분석 완료' : '분석'}
+                  </button>
                 </div>
-              </div>
-              {/* 취소 / 등록 버튼 */}
-              <div className="keyword-action-wrapper">
-                <button
-                  type="button"
-                  className="keyword-action-button"
-                  onClick={() => setIsAnalyzing(false)}
-                >
-                  취소
-                </button>
-                <button
-                  type="button"
-                  className="keyword-action-button"
-                  onClick={handleSubmit}
-                >
-                  등록
-                </button>
+                {analysisComplete && (
+                  <div className="analysis-results">
+                    <div className="keyword-sections-container">
+                      <div className="keyword-type-section">
+                        <h2>긍정 키워드</h2>
+                        <div className="newpage-keyword-section">
+                          <div className="keywords">
+                            {Object.entries(positiveKeywords).map(([keyword, isActive]) => (
+                              <button
+                                key={keyword}
+                                className={`new-positive-button ${isActive ? 'active' : ''}`}
+                                onClick={() => toggleKeyword('positive', keyword)}
+                              >
+                                {keyword}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="keyword-type-section">
+                        <h2>부정 키워드</h2>
+                        <div className="newpage-keyword-section">
+                          <div className="keywords">
+                            {Object.entries(negativeKeywords).map(([keyword, isActive]) => (
+                              <button
+                                key={keyword}
+                                className={`new-nagative-button ${isActive ? 'active' : ''}`}
+                                onClick={() => toggleKeyword('negative', keyword)}
+                              >
+                                {keyword}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="action-buttons">
+                      <button onClick={handleCancel} className="cancel-button">취소</button>
+                      <button onClick={handleSave} className="save-button">저장</button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          )}
+         </div>
         </main>
-
-        <aside className="page-right-sidebar">
-          <RightSidebar />
+        <aside className="make-right-sidebar">
+            <RightSidebar />
         </aside>
       </div>
     </div>
   );
-}
+};
+export default NewPage;

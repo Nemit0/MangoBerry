@@ -1,15 +1,15 @@
-from __future__ import annotations
-
 import os
 from uuid import uuid4
 from typing import List
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from ..connection.mysqldb import get_db, People, Review
 from ..connection.s3 import BUCKET_NAME, REGION_NAME
 from ..services.s3 import upload_bytes, guess_content_type
+
+from .common_imports import *
 
 router = APIRouter()
 
