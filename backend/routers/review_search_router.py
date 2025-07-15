@@ -1,12 +1,12 @@
-from fastapi import APIRouter, Query, HTTPException, Depends
-from typing import Optional
+from fastapi import Query, Depends
 from sqlalchemy.orm import Session
 from ..connection.mysqldb import get_db, People
 
 from ..connection.elasticdb import es_client as es
 
-router = APIRouter()
+from .common_imports import *
 
+router = APIRouter()
 
 @router.get("/search_review_es", tags=["Reviews"])
 def search_review_es(

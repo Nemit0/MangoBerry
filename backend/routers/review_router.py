@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import HTTPException, Depends
 from sqlalchemy.orm import create_session, Session
 from random import randint
 from collections import Counter
+from typing import List, Dict,
 
 from ..connection.mysqldb import get_db, Review, Restaurant, Users
 from ..connection.mongodb import photo_collection, review_keywords_collection, user_keywords_collection
@@ -10,6 +11,9 @@ from ..connection.elasticdb import es_client as es
 from ..schemas.review import ReviewCreate, ReviewUpdate
 
 from ..services.utilities import random_prime_in_range
+from ..services.generate_embedding import embed_small
+
+from .common_imports import *
 
 router = APIRouter()
 
@@ -23,17 +27,49 @@ def update_user_keywords(user_id: int, pos_keywords: list, neg_keywords: list):
     pos_counter = Counter(pos_keywords)
     neg_counter = Counter(neg_keywords)
 
+    all_keywords = set(pos_counter.keys()).union(set(neg_counter.keys()))
+
+    # Select unique new keywords to embed
+    unique_new_keywords = [
+        kw for kw in all_keywords if kw not in existing_keywords
+    ]
+
+    # Embed and make a new map
+    if unique_new_keywords:
+        embedding_vectors = embed_small(unique_new_keywords)
+        embedding_map = {kw: embedding_vectors[i] for i, kw in enumerate(unique_new_keywords)}
+    else:
+        embedding_map = {}
+
     for kw, freq in pos_counter.items():
         if kw in existing_keywords and existing_keywords[kw]["sentiment"] == "positive":
             existing_keywords[kw]["frequency"] += freq
-        else:
+        elif existing_keywords[kw]["sentiment"] == "negative":
             existing_keywords[kw] = {"name": kw, "sentiment": "positive", "frequency": freq}
+        elif kw in embedding_map:
+            existing_keywords[kw] = {
+                "name": kw,
+                "sentiment": "positive",
+                "frequency": freq,
+                "embedding": embedding_map[kw]
+            }
+        else:
+            print(f"Keyword {kw} not found in embedding map, skipping.")
 
     for kw, freq in neg_counter.items():
         if kw in existing_keywords and existing_keywords[kw]["sentiment"] == "negative":
             existing_keywords[kw]["frequency"] += freq
-        else:
+        elif existing_keywords[kw]["sentiment"] == "positive":
             existing_keywords[kw] = {"name": kw, "sentiment": "negative", "frequency": freq}
+        elif kw in embedding_map:
+            existing_keywords[kw] = {
+                "name": kw,
+                "sentiment": "negative",
+                "frequency": freq,
+                "embedding": embedding_map[kw]
+            }
+        else:
+            print(f"Keyword {kw} not found in embedding map, skipping.")
 
     user_keywords_collection.update_one(
         {"user_id": user_id},
@@ -144,8 +180,9 @@ def create_review(payload: ReviewCreate, db: Session = Depends(get_db)):
 
     except Exception as e:
         db.rollback()
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
-
 
 
 @router.put("/reviews/{review_id}", tags=["Reviews"])
@@ -209,6 +246,7 @@ def update_review(review_id: int, payload: ReviewUpdate, db: Session = Depends(g
             prev_keywords.get("positive_keywords", []),
             prev_keywords.get("negative_keywords", [])
         )
+
         update_user_keywords(
             user_id=review.user_id,
             pos_keywords=payload.positive_keywords or [],

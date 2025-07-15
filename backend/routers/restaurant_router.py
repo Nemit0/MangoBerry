@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Query, Request
+from fastapi import Query, Request
 
 from ..connection.elasticdb import es_client as es
 from ..services.utilities import get_location_from_ip
+
+from .common_imports import *
 
 router = APIRouter()
 
