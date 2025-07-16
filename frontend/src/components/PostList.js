@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import PostItem from '../components/PostItem';
 import Modal from '../components/Modal';
+import { useAuth } from '../contexts/AuthContext';
 import './PostList.css';
 
 const API_URL = '/api';
@@ -13,13 +14,25 @@ function PostList({ searchTerm, isMyPage }) {
   const [filtered, setFiltered]         = useState([]);     // 검색 결과
   const [isModalOpen, setIsModalOpen]   = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
+  const { user } = useAuth();
+
+  const userID = user?.user_id ?? null;
 
   /* ─────────────── initial fetch ───────────────
      빈 text 인자로 /search_review_es 호출 → ES에서 freq 기준 정렬 */
   useEffect(() => {
     const fetchInitial = async () => {
       try {
-        const resp = await fetch(`${API_URL}/search_review_es?size=50&sort=frequent`);
+        let url = `${API_URL}/search_review_es?size=50&sort=frequent`;
+        if (userID) {
+          url += `&viewer_id=${userID}`;  
+        }
+        const resp = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const json = await resp.json();
         if (!json.success) throw new Error(json.error ?? 'Unknown error');

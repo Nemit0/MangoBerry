@@ -10,7 +10,7 @@ function PostItem({ post, onClick }) { // <-- onClick prop 추가
     const positiveKeywords = post.keywords ? post.keywords.filter(item => item.sentiment === 'positive').map(item => item.keyword) : [];
     const negativeKeywords = post.keywords ? post.keywords.filter(item => item.sentiment === 'negative').map(item => item.keyword) : [];
 
-    const gaugeWidth = (post.rating / 5) * 100; // 백분율로 계산
+    const gaugeWidth = post.rating
 
     return (
         <div className="post-card" onClick={() => onClick(post)}> {/* <-- 클릭 이벤트 추가 */}
