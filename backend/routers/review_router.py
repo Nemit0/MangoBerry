@@ -404,6 +404,7 @@ def create_review(payload: ReviewCreate, db: Session = Depends(get_db)):
 
     except Exception as e:
         db.rollback()
+        print(traceback.format_exec())
         raise HTTPException(status_code=500, detail=str(e))
 
 
