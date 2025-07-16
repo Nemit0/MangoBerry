@@ -1,4 +1,6 @@
-from fastapi import HTTPException, Depends
+import datetime
+import traceback
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import create_session, Session
 from random import randint
 from collections import Counter
@@ -395,9 +397,11 @@ def create_review(payload: ReviewCreate, db: Session = Depends(get_db)):
 
     except Exception as e:
         db.rollback()
-        import traceback
-        traceback.print_exc()
+        print(traceback.format_exec())
         raise HTTPException(status_code=500, detail=str(e))
+
+
+
 
 @router.put("/reviews/{review_id}", tags=["Reviews"])
 def update_review(review_id: int, payload: ReviewUpdate, db: Session = Depends(get_db)):
@@ -490,7 +494,7 @@ def update_review(review_id: int, payload: ReviewUpdate, db: Session = Depends(g
         )
 
         # Update Elasticsearch
-        es.update(index="user_review_kor", id=review_id, body={
+        es.update(index="user_review_nickname", id=review_id, body={
             "doc": {
                 "comments": payload.comments,
                 "review": payload.review,

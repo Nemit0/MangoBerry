@@ -7,7 +7,7 @@ import requests
 # ───────────────────────────────────────────────────────────────────────────────
 # 1. CONFIGURATION
 # ───────────────────────────────────────────────────────────────────────────────
-BACKEND = "http://10.241.144.46:8001"
+BACKEND = "http://10.241.144.46:8000"
 ANALYZE_ENDPOINT = f"{BACKEND}/analyze_review"
 CREATE_REVIEW_ENDPOINT = f"{BACKEND}/reviews"
 HEADERS = {"accept": "application/json", "Content-Type": "application/json"}
