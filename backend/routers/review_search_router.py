@@ -9,7 +9,7 @@ router = APIRouter()
 
 @router.get("/search_review_es", tags=["Reviews"])
 def search_review_es(
-    text: str = Query(..., description="Search text in review, comments, or nickname"),
+    text: str = Query(None, description="Search text in review, comments, or nickname"),
     user_id: int = Query(None),
     restaurant_id: int = Query(None),
     size: int = Query(10),

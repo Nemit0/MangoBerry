@@ -1,4 +1,5 @@
 import datetime
+import traceback
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import create_session, Session
 from random import randint
@@ -151,7 +152,9 @@ def create_review(payload: ReviewCreate, db: Session = Depends(get_db)):
 
     except Exception as e:
         db.rollback()
+        print(traceback.format_exec())
         raise HTTPException(status_code=500, detail=str(e))
+
 
 
 
@@ -224,7 +227,7 @@ def update_review(review_id: int, payload: ReviewUpdate, db: Session = Depends(g
  
 
         # Update Elasticsearch
-        es.update(index="user_review_kor", id=review_id, body={
+        es.update(index="user_review_nickname", id=review_id, body={
             "doc": {
                 "comments": payload.comments,
                 "review": payload.review,
@@ -268,7 +271,17 @@ def delete_review(review_id: int, db: Session = Depends(get_db)):
         )
 
         # Step 6: Delete from Elasticsearch
-        es.delete(index="user_review_kor", id=str(review_id), ignore=[404])
+        es.delete_by_query(
+        index="user_review_nickname",
+        body={
+            "query": {
+                "term": {
+                    "review_id": review_id  # use the source field
+                }
+            }
+        },
+        refresh=True  # ensures the deletion is immediately reflected in search
+    )
 
         return {"message": f"Review {review_id} deleted successfully"}
 
