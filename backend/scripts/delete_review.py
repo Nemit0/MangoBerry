@@ -9,7 +9,10 @@ DELETE_ENDPOINT = f"{BACKEND}/reviews"
 HEADERS = {"accept": "application/json"}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> ade7cc4 (edited the review schema and uploaded review posts)
 # List all user_ids used in your REVIEWS list
 # USER_IDS = [5, 6, 7, 8, 9]
 
@@ -43,7 +46,10 @@ HEADERS = {"accept": "application/json"}
 #                 print(f"[WARNING] No review_id in: {r}")
 # if __name__ == "__main__":
 #     main()
+<<<<<<< HEAD
 >>>>>>> 7d8cef9 (edited the review schema and uploaded review posts)
+=======
+>>>>>>> ade7cc4 (edited the review schema and uploaded review posts)
 def delete_review_by_id(review_id: int):
     try:
         res = requests.delete(f"{DELETE_ENDPOINT}/{review_id}", headers=HEADERS)
