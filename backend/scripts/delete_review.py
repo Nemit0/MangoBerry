@@ -10,6 +10,7 @@ HEADERS = {"accept": "application/json"}
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> ade7cc4 (edited the review schema and uploaded review posts)
@@ -50,6 +51,8 @@ HEADERS = {"accept": "application/json"}
 >>>>>>> 7d8cef9 (edited the review schema and uploaded review posts)
 =======
 >>>>>>> ade7cc4 (edited the review schema and uploaded review posts)
+=======
+>>>>>>> 237700e (attempted to fix review routers)
 def delete_review_by_id(review_id: int):
     try:
         res = requests.delete(f"{DELETE_ENDPOINT}/{review_id}", headers=HEADERS)
