@@ -138,10 +138,16 @@ def search_review_es(  # noqa: C901 – single endpoint contains all logic
         images: List[str] = [doc["photo_urls"] for doc in img_cursor]
 
         # 3-c. Keywords for this review (MongoDB)
-        kw_doc = review_keywords_collection.find_one({"review_id": src["review_id"]}) or {}
+        projection = {
+            '_id': 0,
+            'positive_keywords': 1,
+            'negative_keywords': 1,
+            'review_id': 1,
+        }
+        kw_doc = review_keywords_collection.find_one({"review_id": src["review_id"]}, projection=projection) or {}
         pos_kw = kw_doc.get("positive_keywords", [])
         neg_kw = kw_doc.get("negative_keywords", [])
-        keywords: List[str] = pos_kw + neg_kw
+        keywords = [{"keyword": kw, "sentiment": "positive"} for kw in pos_kw] + [{"keyword": kw, "sentiment": "negative"} for kw in neg_kw]
 
         # 3-d. Personalised rating (0‒100, or 0 if viewer_id missing)
         try:

@@ -18,5 +18,16 @@ stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setFormatter(formatter)
 logger.addHandler(stdout_handler)
 
-for name in ("pymongo", "pymongo.pool", "pymongo.server", "pymongo.topology"):
+# Suppress logging list
+supress_prefixes = [
+    "pymongo",
+    "pymongo.pool",
+    "pymongo.server",
+    "pymongo.topology",
+    "botocore",
+    "botocore.configprovider",
+    "boto3"
+]
+
+for name in supress_prefixes:
     logging.getLogger(name).setLevel(logging.WARNING)
