@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import LeftSidebar from '../components/LeftSidebar';
 import RightSidebar from '../components/RightSidebar';
-import { TbPhotoPlus } from "react-icons/tb";
+import { TbPhotoPlus } from "react-icons/tb";	
 import './EditPage.css';
+
 const EditPage = () => {
   const navigate = useNavigate();
   const [analysisComplete, setAnalysisComplete] = useState(false);
@@ -88,7 +89,7 @@ const EditPage = () => {
                   accept="image/*"
                   onChange={handleImageChange}
                   style={{ display: 'none' }}
-                />
+                /> 
                 <div className="image-preview-container">
                   {images.map((image, index) => (
                     <img key={index} src={image} alt={`preview ${index}`} className="image-preview" />
