@@ -1,9 +1,15 @@
 import hashlib
+
+import numpy as np
+
 from random import randint
 from typing import Optional
 from warnings import warn
 
+from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 from pydantic import EmailStr
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -12,7 +18,10 @@ from email_validator import validate_email, EmailNotValidError
 
 from ..connection.mysqldb import get_db, People, Users, Review
 from ..schemas.user import LoginInput, RegisterInput
-from ..services.calc_score import update_user_to_restaurant_score
+from ..services.calc_score import (
+    update_user_to_restaurant_score,
+    update_user_to_user_score
+)
 
 router = APIRouter()
 pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -208,19 +217,76 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     db.commit()
 
     return {"detail": "User deleted successfully"}
+def _json_ready(payload):
+    """
+    Recursively convert ObjectId → str and ndarray → list so FastAPI can
+    serialise the result without choking.
+    """
+    return jsonable_encoder(
+        payload,
+        custom_encoder={
+            ObjectId: str,           # ① BSON ObjectId → hex string
+            np.ndarray: lambda a: a.tolist(),  # ② just in case
+        },
+        exclude_none=False
+    )
 
 @router.post("/update_user_to_restaurant_score", tags=["Admin"])
 def debug_update_user_to_restaurant_score(
     u_id: int,
     r_id: int,
-    db: Session = Depends(get_db),
     force_update: bool = True,
+    db: Session = Depends(get_db),
 ):
     """
-    Debug endpoint to update the user-to-restaurant score.
-    This is primarily for testing and debugging purposes.
+    Debug endpoint – returns either a plain score (float) or, when
+    `force_update=True`, a dict {score, user_keywords, rest_keywords}.
     """
     try:
-        return update_user_to_restaurant_score(u_id, r_id, db, force_update=force_update)
-    except Exception as e:
+        result = update_user_to_restaurant_score(u_id, r_id, db, force_update)
+
+        # Plain float?  FastAPI can handle it.
+        if not force_update:
+            return result
+
+        # Tuple -> promote to dict + sanitise for JSON.
+        score_val, kw_user_doc, kw_rest_doc = result
+        payload = {
+            "score": score_val,
+            "user_keywords": kw_user_doc,
+            "rest_keywords": kw_rest_doc,
+        }
+        return JSONResponse(content=_json_ready(payload))
+
+    except Exception as e:                          # pragma: no cover
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+@router.post("/update_user_to_user_score", tags=["Admin"])
+def debug_update_user_to_user_score(
+    u_id_a: int,
+    u_id_b: int,
+    force_update: bool = True,
+    db: Session = Depends(get_db),
+):
+    """
+    Debug endpoint – returns either a plain score (float) or, when
+    `force_update=True`, a dict {score, user_a_keywords, user_b_keywords}.
+    """
+    try:
+        result = update_user_to_user_score(u_id_a, u_id_b, db, force_update)
+
+        # Plain float?  FastAPI can handle it.
+        if not force_update:
+            return result
+
+        # Tuple -> promote to dict + sanitise for JSON.
+        score_val, kw_a_doc, kw_b_doc = result
+        payload = {
+            "score": score_val,
+            "user_a_keywords": kw_a_doc,
+            "user_b_keywords": kw_b_doc,
+        }
+        return JSONResponse(content=_json_ready(payload))
+
+    except Exception as e:                          # pragma: no cover
         raise HTTPException(status_code=500, detail=str(e)) from e
