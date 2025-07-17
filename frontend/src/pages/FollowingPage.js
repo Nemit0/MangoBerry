@@ -1,4 +1,3 @@
-// src/pages/FollowingPage.js
 import React from "react";
 import "./FollowingPage.css";
 

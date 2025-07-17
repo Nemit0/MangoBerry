@@ -1,10 +1,11 @@
-import { useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import LeftSidebar from '../components/LeftSidebar';
 import RightSidebar from '../components/RightSidebar';
-import { TbPhotoPlus } from "react-icons/tb";
+import { TbPhotoPlus } from "react-icons/tb";	
 import './NewPage.css';
+
 const NewPage = () => {
   const navigate = useNavigate();
   const [analysisComplete, setAnalysisComplete] = useState(false);
@@ -70,7 +71,7 @@ const NewPage = () => {
         </aside>
         <main className="makepage-main">
           <div className="makepage-wrapper">
-            <div className="makepage-top">
+            <div className="makepage-top"> 
               {/* 높이 맞춤용*/}
             <div className="page-title-with-delete">
               <h1>글쓰기</h1>
@@ -89,7 +90,7 @@ const NewPage = () => {
                     accept="image/*"
                     onChange={handleImageChange}
                     style={{ display: 'none' }}
-                  />
+                  />    
                   <div className="image-preview-container">
                     {images.map((image, index) => (
                       <img key={index} src={image} alt={`preview ${index}`} className="image-preview" />
