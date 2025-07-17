@@ -539,7 +539,17 @@ def delete_review(review_id: int, db: Session = Depends(get_db)):
         )
 
         # Step 6: Delete from Elasticsearch
-        es.delete(index="user_review_kor", id=str(review_id), ignore=[404])
+        es.delete_by_query(
+        index="user_review_nickname",
+        body={
+            "query": {
+                "term": {
+                    "review_id": review_id  # use the source field
+                }
+            }
+        },
+        refresh=True  # ensures the deletion is immediately reflected in search
+    )
 
         # Step 7: Subtract keywords from restaurant_keywords
         subtract_restaurant_keywords(
