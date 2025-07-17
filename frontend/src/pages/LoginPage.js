@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
-import LeftSidebar from '../components/LeftSidebar';
-import RightSidebar from '../components/RightSidebar';
 import './LoginPage.css';
 
 function LoginPage() {
@@ -51,10 +49,6 @@ function LoginPage() {
         <div className='loginpage-layout'>
             <Header />
             <div className='main-content-wrapper'>
-                <aside className='left-sidebar'>
-                    <LeftSidebar />
-                </aside>
-
                 <main className='middle-login-area'>
                     <div className='login-container'>
                         <div className='login-box'>
@@ -92,11 +86,6 @@ function LoginPage() {
                         </div>
                     </div>
                 </main>
-                
-                <aside className='right-sidebar'>
-                    <RightSidebar />
-                </aside>
-
             </div>
         </div>
     );

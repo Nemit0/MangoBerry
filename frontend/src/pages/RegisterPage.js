@@ -3,8 +3,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import Header from '../components/Header';
-import LeftSidebar from '../components/LeftSidebar';
-import RightSidebar from '../components/RightSidebar';
 
 import './RegisterPage.css';
 
@@ -129,11 +127,6 @@ function RegisterPage() {
       <Header />
 
       <div className='main-content-wrapper'>
-        {/* ─────── 좌측 사이드바 ─────── */}
-        <aside className='left-sidebar'>
-          <LeftSidebar />
-        </aside>
-
         {/* ─────── 중앙: 회원가입 폼 ─────── */}
         <main className='middle-register-area'>
           <div className='register-container'>
@@ -298,11 +291,6 @@ function RegisterPage() {
             </div>
           </div>
         </main>
-
-        {/* ─────── 우측 사이드바 ─────── */}
-        <aside className='right-sidebar'>
-          <RightSidebar />
-        </aside>
       </div>
     </div>
   );

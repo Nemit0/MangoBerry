@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext'; // AuthContext 임포트
 import SearchBar from './SearchBar'; // SearchBar 컴포넌트 임포트
 import './Header.css';
@@ -18,34 +18,59 @@ function Header({ searchTerm, onSearchChange }) { // 검색어 관련 props 받�
         navigate('/'); // 로그아웃 후 HomePage로 이동
     };
 
+    const handleLoginClick = () => {
+        navigate('/login');
+    };
+
+    const handleRegisterClick = () => {
+        navigate('/register');
+    };
+
+    const goToMyPage = () => navigate('/my');
+    const goToMapPage = () => navigate('/map');
+    const goToNewPage = () => navigate('/new');
+
     return (
         <header className="header-container">
             <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
                 GUMIO
             </div>
 
-            {location.pathname === '/' && (
-                <div className="header-search-area">
-                    {/* SearchBar 컴포넌트 사용 */}
+            <div className="header-search-area">
+                {location.pathname === '/' && (
+                    /* SearchBar 컴포넌트 사용 */
                     <SearchBar
                         searchTerm={searchTerm}
                         onSearchChange={onSearchChange}
                         placeholder="게시물 검색..."
                     />
-                </div>
-            )}
+                )}
+            </div>
             
+            <div className="header-nav-container">
+                <nav className="menu-nav">
+                    {isLoggedIn ? (
+                        <>
+                            <p onClick={goToMyPage} className="nav-link">내 프로필</p>
+                            <p onClick={goToNewPage} className="nav-link">새글쓰기</p>
+                            <p onClick={goToMapPage} className="nav-link">지도</p>
+                        </>
+                    ) : (
+                        <p onClick={goToMapPage} className="nav-link">지도</p>
+                    )}
+                </nav>
 
-            <nav className="header-nav">
-                {!isLoggedIn && ( // 로그아웃 상태일 때만 회원가입 표시
-                    <Link to="/register" className="nav-link">회원가입</Link>
-                )}
-                {isLoggedIn ? ( // 로그인 상태이면 로그아웃 표시
-                    <span onClick={handleLogoutClick} className="nav-link logout-link">로그아웃</span>
-                ) : ( // 로그아웃 상태이면 로그인 표시
-                    <Link to="/login" className="nav-link">로그인</Link>
-                )}
-            </nav>
+                <nav className="header-nav">
+                    {!isLoggedIn && ( // 로그아웃 상태일 때만 회원가입 표시
+                        <p onClick={handleRegisterClick} className="nav-link">회원가입</p>
+                    )}
+                    {isLoggedIn ? ( // 로그인 상태이면 로그아웃 표시
+                        <p onClick={handleLogoutClick} className="nav-link logout-link">로그아웃</p>
+                    ) : ( // 로그아웃 상태이면 로그인 표시
+                        <p onClick={handleLoginClick} className="nav-link">로그인</p>
+                    )}
+                </nav>
+            </div>
         </header>
     );
 }
