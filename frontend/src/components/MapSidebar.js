@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './MapSidebar.css';
 import { FaSearch, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
@@ -55,11 +56,15 @@ const MapSidebar = ({ onSearch, searchResults, currentKeyword, onResultItemClick
         console.log('Clicked place:', place);
         setShowSearchResults(false); // 결과 클릭 시 결과 숨기기
     };
+
+    const navigate = useNavigate();
+    const goToHomePage = () => navigate('/');
     
 
     return (
         <div className={`map-sidebar-container ${isCollapsed ? 'collapsed' : ''}`}>
             <div className="sidebar-content">
+                <p className='map-logo' onClick={goToHomePage} style={{ cursor: 'pointer' }}>GUMIO</p>
                 <h2 className="sidebar-title">지도 내 검색</h2>
                 
                 <div className="sidebar-search-bar" ref={searchBarRef}> {/* ref 추가 */}

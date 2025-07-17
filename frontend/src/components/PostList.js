@@ -8,7 +8,7 @@ const API_URL = '/api';
 const DEFAULT_IMAGE =
   'https://mangoberry-bucket.s3.ap-northeast-2.amazonaws.com/test/single/final_logo.jpg';
 
-function PostList({ searchTerm, isMyPage }) {
+function PostList({ searchTerm, isMyPage, columns }) {
   /* ─────────────── state ─────────────── */
   const [posts, setPosts]               = useState([]);     // 모든 포스트
   const [filtered, setFiltered]         = useState([]);     // 검색 결과
@@ -97,7 +97,7 @@ function PostList({ searchTerm, isMyPage }) {
   /* ─────────────── render ─────────────── */
   return (
     <div className="post-list-wrapper">
-      <div className="post-grid-container">
+      <div className={`post-grid-container columns-${columns}`}>
         {filtered.length > 0 ? (
           filtered.map((post) => (
             <PostItem

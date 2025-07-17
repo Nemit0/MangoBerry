@@ -24,6 +24,14 @@
     display: none; /* 텍스트 숨기기 */
 }
 
+.map-logo {
+    font-size: 30px;
+    color: #672091;
+    margin-top: 0px;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
 .sidebar-content {
     padding: 20px;
     overflow-y: auto; /* 내용이 많으면 스크롤 */
@@ -39,6 +47,7 @@
 .sidebar-title {
     font-size: 1.4em;
     margin-bottom: 20px;
+    text-align: left;
 }
 
 .sidebar-subtitle {
@@ -46,6 +55,7 @@
     margin-top: 10px;
     margin-bottom: 5px;
     color: #333;
+    text-align: left;
 }
 
 .sidebar-search-bar {

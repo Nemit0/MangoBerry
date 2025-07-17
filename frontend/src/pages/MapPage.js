@@ -1,6 +1,5 @@
 // src/pages/MapPage/MapPage.js
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import Header from '../components/Header'; // 헤더 컴포넌트 임포트
 import MapSidebar from '../components/MapSidebar'; // 지도 사이드바 컴포넌트 임포트
 import '../pages/HomePage.css'; // 홈 페이지 CSS 임포트 (공통 스타일)
 import './MapPage.css'; // 지도 페이지 전용 CSS 임포트
@@ -248,8 +247,6 @@ function MapPage() {
 
     return (
         <div className="map-page-layout">
-            {/* 헤더 컴포넌트 */}
-            <Header searchTerm="" onSearchChange={() => {}} />
             <div className="map-content-wrapper">
                 {/* 지도 사이드바 컴포넌트 */}
                 <MapSidebar

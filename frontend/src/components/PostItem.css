@@ -1,29 +1,24 @@
 /* src/components/PostItem/PostItem.css */
-@font-face {
-    font-family: 'Bangers';
-    src: url(../assets/fonts/Bangers/Bangers-Regular.ttf);
-}
 
 .post-card {
+    container-type: inline-size;
     border: 1px solid #ddd;
     border-radius: 5px;
     background-color: #fff;
-    /* box-shadow: 0 2px 5px rgba(0,0,0,0.1); */
     overflow: hidden; /* 이미지 오버플로우 방지 */
     display: flex;
     flex-direction: column;
-    height: 100%; /* PostList의 그리드 아이템의 높이를 동일하게 */
+    aspect-ratio: 3 / 4;
     cursor: pointer;
 }
 
 .post-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid gray;
 }
 
 .post-image {
     width: 100%;
-    height: 200px; /* 이미지 고정 높이 */
+    height: 60%;
     object-fit: cover; /* 이미지 비율 유지하며 채우기 */
     display: block; /* 이미지 아래 공백 제거 */
 }
@@ -49,7 +44,6 @@
 }
 
 .post-user-name {
-    font-family: 'Bangers';
     font-size: 20px;
     margin-right: 10px;
 }
@@ -65,7 +59,7 @@
     overflow: hidden; /* 넘치는 부분 숨김 */
     text-overflow: ellipsis; /* 넘치는 부분 ...으로 표시 */
     font-size: 1.2em;
-    color: #333;
+    color: #672091;
     font-weight: bold;
     text-align: left;
 }

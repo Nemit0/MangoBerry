@@ -16,11 +16,28 @@
 
 .post-grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* 2열 반응형 그리드 */
-    gap: 20px; /* 그리드 아이템 간의 간격 */
+    gap: 5px; /* 그리드 아이템 간의 간격 */
     padding: 10px; /* 내부 패딩 */
     box-sizing: border-box;
 }
+
+/* Desktop-first: 기본 3열 */
+.post-grid-container.columns-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* 1열 레이아웃 (RestaurantInfoPage) */
+.post-grid-container.columns-1 {
+    grid-template-columns: 1fr;
+}
+
+/* Mobile (768px 이하) */
+@media (max-width: 1000px) {
+    .post-grid-container {
+        grid-template-columns: 1fr; /* 모든 그리드를 1열로 변경 */
+    }
+}
+
 
 .no-results {
     text-align: center;

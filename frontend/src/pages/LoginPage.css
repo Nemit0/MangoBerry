@@ -16,24 +16,6 @@
     box-sizing: border-box;
 }
 
-/* 좌측 사이드바 */
-.left-sidebar {
-    flex-basis: 220px; /* 고정 너비 설정 (이미지 기준) */
-    flex-shrink: 0; /* 내용이 많아도 줄어들지 않도록 */
-    background-color: #f0f2f5;
-    box-sizing: border-box;
-    /* overflow-y: auto; 는 LeftSidebar.css에서 관리 */
-}
-
-/* 우측 사이드바 */
-.right-sidebar {
-    flex-basis: 250px; /* 고정 너비 설정 (이미지 기준) */
-    flex-shrink: 0;
-    background-color: #f0f2f5;
-    box-sizing: border-box;
-    /* overflow-y: auto; 는 RightSidebar.css에서 관리 */
-}
-
 /* 중간 로그인 영역 (login이 들어갈 곳) */
 .middle-login-area {
     flex-grow: 1; /* 남은 수평 공간을 모두 차지하도록 */
