@@ -17,7 +17,7 @@ from ..connection.mongodb import (
     restaurant_keywords_collection,
     user_rest_score,
 )
-from ..services.calc_score import score_user_to_restaurant
+from ..services.calc_score import score_user_to_restaurant, update_user_to_restaurant_score
 
 router = APIRouter()
 
@@ -144,42 +144,17 @@ def search_review_es(  # noqa: C901 – single endpoint contains all logic
         keywords: List[str] = pos_kw + neg_kw
 
         # 3-d. Personalised rating (0‒100, or 0 if viewer_id missing)
-        rating: float = 0.0
-        if viewer_id is not None and restaurant_state_id is not None and viewer_state_id is not None:
-            current_product_state = viewer_state_id * restaurant_state_id
-
-            cache_doc = user_rest_score.find_one(
-                {"u_id": viewer_id, "scores.r_id": src["restaurant_id"]},
-                {"scores.$": 1},
+        try:
+            rating: float = update_user_to_restaurant_score(
+                u_id=viewer_id,
+                r_id=src["restaurant_id"],
+                db=db
             )
-
-            cache_hit: Optional[Dict[str, Any]] = (
-                cache_doc["scores"][0] if cache_doc and "scores" in cache_doc else None
-            )
-
-            if cache_hit and cache_hit.get("state_id") == current_product_state:
-                rating = float(cache_hit.get("score", 0.0))
-            else:
-                # Recompute score and update cache
-                rest_kw_doc = restaurant_keywords_collection.find_one({"r_id": src["restaurant_id"]}) or {}
-                rest_kw = rest_kw_doc.get("keywords", [])
-
-                rating = score_user_to_restaurant(viewer_keywords, rest_kw)
-
-                user_rest_score.update_one(
-                    {"u_id": viewer_id},
-                    {
-                        "$pull": {"scores": {"r_id": src["restaurant_id"]}},
-                        "$push": {
-                            "scores": {
-                                "r_id": src["restaurant_id"],
-                                "state_id": current_product_state,
-                                "score": rating,
-                            }
-                        },
-                    },
-                    upsert=True,
-                )
+            print(f"Rating for {src['review_id']} → {rating}")
+        except ValueError as exc:
+            print(f"Skipping rating for {src['review_id']} → {exc}")
+            print(f"Viewer ID: {viewer_id}, Restaurant ID: {src['restaurant_id']}")
+            rating = 0.0
 
         # 3-e. Assemble result object
         results.append(
@@ -202,8 +177,5 @@ def search_review_es(  # noqa: C901 – single endpoint contains all logic
     if sort == "frequent":
         # Highest rating first; tie-break by created_at DESC
         results.sort(key=lambda r: (r["rating"], r["created_at"] or ""), reverse=True)
-
-    # ─── 5. Debug log + return ─────────────────────────────────────
-    print("[search_review_es] →", json.dumps(results, ensure_ascii=False, indent=2))
 
     return {"success": True, "result": results}

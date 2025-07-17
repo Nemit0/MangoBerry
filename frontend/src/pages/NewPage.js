@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import Header from '../components/Header';
 import LeftSidebar from '../components/LeftSidebar';
 import RightSidebar from '../components/RightSidebar';
@@ -71,8 +71,12 @@ const NewPage = () => {
         <main className="makepage-main">
           <div className="makepage-wrapper">
             <div className="makepage-top">
+              {/* 높이 맞춤용*/}
+            <div className="page-title-with-delete">
               <h1>글쓰기</h1>
+                <button className="delete-button" style={{ visibility: 'hidden' }}>삭제</button>
             </div>
+          </div>
             <div className="makepage-bottom">
               <div className="makepage-left">
                 <div className="makepage-photo-upload"
@@ -103,7 +107,7 @@ const NewPage = () => {
                     className="analysis-button"
                     disabled={analysisComplete}
                   >
-                    {analysisComplete ? '분석 완료' : '분석'}
+                    {analysisComplete ? '분석 완료' : '분석 시작'}
                   </button>
                 </div>
                 {analysisComplete && (

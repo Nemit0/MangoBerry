@@ -185,8 +185,13 @@ def _compute_score(u_id: int, r_id: int, db: Session) -> float:
     # 1.  Load SQL rows and ensure version-tracking primes ---------------------
     user_obj = db.query(Users).filter(Users.user_id == u_id).first()
     rest_obj = db.query(Restaurant).filter(Restaurant.restaurant_id == r_id).first()
+    print(user_obj, rest_obj)  # Debugging output
     if user_obj is None or rest_obj is None:
-        raise ValueError("Invalid u_id or r_id supplied.")
+        raise ValueError("Invalid u_id or r_id supplied.",
+            f"u_id: {u_id}" if user_obj is None else "",
+            f"r_id: {r_id}" if rest_obj is None else ""
+        )
+    
 
     uid_prime = _ensure_state_id(user_obj, "state_id", db)
     rid_prime = _ensure_state_id(rest_obj, "state_id", db)

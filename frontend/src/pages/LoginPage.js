@@ -32,7 +32,7 @@ function LoginPage() {
             const data = await response.json();
 
             if (data.login && data.verified) {
-                login();
+                login(data);
                 navigate('/');
             } else {
                 alert('Incorrect credentials or user not verified.');
