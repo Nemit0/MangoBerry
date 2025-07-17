@@ -180,7 +180,7 @@ def _ensure_state_id(obj, attr: str, db: Session) -> int:
     return val
 
 
-def _compute_score(u_id: int, r_id: int, db: Session) -> float:
+def _compute_score(u_id: int, r_id: int, db: Session, force_update: bool) -> float:
     """Core logic, split out so we can reuse it in two wrappers."""
     # 1.  Load SQL rows and ensure version-tracking primes ---------------------
     user_obj = db.query(Users).filter(Users.user_id == u_id).first()
@@ -190,7 +190,7 @@ def _compute_score(u_id: int, r_id: int, db: Session) -> float:
         raise ValueError("Invalid u_id or r_id supplied.",
             f"u_id: {u_id}" if user_obj is None else "",
             f"r_id: {r_id}" if rest_obj is None else ""
-        )
+        )   
     
 
     uid_prime = _ensure_state_id(user_obj, "state_id", db)
@@ -208,7 +208,7 @@ def _compute_score(u_id: int, r_id: int, db: Session) -> float:
         {"u_id": u_id, "scores.r_id": r_id, "scores.state_id": current_hash},
         proj,
     )
-    if cached_parent and cached_parent["scores"]:
+    if cached_parent and cached_parent["scores"] and not force_update:
         return cached_parent["scores"][0]["score"]          # cache hit ✅
 
     # 4.  Compute fresh score --------------------------------------------------
@@ -247,6 +247,7 @@ def update_user_to_restaurant_score(
     u_id: int,
     r_id: int,
     db: Optional[Session] = Depends(get_db),
+    force_update: bool = False,
 ) -> float:
     """
     Return a compatibility score between *user* and *restaurant*.
@@ -264,7 +265,11 @@ def update_user_to_restaurant_score(
         db = next(db_gen)
 
     try:
-        return _compute_score(u_id, r_id, db)
+        if not force_update:
+            return _compute_score(u_id, r_id, db, force_update=force_update)
+        else:
+            # For debug purpose, also provide keywords that were compared
+            return _compute_score(u_id, r_id, db, force_update=force_update), user_keywords_collection.find_one({"user_id": u_id}), restaurant_keywords_collection.find_one({"r_id": r_id})
     finally:
         if needs_local_session:     # avoid leaking connections
             db.close()
