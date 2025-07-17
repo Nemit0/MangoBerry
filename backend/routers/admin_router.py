@@ -12,6 +12,7 @@ from email_validator import validate_email, EmailNotValidError
 
 from ..connection.mysqldb import get_db, People, Users, Review
 from ..schemas.user import LoginInput, RegisterInput
+from ..services.calc_score import update_user_to_restaurant_score
 
 router = APIRouter()
 pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -207,3 +208,19 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     db.commit()
 
     return {"detail": "User deleted successfully"}
+
+@router.post("/update_user_to_restaurant_score", tags=["Admin"])
+def debug_update_user_to_restaurant_score(
+    u_id: int,
+    r_id: int,
+    db: Session = Depends(get_db),
+    force_update: bool = True,
+):
+    """
+    Debug endpoint to update the user-to-restaurant score.
+    This is primarily for testing and debugging purposes.
+    """
+    try:
+        return update_user_to_restaurant_score(u_id, r_id, db, force_update=force_update)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e

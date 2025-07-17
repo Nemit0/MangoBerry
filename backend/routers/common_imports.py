@@ -17,3 +17,6 @@ logger.addHandler(stderr_handler)
 stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setFormatter(formatter)
 logger.addHandler(stdout_handler)
+
+for name in ("pymongo", "pymongo.pool", "pymongo.server", "pymongo.topology"):
+    logging.getLogger(name).setLevel(logging.WARNING)
