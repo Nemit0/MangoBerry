@@ -63,6 +63,7 @@
     border-radius: 5px;
     font-size: 1em;
     resize: none; /* textarea의 크기 조절 불가 */
+    font-family: 'IBM_Plex_Sans_KR';
 }
 
 .input-group textarea {

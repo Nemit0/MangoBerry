@@ -45,7 +45,7 @@ function PostList({ searchTerm, isMyPage }) {
           user: raw.nickname ?? 'Unknown',
           rating: raw.rating ?? 0,
           content: raw.review ?? '',
-          datePosted: raw.created_at ?? '',
+          datePosted: (raw.created_at ?? '').split('T')[0].replace(/-/g, '.'),
           images:
             Array.isArray(raw.images) && raw.images.length > 0
               ? raw.images
