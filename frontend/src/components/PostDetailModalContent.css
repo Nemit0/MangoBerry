@@ -147,26 +147,20 @@
 /* 개별 긍정 태그 스타일 */
 .modal-positive-tag-badge {
     display: inline-block; /* 태그 크기에 맞게 */
-    padding: 8px 15px; /* 내부 여백 */
-    border: 1px solid rgba(30, 150, 0, 1); /* 초록색 테두리 */
-    color: rgba(30, 150, 0, 1); /* 초록색 글씨 */
-    background-color: #ffffff; /* 연한 초록색 배경 */
-    border-radius: 20px; /* 둥근 모서리 */
+    padding: 4px 8px; /* 내부 여백 */
+    background-color: #D4EDDA;
+    border-radius: 8px; /* 둥근 모서리 */
     font-size: 0.9em;
-    font-weight: bold;
     white-space: nowrap; /* 태그 내용이 한 줄에 표시되도록 */
 }
 
 /* 개별 부정 태그 스타일 */
 .modal-negative-tag-badge {
     display: inline-block;
-    padding: 8px 15px;
-    border: 1px solid rgba(150, 0, 0, 1); /* 빨간색 테두리 */
-    color: rgba(150, 0, 0, 1); /* 빨간색 글씨 */
-    background-color: #ffffff; /* 연한 빨간색 배경 */
-    border-radius: 20px;
+    padding: 4px 8px;
+    background-color: #F8D7DA;
+    border-radius: 8px;
     font-size: 0.9em;
-    font-weight: bold;
     white-space: nowrap;
 }
 
@@ -192,8 +186,8 @@
 }
 
 .modal-edit-button:hover {
-    background-color: rgba(150, 70, 110, 1);
-    color: rgba(250, 240, 210, 1);
+    background-color: #672091;
+    color: white;
 }
 
 .modal-actions-container {

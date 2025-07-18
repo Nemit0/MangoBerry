@@ -103,27 +103,27 @@
 }
 
 .popup-button.prev-button {
-    background-color: #6c757d;
+    background-color: #a0a0a0;
     color: white;
 }
 .popup-button.prev-button:hover {
-    background-color: #5a6268;
+    background-color: #808080;
 }
 
 .popup-button.next-button {
-    background-color: #007bff;
+    background-color: #a0a0a0;
     color: white;
 }
 .popup-button.next-button:hover {
-    background-color: #0056b3;
+    background-color: #672091;
 }
 
 .popup-button.submit-button {
-    background-color: #28a745;
+    background-color: black;
     color: white;
 }
 .popup-button.submit-button:hover {
-    background-color: #218838;
+    background-color: #672091;
 }
 
 .left-nav-group {
@@ -148,7 +148,8 @@
 .skip-button {
     padding: 0px;
     margin: 0px;
+    margin-bottom: 5px;
     font-size: 15px;
-    color: gray;
+    color: #a0a0a0;
     text-decoration: underline;
 }

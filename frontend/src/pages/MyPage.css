@@ -3,28 +3,17 @@
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
+  width: 60%;
+  margin: 0 auto;
 }
 .mypage-main-wrapper {
   display: flex;
   flex-grow: 1;
-  height: calc(100vh - 60px);
-  margin-top: 60px;
+  height: calc(100vh - 80px);
+  margin-top: 80px;
   box-sizing: border-box;
 }
-/* 좌측 사이드바 */
-.my-left-sidebar {
-  flex-basis: 250px;
-  flex-shrink: 0;
-  background-color: #003585;
-  box-sizing: border-box;
-}
-/* 우측 사이드바 */
-.my-right-sidebar {
-  flex-basis: 250px;
-  flex-shrink: 0;
-  background-color: #003481;
-  box-sizing: border-box;
-}
+
 .mypage-middle-area {
   flex-grow: 1;
   background-color: #FFFFFF;

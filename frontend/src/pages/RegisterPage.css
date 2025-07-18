@@ -101,6 +101,15 @@
     font-size: 1.1em;
     outline: none;
     transition: border-color 0.2s;
+    color: rgb(0, 0, 0);
+    font-family: 'IBM_Plex_Sans_KR';
+}
+
+input[type='date']::-webkit-datetime-edit-text, 
+input[type="date"]::-webkit-datetime-edit-month-field, 
+input[type="date"]::-webkit-datetime-edit-day-field, 
+input[type="date"]::-webkit-datetime-edit-year-field {
+    color: gray;
 }
 
 .register-input-group input[type='text'] {
@@ -143,7 +152,7 @@
 }
 
 .duplicate-check-button:hover {
-    background-color: rgba(150, 70, 110, 1);
+    background-color: #672091;
     color: rgba(250, 240, 210, 1);
 }
 
@@ -188,7 +197,7 @@
 }
 
 .radio-gender{
-    accent-color: rgba(150, 70, 110, 1);
+    accent-color: #672091;
 }
 
 
@@ -208,7 +217,7 @@
 }
 
 .register-submit-button:hover {
-    background-color: rgba(150, 70, 110, 1);
+    background-color: #672091;
     color: rgba(250, 240, 210, 1);
 }
 
