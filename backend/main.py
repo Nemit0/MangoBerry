@@ -10,7 +10,8 @@ from .routers import (
     review_image_router, 
     review_router, 
     review_search_router, 
-    social_router
+    social_router,
+    debug_review
 )
 
 sys.stdout.reconfigure(encoding='utf-8')
@@ -48,3 +49,4 @@ app.include_router(review_router.router)
 app.include_router(review_search_router.router)
 app.include_router(review_image_router.router)
 app.include_router(keyword_router.router)
+app.include_router(debug_review.router)
