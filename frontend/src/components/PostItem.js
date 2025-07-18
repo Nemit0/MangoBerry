@@ -3,6 +3,7 @@ import React from 'react';
 import './PostItem.css';
 import RatingDisplay from './RatingDisplay';
 import foxImage from '../assets/photo/circular_image.png';
+import foxImage from '../assets/photo/circular_image.png';
 // import { BiUser } from "react-icons/bi";
 
 // onClick prop을 추가하고, div에 연결
