@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import PostList from "../components/PostList";
 import './MyPage.css';
+import foxImage from '../assets/photo/circular_image.png';
 
 // 클릭 가능한 UserInfo 컴포넌트
 const UserInfo = ({ label, value, onClick }) => (
@@ -28,6 +29,11 @@ const MyPage = () => {
     navigate('/following');
   };
 
+  const myProfile = {
+    nickname: "닉네임", // 실제 사용자 닉네임으로 변경
+    profileImg: foxImage // 여기에 여우 이미지 경로 사용
+  };
+
   return (
     <div className="mypage-layout">
       <Header />
@@ -36,8 +42,11 @@ const MyPage = () => {
         <main className="mypage-middle-area">
           <div className="my-user-info">
             <div className="user-info-left">
-              <div className="user-image">이미지</div>
-              <div className="user-nickname">닉네임</div>
+              {/* 이미지 란을 여우 이미지로 변경 */}
+              <div className="user-image-container"> {/* 새로운 컨테이너 클래스 추가 */}
+                <img src={myProfile.profileImg} alt="My Profile" className="my-profile-img" />
+              </div>
+              <div className="user-nickname">{myProfile.nickname}</div> {/* 닉네임도 상태에서 가져올 수 있도록 */}
             </div>
 
             <div className="user-info-right">
