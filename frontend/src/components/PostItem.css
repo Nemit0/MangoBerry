@@ -38,11 +38,28 @@
     font-size: 0.9em;
     color: #666;
 }
-
-.post-user-icon {
-    margin-right: 5px;
+/* --- 이미지 컨테이너 스타일 수정 --- */
+.post-user-image-container {
+    width: 25px; /* 프로필 이미지 크기를 5px로 설정 */
+    height: 25px; /* 프로필 이미지 크기를 5px로 설정 */
+    border-radius: 50%; /* 원형으로 자르기 */
+    overflow: hidden; /* 컨테이너 밖으로 나가는 이미지 자르기 */
+    display: flex; /* 내부 이미지를 중앙 정렬 */
+    justify-content: center;
+    align-items: center;
+    margin-right: 10px; /* 사용자 이름과의 간격 */
+    background-color: #eee; /* 이미지가 로드되기 전의 배경색 */
+    flex-shrink: 0; /* 공간이 부족해도 축소되지 않도록 */
 }
 
+.post-profile-img {
+    width: 100%; /* 컨테이너에 꽉 채우기 */
+    height: 100%; /* 컨테이너에 꽉 채우기 */
+    object-fit: cover; /* 이미지 비율 유지하며 컨테이너 채우기 */
+    display: block; /* 이미지 하단 여백 제거 */
+}
+
+/* --- 이미지 컨테이너 스타일 끝 --- */
 .post-user-name {
     font-size: 20px;
     margin-right: 10px;

@@ -34,21 +34,36 @@
 .user-info-left {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 20px;
 }
-.user-image {
-  width: 60px; /* 이미지 크기 조정 */
-  height: 60px;
-  border-radius: 50%;
-  background-color: #eee; /* 임시 배경색 */
-  display: flex;
+
+/* --- 이미지 컨테이너 스타일 수정 --- */
+.user-image-container {
+  width: 60px; /* 프로필 사진 크기를 60px로 설정 */
+  height: 60px; /* 프로필 사진 크기를 60px로 설정 */
+  border-radius: 50%; /* 원형으로 자르기 */
+  overflow: hidden; /* 컨테이너 밖으로 나가는 이미지 부분 자르기 */
+  display: flex; /* 이미지를 중앙에 배치하기 위함 */
   justify-content: center;
   align-items: center;
+  border: 2px solid #ddd; /* 테두리 추가 (선택 사항) */
+  background-color: #eee; /* 이미지가 로드되기 전 배경색 */
 }
+
+.my-profile-img {
+  width: 100%; /* 컨테이너에 꽉 채우기 */
+  height: 100%; /* 컨테이너에 꽉 채우기 */
+  object-fit: cover; /* 이미지가 비율 유지하며 컨테이너 채우기 */
+  display: block; /* 이미지 하단 여백 제거 */
+}
+/* --- 이미지 컨테이너 스타일 끝 --- */
+
 .user-nickname {
-  font-size: 1.5rem;
+  font-size: 28px;
   font-weight: bold;
+  color: #333;
 }
+
 .user-info-right {
   display: flex;
   align-items: center;
@@ -66,23 +81,7 @@
   font-weight: bold;
 }
 
-/*편집 버튼 안 보이게*/
-/*
-.edit-button button {
-  padding: 8px 20px;
-  border: none;
-  border-radius: 5px;
-  background-color: #555;
-  color: white;
-  cursor: pointer;
-  min-width: 150px;
-  font-size: 1rem;
-  text-align: center;
-}
-.edit-button button:hover {
-  background-color: #9A4A6E;
-}
-  */
+
 
 .my-user-post {
   display: flex;
