@@ -5,71 +5,132 @@
     padding: 40px 20px;
     min-height: 100vh;
     overflow-y: auto;
-}
-
-html, body {
+  }
+  
+  html, body {
     height: 100%;
     overflow-y: auto;
-}
+  }
   
-.follower-title {
-font-size: 24px;
-font-weight: bold;
-margin-bottom: 30px;
-border-bottom: 1px solid #999;
-display: inline-block;
-}
-
-.keyword-box {
-width: 800px;
-background-color: #f6f6f6;
-border-radius: 10px;
-padding: 20px;
-margin-bottom: 20px;
-}
-
-.profile-icon {
-font-size: 28px;
-background-color: #eee;
-border-radius: 50%;
-width: 48px;
-height: 48px;
-display: flex;
-justify-content: center;
-align-items: center;
-}
-
-.name-and-bar {
-flex: 1;
-font-family: Bangers;
-}
-
-.info-row {
-display: flex;
-align-items: center;
-justify-content: space-between;
-}
-
-.user-name {
-flex: 1;
-text-align: left;
-}
-
-.progress-bar-fill {
-background-color: #96466E;
-height: 12px;
-border-radius: 8px;
-}
-
-.percent-text {
-flex-shrink: 100;
-margin-left: 80px;
-font-weight: bold;
-font-family: Bangers;
-color: #96466E;
-text-align: right;
-position: absolute;
-top: -20px; /* 이 값을 조절하여 텍스트를 위/아래로 움직일 수 있습니다. */
-right: 0; /* 바의 오른쪽 끝에 정렬 */
-width: 100%; /* 부모 컨테이너의 너비에 맞게 설정 */
-}
+  .follower-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #999;
+    display: inline-block;
+  }
+  
+  .follower-count {
+    font-size: 14px;
+    color: #666;
+    width: 800px;
+    text-align: left;
+    margin-bottom: 10px;
+  }
+  
+  .keyword-result-container {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .keyword-box {
+    width: 800px;
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    height: 60px;
+  }
+  
+  /* profile-image-container: 이미지와 아이콘이 들어갈 공간의 크기를 고정합니다. */
+  .profile-image-container {
+    /* .profile-icon과 동일한 크기 및 모양을 가집니다. */
+    width: 48px; /* 너비 48px */
+    height: 48px; /* 높이 48px */
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    margin-right: 15px;
+    background-color: #eee;
+  }
+  
+  /* 실제 프로필 이미지 스타일 */
+  .profile-img {
+    width: 100%; /* 컨테이너 너비에 꽉 차게 */
+    height: 100%; /* 컨테이너 높이에 꽉 차게 */
+    object-fit: cover;
+    border-radius: 50%; /* 좀 더 확실하게 원형 유지 */
+  }
+  
+  .user-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-right: auto;
+  }
+  
+  /* 팔로잉 버튼 스타일 */
+  .follow-button {
+    padding: 8px 15px;
+    /* 모든 상태에서 일관된 테두리 유지 */
+    border: 1px solid transparent; /* 기본은 투명한 1px 테두리 */
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    /* 크기 관련 변화는 transition에서 제외 */
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    font-size: 12px; /* 폰트 크기 고정 */
+    flex-shrink: 0;
+    box-sizing: border-box; /* 패딩과 테두리가 너비/높이에 포함되도록 */
+    line-height: 1; /* 폰트 높이에 따른 버튼 높이 변화 방지 */
+    min-width: 80px; /* 버튼의 최소 너비를 설정하여 텍스트 변경시 너비 변화 방지 (선택 사항) */
+    text-align: center; /* 텍스트가 중앙에 오도록 (선택 사항) */
+  }
+  
+  /* 모든 상태에서 크기/폰트 고정 */
+  .follow-button,
+  .follow-button:hover,
+  .follow-button:active,
+  .follow-button:focus {
+    /* 크기 관련 변화 방지 */
+    width: auto; /* 내용에 따라 너비 자동 조절 (혹은 고정 px 값) */
+    height: auto; /* 내용에 따라 높이 자동 조절 (혹은 고정 px 값) */
+    transform: none; /* 확대/축소 등 변형 방지 */
+    font-size: 12px; /* 폰트 크기 고정 */
+    padding: 8px 15px; /* 패딩 고정 */
+    line-height: 1; /* 줄 높이 고정 */
+    box-shadow: none; /* 그림자 변화 방지 */
+    outline: none; /* 클릭/포커스 시 아웃라인 제거 */
+  }
+  
+  
+  /* '팔로우' 버튼 */
+  .follow-button.follow {
+    background-color: #7B68EE;
+    color: white;
+    border-color: transparent; /* 테두리 투명 */
+  }
+  
+  .follow-button.follow:hover {
+    background-color: #6A5ACD;
+    border-color: transparent; /* hover시에도 테두리 투명 유지 */
+  }
+  
+  /* '팔로잉' 버튼 */
+  .follow-button.following {
+    background-color: #e0e0e0;
+    color: #555;
+    border: 1px solid #ccc; /* 1px 테두리 */
+  }
+  
+  .follow-button.following:hover {
+    background-color: #d0d0d0;
+    border-color: #ccc; /* hover시에도 테두리 색상 고정 */
+  }
