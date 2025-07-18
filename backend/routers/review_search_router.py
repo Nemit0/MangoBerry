@@ -17,7 +17,7 @@ from ..connection.mongodb import (
     restaurant_keywords_collection,
     user_rest_score,
 )
-from ..services.calc_score import score_user_to_restaurant, update_user_to_restaurant_score
+from ..services.calc_score import update_user_to_restaurant_score
 
 router = APIRouter()
 

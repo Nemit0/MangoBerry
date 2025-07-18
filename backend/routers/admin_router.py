@@ -243,7 +243,12 @@ def debug_update_user_to_restaurant_score(
     `force_update=True`, a dict {score, user_keywords, rest_keywords}.
     """
     try:
-        result = update_user_to_restaurant_score(u_id, r_id, db, force_update)
+        result = update_user_to_restaurant_score(
+            u_id=u_id, 
+            r_id=r_id, 
+            db=db, 
+            force_update=True
+            )
 
         # Plain float?  FastAPI can handle it.
         if not force_update:
@@ -273,7 +278,11 @@ def debug_update_user_to_user_score(
     `force_update=True`, a dict {score, user_a_keywords, user_b_keywords}.
     """
     try:
-        result = update_user_to_user_score(u_id_a, u_id_b, db, force_update)
+        result = update_user_to_user_score(
+            u_id_a=u_id_a, 
+            u_id_b=u_id_b, 
+            db=db, 
+            force_update=force_update)
 
         # Plain float?  FastAPI can handle it.
         if not force_update:
@@ -288,5 +297,5 @@ def debug_update_user_to_user_score(
         }
         return JSONResponse(content=_json_ready(payload))
 
-    except Exception as e:                          # pragma: no cover
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
