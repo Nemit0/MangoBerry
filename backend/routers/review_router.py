@@ -408,8 +408,7 @@ def create_review(payload: ReviewCreate, db: Session = Depends(get_db)):
 
 
 
-
-@router.put("/reviews/{review_id}", tags=["Reviews"])
+@router.put("/update_reviews/{review_id}", tags=["Reviews"])
 def update_review(review_id: int, payload: ReviewUpdate, db: Session = Depends(get_db)):
     try:
         review = db.query(Review).filter(Review.review_id == review_id).first()
