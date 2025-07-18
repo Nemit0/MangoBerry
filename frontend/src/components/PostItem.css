@@ -115,21 +115,17 @@
 }
 
 .positive-tag-badge {
-    background-color: #ffffff;
-    border: 1px solid rgba(30, 150, 0, 1);
-    color: rgba(30, 150, 0, 1);
+    background-color: #D4EDDA;
     padding: 4px 8px;
-    border-radius: 20px;
+    border-radius: 8px;
     font-size: 0.8em;
     white-space: nowrap; /* 태그 줄바꿈 방지 */
 }
 
 .negative-tag-badge {
-    background-color: #ffffff;
-    border: 1px solid rgba(150, 0, 0, 1);
-    color: rgba(150, 0, 0, 1);
+    background-color: #F8D7DA;
     padding: 4px 8px;
-    border-radius: 20px;
+    border-radius: 8px;
     font-size: 0.8em;
     white-space: nowrap; /* 태그 줄바꿈 방지 */
 }

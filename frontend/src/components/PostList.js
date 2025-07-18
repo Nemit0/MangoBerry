@@ -74,10 +74,11 @@ function PostList({ searchTerm, isMyPage, columns }) {
 
     const q = searchTerm.toLowerCase();
     const res = posts.filter((p) => {
+      const r_name  = p.r_name.join(' ').toLowerCase();
       const title   = p.title.join(' ').toLowerCase();
       const user    = p.user.toLowerCase();
       const content = p.content.toLowerCase();
-      return title.includes(q) || user.includes(q) || content.includes(q);
+      return r_name.includes(q) || title.includes(q) || user.includes(q) || content.includes(q);
     });
 
     setFiltered(res);

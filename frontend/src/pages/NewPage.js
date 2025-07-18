@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
-import LeftSidebar from '../components/LeftSidebar';
-import RightSidebar from '../components/RightSidebar';
 import { TbPhotoPlus } from "react-icons/tb";	
 import './NewPage.css';
 
@@ -66,9 +64,6 @@ const NewPage = () => {
     <div className="makepage-container">
       <Header />
       <div className="makepage-content">
-        <aside className="make-left-sidebar">
-            <LeftSidebar />
-        </aside>
         <main className="makepage-main">
           <div className="makepage-wrapper">
             <div className="makepage-top"> 
@@ -157,9 +152,6 @@ const NewPage = () => {
             </div>
          </div>
         </main>
-        <aside className="make-right-sidebar">
-            <RightSidebar />
-        </aside>
       </div>
     </div>
   );

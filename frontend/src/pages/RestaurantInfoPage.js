@@ -1,10 +1,8 @@
 // src/pages/RestaurantInfoPage.js
 import './RestaurantInfoPage.css';
 import Header from '../components/Header';
-import LeftSidebar from '../components/LeftSidebar';
-import RightSidebar from '../components/RightSidebar';
 import PostList from '../components/PostList';
-import pork from '../assets/photo/porkCutlet_width.jpg';
+import fox from '../assets/photo/fox.png';
 import { useEffect, useState } from 'react';
 
 const parseTags = (tagString) => {
@@ -27,7 +25,7 @@ function RestaurantInfoPage () {
             id: 1,
             name: '맛있는 돈까스',
             address: '서울시 강남구 테헤란로 123',
-            image: pork, // 실제로는 이미지 URL을 받아옵니다.
+            image: fox, // 실제로는 이미지 URL을 받아옵니다.
             positiveKeywords: '바삭바삭, 육즙가득, 친절한',
             negativeKeywords: '웨이팅, 좁은 공간',
         };
@@ -50,10 +48,7 @@ function RestaurantInfoPage () {
         <div className='restaurantInfopage-layout'>
             <Header />
             <div className='main-content-wrapper'>
-                <aside className='rIpage-left-sidebar'>
-                    <LeftSidebar />
-                </aside>
-                
+
                 <main className='rIpage-middle-area'>
                     <div className='rIpage-left-part'>
                         <div className='restaurant-info-container'>
@@ -85,10 +80,7 @@ function RestaurantInfoPage () {
                         <PostList />
                     </div>
                 </main>
-
-                <aside className='rIpage-right-sidebar'>
-                    <RightSidebar />
-                </aside>
+                
             </div>
         </div>
     )

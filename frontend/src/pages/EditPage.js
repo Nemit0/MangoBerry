@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
-import LeftSidebar from '../components/LeftSidebar';
-import RightSidebar from '../components/RightSidebar';
 import { TbPhotoPlus } from "react-icons/tb";	
 import './EditPage.css';
 
@@ -66,99 +64,94 @@ const EditPage = () => {
     <div className="makepage-container">
       <Header />
       <div className="makepage-content">
-        <aside className="make-left-sidebar">
-            <LeftSidebar />
-      </aside>
-      <main className="makepage-main">
-        <div className="makepage-wrapper">
-          <div className="makepage-top">
-           <div className="page-title-with-delete">
-             <h1>글편집</h1>
-             <button className="delete-button">삭제</button>
+
+        <main className="makepage-main">
+          <div className="makepage-wrapper">
+            <div className="makepage-top">
+            <div className="page-title-with-delete">
+              <h1>글편집</h1>
+              <button className="delete-button">삭제</button>
+            </div>
           </div>
-        </div>
-          <div className="makepage-bottom">
-            <div className="makepage-left">
-              <div className="makepage-photo-upload"
-                   onClick={() => document.getElementById('imageInput').click()}>
-                <TbPhotoPlus size={50} color="#aaa" />
-                <input
-                  id="imageInput"
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  style={{ display: 'none' }}
-                /> 
-                <div className="image-preview-container">
-                  {images.map((image, index) => (
-                    <img key={index} src={image} alt={`preview ${index}`} className="image-preview" />
-                  ))}
+            <div className="makepage-bottom">
+              <div className="makepage-left">
+                <div className="makepage-photo-upload"
+                    onClick={() => document.getElementById('imageInput').click()}>
+                  <TbPhotoPlus size={50} color="#aaa" />
+                  <input
+                    id="imageInput"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    style={{ display: 'none' }}
+                  /> 
+                  <div className="image-preview-container">
+                    {images.map((image, index) => (
+                      <img key={index} src={image} alt={`preview ${index}`} className="image-preview" />
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="makepage-right">
-              <div className="makepage-inputs">
-                <input type="text" placeholder="식당이름" />
-                <input type="text" placeholder="한줄평" />
-                <textarea placeholder="리뷰"></textarea>
-                <button
-                  onClick={handleAnalysis}
-                  className="analysis-button"
-                  disabled={analysisComplete}
-                >
-                  {analysisComplete ? '분석 완료' : '분석 시작'}
-                </button>
-              </div>
-              {analysisComplete && (
-                <div className="analysis-results">
-                  <div className="keyword-sections-container">
-                    <div className="keyword-type-section">
-                      <h2>긍정 키워드</h2>
-                      <div className="editpage-keyword-section">
-                        <div className="keywords">
-                          {Object.entries(positiveKeywords).map(([keyword, isActive]) => (
-                            <button
-                              key={keyword}
-                              className={`edit-positive-button ${isActive ? 'active' : ''}`}
-                              onClick={() => toggleKeyword('positive', keyword)}
-                            >
-                              {keyword}
-                            </button>
-                          ))}
+              <div className="makepage-right">
+                <div className="makepage-inputs">
+                  <input type="text" placeholder="식당이름" />
+                  <input type="text" placeholder="한줄평" />
+                  <textarea placeholder="리뷰"></textarea>
+                  <button
+                    onClick={handleAnalysis}
+                    className="analysis-button"
+                    disabled={analysisComplete}
+                  >
+                    {analysisComplete ? '분석 완료' : '분석 시작'}
+                  </button>
+                </div>
+                {analysisComplete && (
+                  <div className="analysis-results">
+                    <div className="keyword-sections-container">
+                      <div className="keyword-type-section">
+                        <h2>긍정 키워드</h2>
+                        <div className="editpage-keyword-section">
+                          <div className="keywords">
+                            {Object.entries(positiveKeywords).map(([keyword, isActive]) => (
+                              <button
+                                key={keyword}
+                                className={`edit-positive-button ${isActive ? 'active' : ''}`}
+                                onClick={() => toggleKeyword('positive', keyword)}
+                              >
+                                {keyword}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="keyword-type-section">
+                        <h2>부정 키워드</h2>
+                        <div className="editpage-keyword-section">
+                          <div className="keywords">
+                            {Object.entries(negativeKeywords).map(([keyword, isActive]) => (
+                              <button
+                                key={keyword}
+                                className={`edit-nagative-button ${isActive ? 'active' : ''}`}
+                                onClick={() => toggleKeyword('negative', keyword)}
+                              >
+                                {keyword}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>
-                    <div className="keyword-type-section">
-                      <h2>부정 키워드</h2>
-                      <div className="editpage-keyword-section">
-                        <div className="keywords">
-                          {Object.entries(negativeKeywords).map(([keyword, isActive]) => (
-                            <button
-                              key={keyword}
-                              className={`edit-nagative-button ${isActive ? 'active' : ''}`}
-                              onClick={() => toggleKeyword('negative', keyword)}
-                            >
-                              {keyword}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
+                    <div className="action-buttons">
+                      <button onClick={handleCancel} className="cancel-button">취소</button>
+                      <button onClick={handleSave} className="save-button">저장</button>
                     </div>
                   </div>
-                  <div className="action-buttons">
-                    <button onClick={handleCancel} className="cancel-button">취소</button>
-                    <button onClick={handleSave} className="save-button">저장</button>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
-        </div>
         </main>
-        <aside className="make-right-sidebar">
-            <RightSidebar />
-        </aside>
       </div>
     </div>
   );

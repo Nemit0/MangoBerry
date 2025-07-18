@@ -1,7 +1,5 @@
 // src/pages/OthersPage.js
 import Header from "../components/Header";
-import LeftSidebar from "../components/LeftSidebar";
-import RightSidebar from "../components/RightSidebar";
 import PostList from "../components/PostList";
 import './OthersPage.css';
 import fox from '../assets/photo/fox.png';
@@ -25,9 +23,6 @@ const OthersPage = () => {
         <div className="otherspage-layout">
             <Header />
             <div className="otherspage-main-wrapper">
-                <aside className="others-left-sidebar">
-                    <LeftSidebar />
-                </aside>
                 <main className="otherspage-middle-area">
                     <div className="other-user-info">
                         <div className="user-info-left">
@@ -60,9 +55,6 @@ const OthersPage = () => {
                         </div>
                     </div>
                 </main>
-                <aside className="others-right-sidebar">
-                    <RightSidebar />
-                </aside>
             </div>
 
         </div>

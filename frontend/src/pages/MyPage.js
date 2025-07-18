@@ -2,8 +2,6 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 import Header from "../components/Header";
-import LeftSidebar from "../components/LeftSidebar";
-import RightSidebar from "../components/RightSidebar";
 import PostList from "../components/PostList";
 import './MyPage.css';
 
@@ -34,9 +32,6 @@ const MyPage = () => {
     <div className="mypage-layout">
       <Header />
       <div className="mypage-main-wrapper">
-        <aside className="my-left-sidebar">
-          <LeftSidebar />
-        </aside>
 
         <main className="mypage-middle-area">
           <div className="my-user-info">
@@ -64,9 +59,6 @@ const MyPage = () => {
           </div>
         </main>
 
-        <aside className="my-right-sidebar">
-          <RightSidebar />
-        </aside>
       </div>
     </div>
   );

@@ -51,23 +51,23 @@ function Header({ searchTerm, onSearchChange }) { // 검색어 관련 props 받�
                 <nav className="menu-nav">
                     {isLoggedIn ? (
                         <>
-                            <p onClick={goToMyPage} className="nav-link">내 프로필</p>
-                            <p onClick={goToNewPage} className="nav-link">새글쓰기</p>
-                            <p onClick={goToMapPage} className="nav-link">지도</p>
+                            <p onClick={goToMyPage} className="nav-link" style={{ cursor: 'pointer' }}>내 프로필</p>
+                            <p onClick={goToNewPage} className="nav-link" style={{ cursor: 'pointer' }}>새글쓰기</p>
+                            <p onClick={goToMapPage} className="nav-link" style={{ cursor: 'pointer' }}>지도</p>
                         </>
                     ) : (
-                        <p onClick={goToMapPage} className="nav-link">지도</p>
+                        <p onClick={goToMapPage} className="nav-link" style={{ cursor: 'pointer' }}>지도</p>
                     )}
                 </nav>
 
                 <nav className="header-nav">
                     {!isLoggedIn && ( // 로그아웃 상태일 때만 회원가입 표시
-                        <p onClick={handleRegisterClick} className="nav-link">회원가입</p>
+                        <p onClick={handleRegisterClick} className="nav-link" style={{ cursor: 'pointer' }}>회원가입</p>
                     )}
                     {isLoggedIn ? ( // 로그인 상태이면 로그아웃 표시
-                        <p onClick={handleLogoutClick} className="nav-link logout-link">로그아웃</p>
+                        <p onClick={handleLogoutClick} className="nav-link logout-link" style={{ cursor: 'pointer' }}>로그아웃</p>
                     ) : ( // 로그아웃 상태이면 로그인 표시
-                        <p onClick={handleLoginClick} className="nav-link">로그인</p>
+                        <p onClick={handleLoginClick} className="nav-link" style={{ cursor: 'pointer' }}>로그인</p>
                     )}
                 </nav>
             </div>
