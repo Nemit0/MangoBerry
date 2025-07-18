@@ -1,207 +1,93 @@
-// src/components/WelcomePopup.js
 import React, { useState } from 'react';
-import './WelcomePopup.css'; // 팝업 스타일
+import './WelcomePopup.css';
+import { useAuth } from '../contexts/AuthContext'; // useAuth import
+
+const keywords = {
+  '맛': ['#인생 맛집', '#존맛탱', '#깊은 맛', '#감칠맛', '#쫄깃함', '#바삭함', '#신선한 재료', '#딱 맞는 간', '#매운 맛', '#건강한 맛', '#비건', '#고소한 맛'],
+  '가격': ['#가성비', '#합리적인 가격', '#푸짐한 양', '#저렴한 가격'],
+  '분위기': ['#데이트 분위기', '#인스타 감성', '#조용한 분위기', '#아늑함', '#편안함', '#뷰맛집', '#세련된 디자인', '#이쁜 플레이팅', '#대화하기 좋다', '#사진이 잘나온다', '#혼밥하기 좋은'],
+  '서비스': ['#친절함', '#빠른 응대', '#세심한 배려', '#사장님이 기억해줌'],
+  '위생/청결': ['#깨끗함', '#청결함', '#위생적', '#깨끗한 화장실'],
+  '특별한 경험': ['#숨겨진 맛집', '#이색적인 메뉴', '#기념일에 좋음', '#모임 장소로 최고', '#나만 알고 싶은 곳', '#또 오고 싶은 곳', '#재방문 의사 100%'],
+};
 
 function WelcomePopup({ onClose }) {
-    const [currentPage, setCurrentPage] = useState(1);
-    const [restaurantInputs, setRestaurantInputs] = useState([
-        { name: '', review: '', address: '' },
-        { name: '', review: '', address: '' },
-        { name: '', review: '', address: '' },
-    ]);
+  const [selectedKeywords, setSelectedKeywords] = useState([]);
+  const { user } = useAuth(); // Get user info
 
-    // 식당 검색 (간단한 예시: 실제 지도 API 연동 필요)
-    const mockRestaurantDatabase = {
-        "강남 맛집": "서울시 강남구 테헤란로 123",
-        "종로 식당": "서울시 종로구 종로 456",
-        "홍대 카페": "서울시 마포구 독막로 789",
-        "명동 칼국수": "서울시 중구 명동길 10",
-        "부산 돼지국밥": "부산광역시 부산진구 부전동 123",
-        "제주 흑돼지": "제주특별자치도 제주시 연동 456"
-    };
-
-    const handleRestaurantNameChange = (e, index) => {
-        const newInputs = [...restaurantInputs];
-        newInputs[index].name = e.target.value;
-
-        // 식당명 입력 시 가상의 주소 매칭
-        const matchedAddress = mockRestaurantDatabase[e.target.value];
-        if (matchedAddress) {
-            newInputs[index].address = matchedAddress;
-        } else {
-            newInputs[index].address = ''; // 일치하는 주소가 없으면 초기화
-        }
-        setRestaurantInputs(newInputs);
-    };
-
-    const handleReviewChange = (e, index) => {
-        const newInputs = [...restaurantInputs];
-        newInputs[index].review = e.target.value;
-        setRestaurantInputs(newInputs);
-    };
-
-    const handleNext = () => {
-        // 각 페이지별 유효성 검사 (선택 사항)
-        if (currentPage === 1 && !restaurantInputs[0].name) {
-            alert("첫 번째 식당 이름을 입력해주세요.");
-            return;
-        }
-        if (currentPage === 2 && !restaurantInputs[1].name) {
-            alert("두 번째 식당 이름을 입력해주세요.");
-            return;
-        }
-        if (currentPage < 3) {
-            setCurrentPage(prev => prev + 1);
-        }
-    };
-
-    const handlePrev = () => {
-        if (currentPage > 1) {
-            setCurrentPage(prev => prev - 1);
-        }
-    };
-
-    const handleSubmit = () => {
-        // 여기에서 수집된 데이터를 서버로 전송하거나 저장하는 로직 구현
-        console.log("취향 정보 제출:", restaurantInputs);
-        onClose(); // 팝업 닫기
-    };
-
-    const handleSkip = () => {
-        if (currentPage < 3) {
-            setCurrentPage(prev => prev + 1);
-        }
-    };
-
-    const renderPageContent = () => {
-        switch (currentPage) {
-            case 1:
-                return (
-                    <div className="popup-page">
-                        {/* <h3>인상 깊었거나 최근에 간 식당 3곳을 알려주세요</h3> */}
-                        <div className="input-group">
-                            {/* <label htmlFor="restaurant1">식당명:</label> */}
-                            <input
-                                id="restaurant1"
-                                type="text"
-                                value={restaurantInputs[0].name}
-                                onChange={(e) => handleRestaurantNameChange(e, 0)}
-                                placeholder="식당 이름을 입력하세요"
-                            />
-                            {restaurantInputs[0].address && (
-                                <p className="restaurant-address">주소: {restaurantInputs[0].address}</p>
-                            )}
-                        </div>
-                        <div className="input-group">
-                            {/* <label htmlFor="review1">리뷰:</label> */}
-                            <textarea
-                                id="review1"
-                                value={restaurantInputs[0].review}
-                                onChange={(e) => handleReviewChange(e, 0)}
-                                placeholder="간단한 리뷰를 작성해주세요"
-                            />
-                        </div>
-                    </div>
-                );
-            case 2:
-                return (
-                    <div className="popup-page">
-                        {/* <h3>인상 깊었거나 최근에 간 식당 3곳을 알려주세요</h3> */}
-                        <div className="input-group">
-                            {/* <label htmlFor="restaurant2">식당명:</label> */}
-                            <input
-                                id="restaurant2"
-                                type="text"
-                                value={restaurantInputs[1].name}
-                                onChange={(e) => handleRestaurantNameChange(e, 1)}
-                                placeholder="식당 이름을 입력하세요"
-                            />
-                            {restaurantInputs[1].address && (
-                                <p className="restaurant-address">주소: {restaurantInputs[1].address}</p>
-                            )}
-                        </div>
-                        <div className="input-group">
-                            {/* <label htmlFor="review2">리뷰:</label> */}
-                            <textarea
-                                id="review2"
-                                value={restaurantInputs[1].review}
-                                onChange={(e) => handleReviewChange(e, 1)}
-                                placeholder="간단한 리뷰를 작성해주세요"
-                            />
-                        </div>
-                    </div>
-                );
-            case 3:
-                return (
-                    <div className="popup-page">
-                        {/* <h3>인상 깊었거나 최근에 간 식당 3곳을 알려주세요</h3> */}
-                        <div className="input-group">
-                            {/* <label htmlFor="restaurant3">식당명:</label> */}
-                            <input
-                                id="restaurant3"
-                                type="text"
-                                value={restaurantInputs[2].name}
-                                onChange={(e) => handleRestaurantNameChange(e, 2)}
-                                placeholder="식당 이름을 입력하세요"
-                            />
-                             {restaurantInputs[2].address && (
-                                <p className="restaurant-address">주소: {restaurantInputs[2].address}</p>
-                            )}
-                        </div>
-                        <div className="input-group">
-                            {/* <label htmlFor="review3">리뷰:</label> */}
-                            <textarea
-                                id="review3"
-                                value={restaurantInputs[2].review}
-                                onChange={(e) => handleReviewChange(e, 2)}
-                                placeholder="간단한 리뷰를 작성해주세요"
-                            />
-                        </div>
-                    </div>
-                );
-            default:
-                return null;
-        }
-    };
-
-    return (
-        // 팝업 외부 클릭 방지: onClose가 `props`로 전달되지 않거나,
-        // modal-overlay에 클릭 이벤트를 추가하지 않아 외부 클릭으로 닫히지 않도록 구현됩니다.
-        <div className="welcome-popup-overlay">
-            <div className="welcome-popup-content">
-                <h2 className="popup-main-title">당신의 취향을 알려주세요</h2>
-                <h3 className='popup-sub-title'>해당 리뷰는 키워드 분석하는 데에만 사용됩니다.</h3>
-                
-                {renderPageContent()}
-                
-                <div className="popup-navigation">
-                    <div className="left-nav-group">
-                        {currentPage > 1 && (
-                            <button onClick={handlePrev} className="popup-button prev-button">이전</button>
-                        )}
-                    </div>
-                    
-                    <div className="center-nav-group">
-                        <span className="page-indicator">{currentPage} / 3</span>
-                    </div>
-
-                    <div className="right-nav-group">
-                        {currentPage < 3 && (
-                            <button onClick={handleNext} className="popup-button next-button">다음</button>
-                        )}
-                        {currentPage === 3 && (
-                            <button onClick={handleSubmit} className="popup-button submit-button">완료</button>
-                        )}
-                    </div>
-                </div>
-                <div className='popup-skip'>
-                    {currentPage < 3 && (
-                        <p onClick={handleSkip} className="popup-button skip-button">건너뛰기</p>
-                    )}
-                </div>
-            </div>
-        </div>
+  const handleKeywordClick = (keyword) => {
+    setSelectedKeywords(prev => 
+      prev.includes(keyword) 
+        ? prev.filter(k => k !== keyword) 
+        : [...prev, keyword]
     );
+  };
+
+  const handleSubmit = async () => {
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    if (selectedKeywords.length === 0) {
+      alert('키워드를 하나 이상 선택해주세요.');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/user/keywords', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          userId: user.user_id, 
+          keywords: selectedKeywords 
+        }),
+      });
+
+      if (response.ok) {
+        console.log('Keywords submitted successfully:', selectedKeywords);
+        onClose();
+      } else {
+        const errorData = await response.json();
+        alert(`키워드 저장에 실패했습니다: ${errorData.message}`);
+      }
+    } catch (error) {
+      console.error('Error submitting keywords:', error);
+      alert('키워드 저장 중 오류가 발생했습니다.');
+    }
+  };
+
+  return (
+    <div className="welcome-popup-overlay">
+      <div className="welcome-popup-content">
+        <h2 className="popup-main-title">찾고 싶은 식당의 키워드를 선택해주세요</h2>
+        <div className="keyword-sections">
+          {Object.entries(keywords).map(([category, keywordsList]) => (
+            <div key={category} className="keyword-category">
+              <h3>{category}</h3>
+              <div className="keyword-buttons">
+                {keywordsList.map(keyword => (
+                  <button 
+                    key={keyword} 
+                    className={`keyword-button ${selectedKeywords.includes(keyword) ? 'selected' : ''}`}
+                    onClick={() => handleKeywordClick(keyword)}
+                  >
+                    {keyword}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="popup-actions">
+          <button onClick={handleSubmit} className="popup-button submit-button">선택 완료</button>
+          <button onClick={onClose} className="popup-button skip-button">건너뛰기</button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default WelcomePopup;

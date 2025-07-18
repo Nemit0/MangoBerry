@@ -53,10 +53,14 @@ function PostList({ searchTerm, isMyPage, columns }) {
           keywords: raw.keywords ?? [],
           restaurant_id: raw.restaurant_id,
           user_id: raw.user_id,
+          created_at: raw.created_at, // 정렬을 위해 추가
         }));
 
-        setPosts(sanitized);
-        setFiltered(sanitized);
+        // 날짜 최신순으로 정렬
+        const sorted = sanitized.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        setPosts(sorted);
+        setFiltered(sorted);
       } catch (err) {
         console.error('[PostList] 초기 데이터 로드 실패:', err);
       }
