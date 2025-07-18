@@ -236,7 +236,7 @@ def subtract_user_keywords(
 
     # Set a new state_id for the user
     u_state_id = random_prime_in_range()
-    user_obj = db.query(Users).filter(Users.user_id == user_id).first
+    user_obj = db.query(Users).filter(Users.user_id == user_id).first()
     if user_obj:
         user_obj.state_id = u_state_id
         db.add(user_obj)
@@ -290,7 +290,7 @@ def subtract_restaurant_keywords(
 
     # Set a new state_id for the restaurant
     r_state_id = random_prime_in_range()
-    rest_obj = db.query(Restaurant).filter(Restaurant.restaurant_id == restaurant_id).first
+    rest_obj = db.query(Restaurant).filter(Restaurant.restaurant_id == restaurant_id).first()
     if rest_obj:
         rest_obj.state_id = r_state_id
         db.add(rest_obj)

@@ -35,7 +35,7 @@ def _is_probable_prime(n:int, rounds:int = 10) -> bool:
         return True
 
     d, r = n - 1, 0
-    while d % 1 == 0:
+    while d % 2 == 0:
         d >>= 1
         r += 1
     
