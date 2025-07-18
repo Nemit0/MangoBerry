@@ -1,517 +1,351 @@
 import contextlib
-import numpy as np
 import logging
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, Set
 
-from typing import List, Dict, Union, Optional, Iterable, Tuple, Any
-from logging import debug
+import numpy as np
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from ..connection.mysqldb import Users, Restaurant, get_db
-from ..connection.mongodb import (
-    user_keywords_collection,
+# ─────────────────────────────────── SQL / Mongo hooks ─────────────────────────
+from ..connection.mysqldb import Restaurant, Users, get_db
+from ..connection.mongodb import (  # type: ignore
     restaurant_keywords_collection,
+    user_keywords_collection,
     user_rest_score,
-    user_user_score
+    user_user_score,
 )
-from .utilities import random_prime_in_range, PRIME_LOWER_CAP, PRIME_UPPER_CAP
+from .utilities import PRIME_LOWER_CAP, PRIME_UPPER_CAP, random_prime_in_range
 
-# --------------------------------------------------------------------------- #
-# Tunables
-# --------------------------------------------------------------------------- #
+logger = logging.getLogger(__name__)
 
-THRESHOLD: float = 0.6 
-SKEW_B: int = 15
+# ───────────────────────────────────── Tunables ────────────────────────────────
+THRESHOLD: float = 0.50           # cosine ≥ THRESHOLD counts as a match
+EMBED_DIM: int = 1536             # OpenAI text‑embedding‑3‑small dimension
+LIFT_TAIL_B: int = 10             # 1 disables logarithmic skew
+print(f"DEBUG: USING CONFIG:\nTHRESHOLD = {THRESHOLD}\nEMBED_DIM = {EMBED_DIM}\nLIFT_TAIL_B = {LIFT_TAIL_B}")
 
-
-# --------------------------------------------------------------------------- #
-# Math helpers
-# --------------------------------------------------------------------------- #
-
-def skew_score(score: float, b: int = SKEW_B) -> float:
+def skew_score(score: float, b: int = LIFT_TAIL_B) -> float:
     """
-    Logarithmic "lift the tail" transform for values in [0,1].
-    Keeps endpoints fixed; compresses high end slightly; lifts low end.
+    Apply logarithmic tail lift to a score in [0, 1].
+    If b = 1, no skew is applied (linear).
     """
-    return np.log(1 + (b - 1) * score) / np.log(b)
+    if b <= 1:
+        return score
+    return np.log1p((b - 1) * score) / np.log(b)
 
-
-def cosine_similarity(vec_a: Union[List[float], np.ndarray],
-                      vec_b: Union[List[float], np.ndarray]) -> float:
-    """
-    Cosine similarity between two equal-length vectors.
-    Returns 0.0 if either vector has zero L2 norm.
-    """
-    a = np.asarray(vec_a, dtype=np.float32)
-    b = np.asarray(vec_b, dtype=np.float32)
-    if a.shape != b.shape:
-        raise ValueError("Vectors must be of the same dimension")
-    norm_a = np.linalg.norm(a)
-    norm_b = np.linalg.norm(b)
-    if norm_a == 0.0 or norm_b == 0.0:
-        return 0.0
-    return float(np.dot(a, b) / (norm_a * norm_b))
-
-
-# --------------------------------------------------------------------------- #
-# Keyword canonicalization
-# --------------------------------------------------------------------------- #
-
+# ───────────────────────────── Canonicalisation helpers ───────────────────────
 def _canon_token(rec: Dict[str, Any]) -> str:
-    """Extract the keyword string regardless of source field naming."""
-    if "token" in rec:
-        return rec["token"]
-    if "name" in rec:
-        return rec["name"]
-    if "keyword" in rec:
-        return rec["keyword"]
-    # fallback: try label / word etc.
-    for k in ("word", "text", "label"):
-        if k in rec:
-            return rec[k]
-    raise KeyError("No keyword-like field found in record: %r" % rec)
+    for key in ("token", "name", "keyword", "word", "text", "label"):
+        if key in rec:
+            return rec[key]
+    raise KeyError(f"No keyword‑like field found: {rec!r}")
 
+def _canon_sentiment(rec: Dict[str, Any]) -> str:  # 'positive' default
+    return rec.get("sentiment", "positive")
 
-def _canon_sentiment(rec: Dict[str, Any]) -> str:
-    """Default to 'positive' when absent."""
-    return rec.get("sentiment") or "positive"
-
-
-def _canon_frequency(rec: Dict[str, Any]) -> int:
-    """Coerce freq to positive int; floor to 1."""
+def _canon_frequency(rec: Dict[str, Any]) -> int:  # floor at 1
     try:
         v = int(rec.get("frequency", 1))
     except Exception:
         v = 1
-    return v if v > 0 else 1
-
+    return max(v, 1)
 
 def _canon_embedding(rec: Dict[str, Any]) -> np.ndarray:
-    """Return float32 numpy vector (empty→0-len array)."""
     emb = rec.get("embedding", [])
     return np.asarray(emb, dtype=np.float32)
 
-
 def _canonize_kw_list(records: Optional[Iterable[Dict[str, Any]]]) -> List[Dict[str, Any]]:
-    """
-    Normalize a heterogenous incoming keyword list into canonical form.
-
-    Returns list-of-dicts; each dict guaranteed to have keys:
-        token, sentiment, frequency, embedding(np.ndarray[float32])
-    """
     if not records:
         return []
     canon: List[Dict[str, Any]] = []
     for rec in records:
         try:
-            canon.append({
-                "token": _canon_token(rec),
-                "sentiment": _canon_sentiment(rec),
-                "frequency": _canon_frequency(rec),
-                "embedding": _canon_embedding(rec),
-            })
-        except Exception:
-            # Skip malformed entries silently; alternatively log/raise.
-            continue
+            canon.append(
+                {
+                    "token": _canon_token(rec),
+                    "sentiment": _canon_sentiment(rec),
+                    "frequency": _canon_frequency(rec),
+                    "embedding": _canon_embedding(rec),
+                }
+            )
+        except Exception as exc:
+            logger.debug("Skipping malformed keyword %r (%s)", rec, exc)
     return canon
 
+# ───────────────────────────── Similarity primitives ──────────────────────────
+def _cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
+    if not a.any() or not b.any():
+        return 0.0
+    return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
 
-# --------------------------------------------------------------------------- #
-# Core scoring kernels (operate on canonicalized lists)
-# --------------------------------------------------------------------------- #
-
-def score_user_to_restaurant(
-    user_keywords: List[Dict[str, Any]],
-    restaurant_keywords: List[Dict[str, Any]],
+# ───────────────────────────── Core scoring routine ───────────────────────────
+def _score_pair(
+    kw_user: List[Dict[str, Any]],
+    kw_rest: List[Dict[str, Any]],
+    *,
+    metric: str = "cosine",           # kept for API compatibility – ignored
+    lift_tail_b: int | None = None,   # ditto
     threshold: float = THRESHOLD,
-    b: int = SKEW_B,
 ) -> float:
     """
-    Compare one user profile to one restaurant profile.
+    Per‑keyword cosine scoring with threshold.
 
-    Canonical inputs (see _canonize_kw_list).
-    Returns [0,100].
+    Steps
+    -----
+    1. For every user keyword U, find the *single* restaurant keyword R with the
+       highest cosine ≥ *threshold* that hasn’t already been matched.
+    2. Contribution = sentiment_sign(U) · freq(U) · freq(R).
+    3. Sum contributions → *score_sum*.
+    4. Normalise by the average profile weight and map to 0‑100.
+
+    Returns
+    -------
+    float in [0, 100]
     """
-    u_kw = _canonize_kw_list(user_keywords)
-    r_kw = _canonize_kw_list(restaurant_keywords)
+    # Filter out keywords whose embeddings are the wrong size
+    user_kw = [rec for rec in kw_user if rec["embedding"].size == EMBED_DIM]
+    rest_kw = [rec for rec in kw_rest if rec["embedding"].size == EMBED_DIM]
 
-    # Quick exits
-    if not u_kw or not r_kw:
+    if not user_kw or not rest_kw:
         return 0.0
 
-    # Fast lookup: restaurant token -> vec
-    r_vecs = {rec["token"]: rec["embedding"] for rec in r_kw}
+    # Pre‑compute normalised vectors for efficiency
+    for rec in user_kw + rest_kw:
+        vec = rec["embedding"]
+        # Cache the L2‑norm to avoid recomputing inside the loop
+        rec["_norm"] = np.linalg.norm(vec)
 
     score_sum: float = 0.0
-    matched_r: set[str] = set()
+    matched_rest_tokens: Set[str] = set()
 
-    for u in u_kw:
-        u_token = u["token"]
-        u_vec = u["embedding"]
-        u_sent = u["sentiment"]
-        u_freq = u["frequency"]
+    # Iterate over user keywords
+    for u_rec in user_kw:
+        u_vec = u_rec["embedding"]
+        u_norm = u_rec["_norm"] or 1.0
 
-        best_sim = 0.0
-        best_token = None
-        best_r_freq = 1
+        best_sim: float = 0.0
+        best_r_rec: Optional[Dict[str, Any]] = None
 
-        for r in r_kw:
-            token_r = r["token"]
-            if token_r in matched_r:
+        # Linear scan over restaurant keywords (small lists → fine)
+        for r_rec in rest_kw:
+            if r_rec["token"] in matched_rest_tokens:
                 continue
-            sim_val = cosine_similarity(u_vec, r_vecs[token_r])
-            if sim_val >= threshold and sim_val > best_sim:
-                best_sim = sim_val
-                best_token = token_r
-                best_r_freq = r["frequency"]
+            sim = float(np.dot(u_vec, r_rec["embedding"]) / (u_norm * (r_rec["_norm"] or 1.0)))
+            if sim >= threshold and sim > best_sim:
+                best_sim = sim
+                best_r_rec = r_rec
 
-        if best_token is not None:
-            matched_r.add(best_token)
-            sentiment_sign = 1 if u_sent == "positive" else -1
-            weight = (u_freq or 1) * (best_r_freq or 1)
+        if best_r_rec is not None:
+            matched_rest_tokens.add(best_r_rec["token"])
+            sentiment_sign = 1 if u_rec["sentiment"] == "positive" else -1
+            weight = u_rec["frequency"] * best_r_rec["frequency"]
             score_sum += sentiment_sign * weight
 
-    total_u_weight = sum(rec["frequency"] for rec in u_kw)
-    total_r_weight = sum(rec["frequency"] for rec in r_kw)
-    norm_factor = (total_u_weight + total_r_weight) / 2.0 or 1.0
-
-    raw_score = max(0.0, score_sum / norm_factor)  # negatives clamp to 0
-    skewed = skew_score(raw_score, b=b)
-    return min(max(skewed * 100.0, 0.0), 100.0)
-
-
-def score_user_to_user(
-    userA_keywords: List[Dict[str, Any]],
-    userB_keywords: List[Dict[str, Any]],
-    threshold: float = THRESHOLD,
-    b: int = SKEW_B,
-) -> float:
-    """
-    Symmetric compatibility between two users.
-    Sentiment agreement increases, disagreement reduces.
-    Returns [0,100].
-    """
-    kwA = _canonize_kw_list(userA_keywords)
-    kwB = _canonize_kw_list(userB_keywords)
-
-    if not kwA or not kwB:
+    # Normalise – average profile weight
+    total_user_weight = sum(rec["frequency"] for rec in user_kw)
+    total_rest_weight = sum(rec["frequency"] for rec in rest_kw)
+    denominator = (total_user_weight + total_rest_weight) / 2.0
+    if denominator <= 0:
         return 0.0
 
-    vecsB = {rec["token"]: rec["embedding"] for rec in kwB}
+    score_fraction = score_sum / denominator
+    score_fraction = skew_score(score_fraction)
+    return float(np.clip(score_fraction * 100.0, 0.0, 100.0))
 
-    similarity_sum: float = 0.0
-    matched_B: set[str] = set()
-
-    for a in kwA:
-        a_token = a["token"]
-        a_vec = a["embedding"]
-        a_sent = a["sentiment"]
-        a_freq = a["frequency"]
-
-        best_sim = 0.0
-        best_b_token = None
-        best_b_sent = "positive"
-        best_b_freq = 1
-
-        for b_rec in kwB:
-            b_token = b_rec["token"]
-            if b_token in matched_B:
-                continue
-            sim_val = cosine_similarity(a_vec, vecsB[b_token])
-            if sim_val >= threshold and sim_val > best_sim:
-                best_sim = sim_val
-                best_b_token = b_token
-                best_b_sent = b_rec["sentiment"]
-                best_b_freq = b_rec["frequency"]
-
-        if best_b_token is not None:
-            matched_B.add(best_b_token)
-            sentiment_factor = 1 if a_sent == best_b_sent else -1
-            weight = (a_freq or 1) * (best_b_freq or 1)
-            similarity_sum += sentiment_factor * weight
-
-    total_A = sum(rec["frequency"] for rec in kwA)
-    total_B = sum(rec["frequency"] for rec in kwB)
-    norm_factor = (total_A + total_B) / 2.0 or 1.0
-
-    raw_score = max(0.0, similarity_sum / norm_factor)
-    skewed = skew_score(raw_score, b=b)
-    return min(max(skewed * 100.0, 0.0), 100.0)
-
-
-# --------------------------------------------------------------------------- #
-# SQL state helpers
-# --------------------------------------------------------------------------- #
-
+# ─────────────────────────────── Cache helpers ────────────────────────────────
 def _ensure_state_id(obj: Any, attr: str, db: Session) -> int:
-    """
-    Guarantee a prime-valued `state_id` attribute on the given SQLAlchemy row.
-    Lazily assigns one when missing.
-    """
     val = getattr(obj, attr)
     if val is None:
         val = random_prime_in_range(PRIME_LOWER_CAP, PRIME_UPPER_CAP)
         setattr(obj, attr, val)
         db.add(obj)
-        db.flush()  # caller commits
+        db.flush()
     return val
 
-
-# --------------------------------------------------------------------------- #
-# Mongo cache utility ops
-# --------------------------------------------------------------------------- #
-
 def _cache_find_user_rest(u_id: int, r_id: int, state_hash: int) -> Optional[float]:
-    """Return cached user↔restaurant score if present and valid."""
-    proj = {"scores.$": 1}
     doc = user_rest_score.find_one(
         {"u_id": u_id, "scores.r_id": r_id, "scores.state_id": state_hash},
-        proj,
+        {"scores.$": 1},
     )
     if doc and doc.get("scores"):
         return doc["scores"][0]["score"]
     return None
-
 
 def _cache_write_user_rest(u_id: int, r_id: int, state_hash: int, score_val: float) -> None:
-    """Upsert + replace cached snapshot for a user↔restaurant pair."""
     user_rest_score.update_one(
-        {"u_id": u_id},
-        {"$setOnInsert": {"u_id": u_id, "scores": []}},
-        upsert=True,
+        {"u_id": u_id}, {"$setOnInsert": {"u_id": u_id, "scores": []}}, upsert=True
     )
+    user_rest_score.update_one({"u_id": u_id}, {"$pull": {"scores": {"r_id": r_id}}})
     user_rest_score.update_one(
         {"u_id": u_id},
-        {"$pull": {"scores": {"r_id": r_id}}},
-    )
-    user_rest_score.update_one(
-        {"u_id": u_id},
-        {"$push": {"scores": {
-            "r_id": r_id,
-            "state_id": state_hash,
-            "score": score_val,
-        }}},
+        {"$push": {"scores": {"r_id": r_id, "state_id": state_hash, "score": score_val}}},
     )
 
-
-def _cache_find_user_user(holder_u_id: int, partner_u_id: int, state_hash: int) -> Optional[float]:
-    """Lookup cached user↔user score stored under *holder_u_id* doc."""
-    proj = {"scores.$": 1}
+def _cache_find_user_user(holder: int, partner: int, state_hash: int) -> Optional[float]:
     doc = user_user_score.find_one(
-        {"u_id": holder_u_id, "scores.u_id": partner_u_id, "scores.state_id": state_hash},
-        proj,
+        {"u_id": holder, "scores.u_id": partner, "scores.state_id": state_hash},
+        {"scores.$": 1},
     )
     if doc and doc.get("scores"):
         return doc["scores"][0]["score"]
     return None
 
-
-def _cache_write_user_user(holder_u_id: int, partner_u_id: int, state_hash: int, score_val: float) -> None:
-    """
-    Upsert + replace cached snapshot for one direction (holder → partner).
-
-    Called twice (once per direction) when mirroring is enabled.
-    """
+def _cache_write_user_user(holder: int, partner: int, state_hash: int, score_val: float) -> None:
     user_user_score.update_one(
-        {"u_id": holder_u_id},
-        {"$setOnInsert": {"u_id": holder_u_id, "scores": []}},
-        upsert=True,
+        {"u_id": holder}, {"$setOnInsert": {"u_id": holder, "scores": []}}, upsert=True
     )
+    user_user_score.update_one({"u_id": holder}, {"$pull": {"scores": {"u_id": partner}}})
     user_user_score.update_one(
-        {"u_id": holder_u_id},
-        {"$pull": {"scores": {"u_id": partner_u_id}}},
-    )
-    user_user_score.update_one(
-        {"u_id": holder_u_id},
-        {"$push": {"scores": {
-            "u_id": partner_u_id,
-            "state_id": state_hash,
-            "score": score_val,
-        }}},
+        {"u_id": holder},
+        {"$push": {"scores": {"u_id": partner, "state_id": state_hash, "score": score_val}}},
     )
 
-
-# --------------------------------------------------------------------------- #
-# Internal compute paths
-# --------------------------------------------------------------------------- #
-
-def _compute_user_rest_score(u_id: int, r_id: int, db: Session, force_update: bool) -> float:
-    """
-    Core user↔restaurant compute path. Assumes *db* is an open Session.
-    """
-    # Load SQL rows -----------------------------------------------------------
+# ───────────────────────────── Low‑level compute paths ────────────────────────
+def _compute_user_rest_score(
+    u_id: int,
+    r_id: int,
+    db: Session,
+    *,
+    metric: str,
+    lift_tail_b: int,
+    force: bool,
+) -> float:
     user_obj = db.query(Users).filter(Users.user_id == u_id).first()
     rest_obj = db.query(Restaurant).filter(Restaurant.restaurant_id == r_id).first()
     if user_obj is None or rest_obj is None:
-        raise ValueError(
-            "Invalid identifiers supplied.",
-            f"u_id missing: {u_id}" if user_obj is None else "",
-            f"r_id missing: {r_id}" if rest_obj is None else "",
-        )
+        raise ValueError(f"Invalid identifiers u_id={u_id} r_id={r_id}")
 
-    # Ensure both have a prime `state_id` ------------------------------------
-    uid_prime = _ensure_state_id(user_obj, "state_id", db)
-    rid_prime = _ensure_state_id(rest_obj, "state_id", db)
-
-    # Persist newly assigned primes ------------------------------------------
+    prime_u = _ensure_state_id(user_obj, "state_id", db)
+    prime_r = _ensure_state_id(rest_obj, "state_id", db)
     with contextlib.suppress(Exception):
         db.commit()
 
-    # Composite version hash --------------------------------------------------
-    current_hash: int = uid_prime * rid_prime
+    state_hash = prime_u * prime_r
 
-    # Cache check -------------------------------------------------------------
-    if not force_update:
-        cached = _cache_find_user_rest(u_id, r_id, current_hash)
+    if not force:
+        cached = _cache_find_user_rest(u_id, r_id, state_hash)
         if cached is not None:
             return cached
 
-    # Fresh compute -----------------------------------------------------------
-    user_kw = (user_keywords_collection.find_one({"user_id": u_id}) or {}).get("keywords", [])
-    rest_kw = (restaurant_keywords_collection.find_one({"r_id": r_id}) or {}).get("keywords", [])
-    fresh_score = score_user_to_restaurant(user_kw, rest_kw)
+    kw_u = (user_keywords_collection.find_one({"user_id": u_id}) or {}).get("keywords", [])
+    kw_r = (restaurant_keywords_collection.find_one({"r_id": r_id}) or {}).get("keywords", [])
 
-    # Cache write -------------------------------------------------------------
-    _cache_write_user_rest(u_id, r_id, current_hash, fresh_score)
+    score_val = _score_pair(
+        _canonize_kw_list(kw_u),
+        _canonize_kw_list(kw_r),
+        metric=metric,
+        lift_tail_b=lift_tail_b,
+    )
 
-    return fresh_score
-
+    _cache_write_user_rest(u_id, r_id, state_hash, score_val)
+    return score_val
 
 def _compute_user_user_score(
-    u_id_a: int,
-    u_id_b: int,
+    u_a: int,
+    u_b: int,
     db: Session,
-    force_update: bool,
+    *,
+    metric: str,
+    lift_tail_b: int,
+    force: bool,
     mirror: bool,
 ) -> float:
-    """
-    Core user↔user compute path. Assumes *db* is an open Session.
-
-    *mirror*: when True, store the snapshot under BOTH user docs.
-    """
-    # Load both users ---------------------------------------------------------
-    userA = db.query(Users).filter(Users.user_id == u_id_a).first()
-    userB = db.query(Users).filter(Users.user_id == u_id_b).first()
+    userA = db.query(Users).filter(Users.user_id == u_a).first()
+    userB = db.query(Users).filter(Users.user_id == u_b).first()
     if userA is None or userB is None:
-        raise ValueError(
-            "Invalid user id(s) supplied.",
-            f"A missing: {u_id_a}" if userA is None else "",
-            f"B missing: {u_id_b}" if userB is None else "",
-        )
+        raise ValueError(f"Invalid user ids u_a={u_a} u_b={u_b}")
 
-    # Prime state IDs ---------------------------------------------------------
     primeA = _ensure_state_id(userA, "state_id", db)
     primeB = _ensure_state_id(userB, "state_id", db)
-
     with contextlib.suppress(Exception):
         db.commit()
 
-    # Order-independent hash --------------------------------------------------
-    current_hash = primeA * primeB  # commutative
+    state_hash = primeA * primeB
 
-    # Avoid double work when cached ------------------------------------------
-    if not force_update:
-        cached_a = _cache_find_user_user(u_id_a, u_id_b, current_hash)
-        if cached_a is not None:
-            return cached_a
-        # optionally check reverse (in case mirror disabled earlier)
-        cached_b = _cache_find_user_user(u_id_b, u_id_a, current_hash)
-        if cached_b is not None:
-            # if found only on B, mirror into A for completeness
-            _cache_write_user_user(u_id_a, u_id_b, current_hash, cached_b)
-            return cached_b
+    if not force:
+        cached = _cache_find_user_user(u_a, u_b, state_hash)
+        if cached is not None:
+            return cached
+        cached_rev = _cache_find_user_user(u_b, u_a, state_hash)
+        if cached_rev is not None:
+            _cache_write_user_user(u_a, u_b, state_hash, cached_rev)
+            return cached_rev
 
-    # Pull keyword payloads ---------------------------------------------------
-    kwA = (user_keywords_collection.find_one({"user_id": u_id_a}) or {}).get("keywords", [])
-    kwB = (user_keywords_collection.find_one({"user_id": u_id_b}) or {}).get("keywords", [])
+    kw_a = (user_keywords_collection.find_one({"user_id": u_a}) or {}).get("keywords", [])
+    kw_b = (user_keywords_collection.find_one({"user_id": u_b}) or {}).get("keywords", [])
 
-    fresh_score = score_user_to_user(kwA, kwB)
+    score_val = _score_pair(
+        _canonize_kw_list(kw_a),
+        _canonize_kw_list(kw_b),
+        metric=metric,
+        lift_tail_b=lift_tail_b,
+    )
 
-    # Cache write(s) ----------------------------------------------------------
-    _cache_write_user_user(u_id_a, u_id_b, current_hash, fresh_score)
+    _cache_write_user_user(u_a, u_b, state_hash, score_val)
     if mirror:
-        _cache_write_user_user(u_id_b, u_id_a, current_hash, fresh_score)
+        _cache_write_user_user(u_b, u_a, state_hash, score_val)
 
-    return fresh_score
+    return score_val
 
-
-# --------------------------------------------------------------------------- #
-# Public API wrappers
-# --------------------------------------------------------------------------- #
-
+# ───────────────────────────────── Public API ─────────────────────────────────
 def update_user_to_restaurant_score(
     u_id: int,
     r_id: int,
+    *,
     db: Optional[Session] = Depends(get_db),
+    metric: str = "cosine",      # accepted but ignored
+    lift_tail_b: int = 1,        # kept for signature; no skew applied
     force_update: bool = False,
-) -> Union[float, Tuple[float, Dict[str, Any], Dict[str, Any]]]:
-    """
-    Return a compatibility score between *user* and *restaurant*.
-
-    Three usage contexts:
-        1. FastAPI route: FastAPI injects an open Session (db param is a Session)
-        2. Script / REPL: pass nothing (or None) → we open/close a Session
-        3. Existing Session: pass your own Session → we use it
-
-    When `force_update` is truthy, also return the raw keyword docs.
-    """
-    needs_local_session = db is None or not isinstance(db, Session)
-    if needs_local_session:
+) -> Union[float, Tuple[float, List[Dict[str, Any]], List[Dict[str, Any]]]]:
+    local = db is None or not isinstance(db, Session)
+    if local:
         db_gen = get_db()
         db = next(db_gen)
 
     try:
-        score_val = _compute_user_rest_score(u_id, r_id, db, force_update=force_update)
+        score_val = _compute_user_rest_score(
+            u_id, r_id, db, metric=metric, lift_tail_b=lift_tail_b, force=force_update
+        )
         if not force_update:
             return score_val
 
-        kw_user_doc = user_keywords_collection.find_one({"user_id": u_id}) or {}
-        kw_rest_doc = restaurant_keywords_collection.find_one({"r_id": r_id}) or {}
+        # Return stripped keyword docs for debug purposes
+        kw_user = (
+            user_keywords_collection.find_one({"user_id": u_id}) or {}
+        ).get("keywords", [])
+        kw_rest = (
+            restaurant_keywords_collection.find_one({"r_id": r_id}) or {}
+        ).get("keywords", [])
 
-        # Filter out embedding field for brevity
-        kw_user_doc = [
-            {
-                "keyword": rec["token"],
-                "sentiment": rec["sentiment"],
-                "frequency": rec["frequency"]
-            } for rec in _canonize_kw_list(kw_user_doc)
-        ]
-        kw_user_doc = [
-            {
-                "keyword": rec["token"],
-                "sentiment": rec["sentiment"],
-                "frequency": rec["frequency"]
-            } for rec in _canonize_kw_list(kw_user_doc)
-        ]
+        strip = lambda rec: {
+            "keyword": rec["token"],
+            "sentiment": rec.get("sentiment", "positive"),
+            "frequency": rec.get("frequency", 1),
+        }
 
-        return score_val, kw_user_doc, kw_rest_doc
+        return (
+            score_val,
+            [strip(r) for r in _canonize_kw_list(kw_user)],
+            [strip(r) for r in _canonize_kw_list(kw_rest)],
+        )
     finally:
-        if needs_local_session:
+        if local:
             db.close()
             with contextlib.suppress(StopIteration):
                 next(db_gen)
 
-
 def update_user_to_user_score(
     u_id_a: int,
     u_id_b: int,
+    *,
     db: Optional[Session] = Depends(get_db),
-    force_update: bool = False,
+    metric: str = "cosine",
+    lift_tail_b: int = 1,
     mirror: bool = True,
-) -> Union[float, Tuple[float, Dict[str, Any], Dict[str, Any]]]:
-    """
-    Return a symmetric compatibility score for two users.
-
-    *mirror* (default True) stores the score under BOTH user docs in
-    `user_user_score` so downstream queries can always read from the requesting
-    side without a canonical ordering step. Set False if you want to store
-    only under `u_id_a` for space or other reasons.
-
-    When `force_update` is truthy, also return the raw keyword docs that were
-    compared: (score, kw_a_doc, kw_b_doc).
-    """
-    needs_local_session = db is None or not isinstance(db, Session)
-    if needs_local_session:
+    force_update: bool = False,
+) -> Union[float, Tuple[float, List[Dict[str, Any]], List[Dict[str, Any]]]]:
+    local = db is None or not isinstance(db, Session)
+    if local:
         db_gen = get_db()
         db = next(db_gen)
 
@@ -520,52 +354,72 @@ def update_user_to_user_score(
             u_id_a,
             u_id_b,
             db,
-            force_update=force_update,
+            metric=metric,
+            lift_tail_b=lift_tail_b,
+            force=force_update,
             mirror=mirror,
         )
         if not force_update:
             return score_val
 
-        kw_a_doc = user_keywords_collection.find_one({"user_id": u_id_a}) or {}
-        kw_b_doc = user_keywords_collection.find_one({"user_id": u_id_b}) or {}
+        kw_a = (
+            user_keywords_collection.find_one({"user_id": u_id_a}) or {}
+        ).get("keywords", [])
+        kw_b = (
+            user_keywords_collection.find_one({"user_id": u_id_b}) or {}
+        ).get("keywords", [])
 
-        kw_a_doc = kw_a_doc.get("keywords", [])
-        kw_b_doc = kw_b_doc.get("keywords", [])
+        strip = lambda rec: {
+            "keyword": rec["token"],
+            "sentiment": rec.get("sentiment", "positive"),
+            "frequency": rec.get("frequency", 1),
+        }
 
-        kw_a_doc = [
-            {
-                "keyword": rec["token"],
-                "sentiment": rec["sentiment"],
-                "frequency": rec["frequency"]
-            } for rec in _canonize_kw_list(kw_a_doc)
-        ]
-
-        kw_b_doc = [
-            {
-                "keyword": rec["token"],
-                "sentiment": rec["sentiment"],
-                "frequency": rec["frequency"]
-            } for rec in _canonize_kw_list(kw_b_doc)
-        ]
-        # Filter out embedding field for brevity
-        kw_a_doc = [
-            {
-                "keyword": rec["token"],
-                "sentiment": rec["sentiment"],
-                "frequency": rec["frequency"]
-            } for rec in _canonize_kw_list(kw_a_doc)
-        ]
-        kw_b_doc = [
-            {
-                "keyword": rec["token"],
-                "sentiment": rec["sentiment"],
-                "frequency": rec["frequency"]
-            } for rec in _canonize_kw_list(kw_b_doc)
-        ]
-
-        return score_val, kw_a_doc, kw_b_doc
+        return (
+            score_val,
+            [strip(r) for r in _canonize_kw_list(kw_a)],
+            [strip(r) for r in _canonize_kw_list(kw_b)],
+        )
     finally:
-        if needs_local_session:
+        if local:
             db.close()
             with contextlib.suppress(StopIteration):
                 next(db_gen)
+
+# ──────────────────────────────────── CLI demo ────────────────────────────────
+if __name__ == "__main__":
+    import json
+    from pathlib import Path
+
+    user_file = Path("/home/nemit/Downloads/user_keyword.json")
+    rest_file = Path("/home/nemit/Downloads/filtered_restaurant_keywords.json")
+
+    with user_file.open() as f:
+        user_data = json.load(f)
+    with rest_file.open() as f:
+        rest_data = json.load(f)
+
+    sample_user_id = user_data[0]["user_id"]
+    sample_rest_id = rest_data[0]["r_id"]
+
+    sample_user_kw = user_data[0]["keywords"]
+    sample_rest_kw = rest_data[0]["keywords"]
+
+    score = _score_pair(
+        _canonize_kw_list(sample_user_kw),
+        _canonize_kw_list(sample_rest_kw),
+    )
+    print(
+        f"Sample user {sample_user_id} ↔ restaurant {sample_rest_id} score:", round(score, 2)
+    )
+
+    # Quick sweep across all restaurants
+    print(f"Scores for user {sample_user_id}:")
+    for rest in rest_data:
+        rest_id = rest["r_id"]
+        rest_kw = rest.get("keywords", [])
+        s = _score_pair(
+            _canonize_kw_list(sample_user_kw),
+            _canonize_kw_list(rest_kw),
+        )
+        print(f"  Restaurant {rest_id}: {round(s, 2)}")

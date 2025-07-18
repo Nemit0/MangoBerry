@@ -5,8 +5,8 @@ import Header from '../components/Header';
 import './LoginPage.css';
 
 function LoginPage() {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const [username, setUsername] = useState(''); 
+    const [password, setPassword] = useState(''); 
     const [error, setError] = useState(''); 
     const navigate = useNavigate();
     const { login } = useAuth(); // AuthContext의 login 함수 가져오기
