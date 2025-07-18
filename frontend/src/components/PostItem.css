@@ -18,7 +18,7 @@
 
 .post-image {
     width: 100%;
-    height: 60%;
+    height: 50%;
     object-fit: cover; /* 이미지 비율 유지하며 채우기 */
     display: block; /* 이미지 아래 공백 제거 */
 }
@@ -28,6 +28,7 @@
     display: flex;
     flex-direction: column;
     flex-grow: 1; /* 남은 공간을 차지하여 내용이 적어도 높이 유지 */
+    margin-bottom: 2px;
 }
 
 .post-header-meta {
@@ -91,30 +92,6 @@
     color: #333;
     font-weight: bold;
     text-align: left;
-}
-
-/* ⭐ 게이지바 컨테이너 스타일 ⭐ */
-.post-rating-container {
-    /* width: calc(100% - 30px); 카드 너비에서 좌우 패딩을 제외한 너비 (예: 15px씩) */
-    width: auto;
-    height: 10px; /* 게이지바의 높이 */
-    background-color: #e0e0e0; /* 게이지바의 빈 부분 색상 */
-    /* border-radius: 5px; 게이지바 모서리 둥글게 */
-    margin-top: 0px;
-    margin-bottom: 0px;
-    /* margin-left: 15px;
-    margin-right: 15px; */
-    /* margin: 15px; 상하좌우 마진으로 위치 조정 */
-    overflow: hidden; /* 게이지가 밖으로 넘치지 않도록 */
-}
-
-/* ⭐ 실제 게이지가 채워지는 부분 스타일 ⭐ */
-.post-rating-gauge {
-    height: 100%; /* 부모 컨테이너의 높이를 꽉 채움 */
-    background-color: rgba(150, 70, 110, 1); /* 게이지가 채워지는 색상 (초록색 예시) */
-    /* border-radius: 5px; 게이지 모서리 둥글게 */
-    transition: width 0.3s ease-out; /* 너비 변경 시 부드러운 애니메이션 */
-    /* width는 JS에서 동적으로 설정됩니다. */
 }
 
 .post-positive-tags {

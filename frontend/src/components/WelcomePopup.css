@@ -1,16 +1,14 @@
-/* src/components/WelcomePopup.css */
-
 .welcome-popup-overlay {
-    position: fixed; /* 뷰포트에 고정 */
+    position: fixed;
     top: 0;
     left: 0;
-    width: 100vw; /* 뷰포트 전체 너비 */
-    height: 100vh; /* 뷰포트 전체 높이 */
-    background-color: rgba(0, 0, 0, 0.7); /* 반투명 배경 */
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
     display: flex;
-    justify-content: center; /* 수평 중앙 정렬 */
-    align-items: center; /* 수직 중앙 정렬 */
-    z-index: 1000; /* 다른 콘텐츠 위에 표시 */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 }
 
 .welcome-popup-content {
@@ -18,78 +16,70 @@
     padding: 30px;
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    width: 90%; /* 팝업 너비 */
-    max-width: 500px; /* 최대 너비 제한 */
+    width: 90%;
+    max-width: 800px; /* 너비 조정 */
     display: flex;
     flex-direction: column;
     gap: 20px;
-    position: relative; /* 자식 요소의 absolute 포지셔닝을 위해 */
-    height: 610px;
 }
 
 .popup-main-title {
     text-align: center;
     color: #333;
-    margin-bottom: 0px;
     font-size: 1.8em;
-    text-align: left; /* 왼쪽 정렬 */
 }
 
-.popup-sub-title {
-    text-align: center;
-    color: #555;
-    margin-top: 0px;
-    margin-bottom: 10px;
-    font-size: 1.2em;
-    text-align: left;
+.keyword-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-height: 60vh; /* 스크롤 추가 */
+    overflow-y: auto; /* 스크롤 추가 */
 }
 
-.input-group {
+.keyword-category {
     margin-bottom: 15px;
 }
 
-.input-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-    color: #666;
+.keyword-category h3 {
+    font-size: 1.2em;
+    color: #555;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+    text-align: left;
 }
 
-.input-group input[type="text"],
-.input-group textarea {
-    width: calc(100% - 20px); /* 패딩 고려 */
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 1em;
-    resize: none; /* textarea의 크기 조절 불가 */
-    font-family: 'IBM_Plex_Sans_KR';
-}
-
-.input-group textarea {
-    height: 300px;
-}
-
-.restaurant-address {
-    font-size: 0.9em;
-    color: #888;
-    margin-top: 5px;
-    word-break: break-all; /* 주소가 길 경우 줄바꿈 */
-}
-
-.popup-navigation {
+.keyword-buttons {
     display: flex;
-    justify-content: center; /* 페이지 표시를 중앙에 고정 */
-    align-items: center;
-    margin-top: 0px;
-    position: relative; /* 자식 요소의 absolute 포지셔닝을 위해 */
-    width: 100%; /* 부모 너비에 맞춤 */
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
-.page-indicator {
-    font-size: 1.1em;
-    font-weight: bold;
-    color: #444;
+.keyword-button {
+    padding: 8px 15px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.keyword-button:hover {
+    background-color: #e0e0e0;
+}
+
+.keyword-button.selected {
+    background-color: #672091;
+    color: white;
+    border-color: #672091;
+}
+
+.popup-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
 }
 
 .popup-button {
@@ -99,57 +89,9 @@
     cursor: pointer;
     font-size: 1em;
     font-weight: bold;
-    transition: background-color 0.2s ease;
 }
 
-.popup-button.prev-button {
-    background-color: #a0a0a0;
-    color: white;
-}
-.popup-button.prev-button:hover {
-    background-color: #808080;
-}
-
-.popup-button.next-button {
-    background-color: #a0a0a0;
-    color: white;
-}
-.popup-button.next-button:hover {
-    background-color: #672091;
-}
-
-.popup-button.submit-button {
+.submit-button {
     background-color: black;
     color: white;
-}
-.popup-button.submit-button:hover {
-    background-color: #672091;
-}
-
-.left-nav-group {
-    position: absolute;
-    left: 0;
-}
-
-.right-nav-group {
-    position: absolute;
-    right: 0;
-    display: flex;
-    gap: 10px; /* Space between buttons */
-}
-
-.popup-skip {
-    padding: 0px;
-    margin: 0px;
-    text-align: right;
-    
-}
-
-.skip-button {
-    padding: 0px;
-    margin: 0px;
-    margin-bottom: 5px;
-    font-size: 15px;
-    color: #a0a0a0;
-    text-decoration: underline;
 }
