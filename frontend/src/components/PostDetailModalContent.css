@@ -1,8 +1,4 @@
 /* PostList 내부의 모달 상세 내용 스타일 */
-@font-face {
-    font-family: 'Bangers';
-    src: url(../assets/fonts/Bangers/Bangers-Regular.ttf);
-}
 
 .post-detail-modal-content {
     display: flex; /* 자식 요소(modal-left, modal-right)를 가로로 정렬 */
@@ -12,7 +8,7 @@
     margin: 0 auto; /* 중앙 정렬 */
     background-color: #fff;
     border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    /* box-shadow: 0 4px 10px rgba(0,0,0,0.2); */
     text-align: left; /* 텍스트 정렬 */
 
     height: 800px;
@@ -47,10 +43,9 @@
 }
 
 .modal-user-name {
-    font-size: 1.1em;
+    font-size: 1em;
     margin-bottom: 15px; /* 사용자 이름과 이미지 사이 간격 */
     color: #000000;
-    font-family: 'Bangers';
 }
 
 .modal-date-posted {
@@ -76,48 +71,6 @@
     padding-left: 20px;
     height: 100%; /* 부모 높이에 맞춤 */
     overflow-y: auto;  /* 세로 스크롤 */
-}
-
-/* 별점 게이지 스타일 */
-.modal-rating-gauge {
-    width: 100%; /* 부모(.modal-right) 너비에 맞춤 */
-    margin-bottom: 16px; /* 아래 제목과의 간격 */
-}
-
-.modal-rating-header {
-    display: flex;
-    justify-content: space-between; /* '별점'과 퍼센트 텍스트를 양쪽 끝으로 정렬 */
-    align-items: center;
-    margin-bottom: 8px; /* 게이지 바와의 간격 */
-}
-
-.modal-rating-header strong {
-    font-size: 1rem;
-}
-
-/* 게이지 바의 배경 (이제 전체 너비) */
-.modal-gauge-container {
-    width: 100%; /* 부모 너비에 꽉 채움 */
-    height: 15px; /* 높이를 살짝 조정 */
-    background-color: #e9ecef; /* 약간 더 부드러운 배경색 */
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-/* 실제 별점을 나타내는 게이지 바 */
-.modal-gauge-bar {
-    height: 100%;
-    background-color: rgba(150, 70, 110, 1);
-    border-radius: 8px;
-    transition: width 0.5s ease-in-out;
-}
-
-/* 점수와 백분율 텍스트 */
-.modal-rating-text {
-    font-size: 2em;
-    color: rgba(150, 70, 110, 1);
-    font-weight: 500;
-    font-family: 'Bangers';
 }
 
 .modal-post-restaurant-name {

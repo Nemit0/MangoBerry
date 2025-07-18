@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './PostDetailModalContent.css';
+import RatingDisplay from './RatingDisplay';
 
 function PostDetailModalContent({ selectedPost, isMyPage }) {
 
@@ -20,10 +21,10 @@ function PostDetailModalContent({ selectedPost, isMyPage }) {
         <div className='post-detail-modal-content' style={{ display: 'flex' }}>
             {/* ⭐⭐ 좌측 영역: modal-left ⭐⭐ */}
             <div className="modal-left">
-                <div className='name-date'>
+                {/* <div className='name-date'>
                     <p className="modal-user-name">{selectedPost.user}</p>
                     <p className="modal-date-posted">{selectedPost.datePosted}</p>
-                </div>
+                </div> */}
                 
                 <div className="modal-post-images">
                     {selectedPost.images.map((image, index) => (
@@ -34,25 +35,15 @@ function PostDetailModalContent({ selectedPost, isMyPage }) {
 
             {/* ⭐⭐ 우측 영역: modal-right ⭐⭐ */}
             <div className="modal-right">
-                <div className="modal-rating-gauge">
-                    <div className='modal-rating-header'>
-                        <strong>별점:</strong>
-                        <span className="modal-rating-text">
-                            {((selectedPost.rating / 5) * 100).toFixed(0)}%
-                        </span>
-                    </div>
-                    <div className="modal-gauge-container">
-                        <div
-                            className="modal-gauge-bar"
-                            style={{ width: `${(selectedPost.rating / 5) * 100}%` }}
-                        >
-                        </div>
-                    </div>
-
-                </div>
+                <RatingDisplay score={3} width={50} height={50} />
                 <h2 className="modal-post-restaurant-name">{selectedPost.r_name}</h2>
                 
                 <h3 className='modal-post-title'>{selectedPost.title}</h3>
+
+                <div className='name-date'>
+                    <p className="modal-user-name">@{selectedPost.user}</p>
+                    <p className="modal-date-posted">{selectedPost.datePosted}</p>
+                </div>
 
                 {/* post-positive-tags */}
                 <div className="modal-post-positive-tags">

@@ -1,0 +1,8 @@
+.rating-display {
+  display: flex;
+  align-items: center;
+}
+
+.tail-icon {
+  margin-right: 4px;
+}
