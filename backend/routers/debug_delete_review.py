@@ -5,7 +5,7 @@ from sqlalchemy.orm import create_session, Session
 from collections import Counter
 
 from ..connection.mysqldb import get_db, Review, Restaurant, Users, People
-from ..connection.mongodb import photo_collection, review_keywords_collection, user_keywords_collection, user_rest_score
+from ..connection.mongodb import photo_collection, review_keywords_collection, user_keywords_collection, user_rest_score, restaurant_keywords_collection
 from ..connection.elasticdb import es_client as es
 
 from ..schemas.review import ReviewCreate, ReviewUpdate
@@ -72,7 +72,6 @@ def update_user_keywords(
         except Exception as exc:
             raise HTTPException(status_code=500, detail=f"Embedding service failed: {exc}") from exc
 
-    print(f"embedding_map keys: {list(embedding_map.keys())}")
     print(f"keywords to embed: {to_embed}")
 
     # Step 4: Update keyword entries in the map
@@ -148,12 +147,15 @@ def update_restaurant_keywords(
 
     # Fetch existing keywords for this restaurant
     existing_keywords = (
-        review_keywords_collection.find_one({"restaurant_id": restaurant_id})
-        or {"restaurant_id": restaurant_id, "keywords": []}
+        restaurant_keywords_collection.find_one({"r_id": restaurant_id})
+        or {"r_id": restaurant_id, "keywords": []}
     )
 
-    existing_map = [kw["keyword"] for kw in existing_keywords.get("keywords", [])]
+    existing_map = {
+        kw["keyword"]: kw for kw in existing_keywords.get("keywords", [])
+    }
 
+    print(f"[DEBUG] Before update - Existing keywords for restaurant {restaurant_id}: {existing_map}")
     new_keywords = set(keyword_counter.keys()) - set(existing_map)
 
     if new_keywords:
@@ -178,12 +180,20 @@ def update_restaurant_keywords(
             }
 
     # Save updated keywords back to MongoDB
-    review_keywords_collection.update_one(
-        {"restaurant_id": restaurant_id},
-        {"$set": {"keywords": list(existing_map.values())}},
+    cleaned_keywords = [
+        {
+            "keyword": kw["keyword"],
+            "frequency": kw["frequency"],
+            "embedding": kw.get("embedding")
+        }
+        for kw in existing_map.values()
+    ]
+
+    restaurant_keywords_collection.update_one(
+        {"r_id": restaurant_id},
+        {"$set": {"keywords": cleaned_keywords}},
         upsert=True,
     )
-
     # Set a new_state_id for the restaurant
     r_state_id = random_prime_in_range()
     rest_obj = db.query(Restaurant).filter(Restaurant.restaurant_id == restaurant_id).first()
@@ -195,7 +205,6 @@ def update_restaurant_keywords(
         db.refresh(rest_obj)
     else:
         raise HTTPException(status_code=404, detail="Restaurant not found")
-
 
 def subtract_user_keywords(
         user_id: int, 
@@ -262,8 +271,8 @@ def subtract_restaurant_keywords(
 
     # Fetch existing keywords for this restaurant
     existing_keywords = (
-        review_keywords_collection.find_one({"restaurant_id": restaurant_id})
-        or {"restaurant_id": restaurant_id, "keywords": []}
+        restaurant_keywords_collection.find_one({"r_id": restaurant_id})
+        or {"r_id": restaurant_id, "keywords": []}
     )
 
     existing_map = {kw["keyword"]: kw for kw in existing_keywords.get("keywords", [])}
@@ -278,8 +287,8 @@ def subtract_restaurant_keywords(
                 del existing_map[kw]
 
     # Save updated keywords back to MongoDB
-    review_keywords_collection.update_one(
-        {"restaurant_id": restaurant_id},
+    restaurant_keywords_collection.update_one(
+        {"r_id": restaurant_id},
         {"$set": {"keywords": list(existing_map.values())}},
         upsert=True,
     )
@@ -297,8 +306,8 @@ def subtract_restaurant_keywords(
         raise HTTPException(status_code=404, detail="Restaurant not found")
 
 
-@router.delete("/reviews/{review_id}", tags=["Reviews"])
-def delete_review(review_id: int, db: Session = Depends(get_db)):
+@router.delete("/debug_delete_reviews/{review_id}", tags=["Reviews"])
+def debug_delete_review(review_id: int, db: Session = Depends(get_db)):
     try:
         # Step 1: Find review (MySQL)
         review = db.query(Review).filter(Review.review_id == review_id).first()
