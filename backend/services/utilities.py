@@ -40,8 +40,8 @@ def _is_probable_prime(n: int, rounds: int = 10) -> bool:
 
     # write n-1 as d·2ʳ with d odd
     d, r = n - 1, 0
-    while d % 2 == 0:       # <-- FIX: divide out factors of 2
-        d //= 2
+    while d % 2 == 0:
+        d >>= 1
         r += 1
 
     for _ in range(rounds):
