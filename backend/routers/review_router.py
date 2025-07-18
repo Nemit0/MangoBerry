@@ -274,8 +274,8 @@ def subtract_restaurant_keywords(
 
     # Fetch existing keywords for this restaurant
     existing_keywords = (
-        review_keywords_collection.find_one({"restaurant_id": restaurant_id})
-        or {"restaurant_id": restaurant_id, "keywords": []}
+        review_keywords_collection.find_one({"r_id": restaurant_id})
+        or {"r_id": restaurant_id, "keywords": []}
     )
 
     existing_map = {kw["keyword"]: kw for kw in existing_keywords.get("keywords", [])}
@@ -290,8 +290,8 @@ def subtract_restaurant_keywords(
                 del existing_map[kw]
 
     # Save updated keywords back to MongoDB
-    review_keywords_collection.update_one(
-        {"restaurant_id": restaurant_id},
+    restaurant_keywords_collection.update_one(
+        {"r_id": restaurant_id},
         {"$set": {"keywords": list(existing_map.values())}},
         upsert=True,
     )
