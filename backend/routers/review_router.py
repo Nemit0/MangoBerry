@@ -525,6 +525,7 @@ def get_review(review_id: int, db: Session = Depends(get_db)):
         "review_id":            int,
         "user_id":              int,
         "restaurant_id":        int,
+        "restaurant_name":    str | None,
         "nickname":             str | None,
         "comments":             str | None,
         "review":               str | None,
@@ -545,25 +546,30 @@ def get_review(review_id: int, db: Session = Depends(get_db)):
     person = db.query(People).filter(People.user_id == review_row.user_id).first()
     nickname = person.nickname if person else None
 
-    # 3. ── MongoDB: photos
+    # 3. ── MySQL: restaurant name (Restaurants table)
+    restaurant = db.query(Restaurant).filter(Restaurant.restaurant_id == review_row.restaurant_id).first()
+    restaurant_name = restaurant.name if restaurant else None
+
+    # 4. ── MongoDB: photos
     photo_doc = photo_collection.find_one({"review_id": review_id}) or {}
     photo_urls = photo_doc.get("photo_urls", [])
 
-    # 4. ── MongoDB: keywords
+    # 5. ── MongoDB: keywords
     kw_doc = review_keywords_collection.find_one({"review_id": review_id}) or {}
     pos_kws = kw_doc.get("positive_keywords", [])
     neg_kws = kw_doc.get("negative_keywords", [])
 
-    # 5. ── Assemble filenames list
+    # 6. ── Assemble filenames list
     filenames_list = (
         review_row.photo_filenames.split(",") if review_row.photo_filenames else []
     )
 
-    # 6. ── Build and return full payload
+    # 7. ── Build and return full payload
     return {
         "review_id": review_row.review_id,
         "user_id": review_row.user_id,
         "restaurant_id": review_row.restaurant_id,
+        "restaurant_name": restaurant_name,
         "nickname": nickname,
         "comments": review_row.comments,
         "review": review_row.review,
