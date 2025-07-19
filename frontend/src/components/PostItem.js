@@ -13,7 +13,7 @@ function PostItem({ post, onClick }) { // <-- onClick prop 추가
     const positiveKeywords = post.keywords ? post.keywords.filter(item => item.sentiment === 'positive').map(item => item.keyword) : [];
     const negativeKeywords = post.keywords ? post.keywords.filter(item => item.sentiment === 'negative').map(item => item.keyword) : [];
 
-    const gaugeWidth = post.rating; // 이 변수는 현재 사용되지 않음
+    // const gaugeWidth = post.rating; // 이 변수는 현재 사용되지 않음
 
     return (
         <div className="post-card" onClick={() => onClick(post)}> {/* <-- 클릭 이벤트 추가 */}

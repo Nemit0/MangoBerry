@@ -513,7 +513,69 @@ def update_review(review_id: int, payload: ReviewUpdate, db: Session = Depends(g
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/get_review/{review_id}", tags=["Reviews"])
+def get_review(review_id: int, db: Session = Depends(get_db)):
+    """
+    Fetch a single review by ID and return **all** data required to
+    recreate/display it on the client (mirrors fields accepted by ReviewCreate).
 
+    Returns
+    -------
+    {
+        "review_id":            int,
+        "user_id":              int,
+        "restaurant_id":        int,
+        "nickname":             str | None,
+        "comments":             str | None,
+        "review":               str | None,
+        "photo_filenames":      list[str] | None,
+        "photo_urls":           list[str] | None,
+        "positive_keywords":    list[str],
+        "negative_keywords":    list[str],
+        "created_at":           str  (ISO‑8601),
+        "state_id":             int
+    }
+    """
+    # 1. ── MySQL: core review row
+    review_row = db.query(Review).filter(Review.review_id == review_id).first()
+    if not review_row:
+        raise HTTPException(status_code=404, detail="Review not found")
+
+    # 2. ── MySQL: nickname (People table)
+    person = db.query(People).filter(People.user_id == review_row.user_id).first()
+    nickname = person.nickname if person else None
+
+    # 3. ── MongoDB: photos
+    photo_doc = photo_collection.find_one({"review_id": review_id}) or {}
+    photo_urls = photo_doc.get("photo_urls", [])
+
+    # 4. ── MongoDB: keywords
+    kw_doc = review_keywords_collection.find_one({"review_id": review_id}) or {}
+    pos_kws = kw_doc.get("positive_keywords", [])
+    neg_kws = kw_doc.get("negative_keywords", [])
+
+    # 5. ── Assemble filenames list
+    filenames_list = (
+        review_row.photo_filenames.split(",") if review_row.photo_filenames else []
+    )
+
+    # 6. ── Build and return full payload
+    return {
+        "review_id": review_row.review_id,
+        "user_id": review_row.user_id,
+        "restaurant_id": review_row.restaurant_id,
+        "nickname": nickname,
+        "comments": review_row.comments,
+        "review": review_row.review,
+        "photo_filenames": filenames_list,
+        "photo_urls": photo_urls,
+        "positive_keywords": pos_kws,
+        "negative_keywords": neg_kws,
+        "created_at": review_row.created_at.isoformat()
+        if review_row.created_at
+        else None,
+        "state_id": review_row.state_id,
+    }
 
 @router.delete("/delete_reviews/{review_id}", tags=["Reviews"])
 def delete_review(review_id: int, db: Session = Depends(get_db)):

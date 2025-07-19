@@ -1,17 +1,18 @@
+/* ────────────────────────────── Layout root ───────────────────────────── */
+
 .makepage-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
   width: 60%;
-  margin: 0 auto; /* 화면 중앙에 배치 */
+  margin: 0 auto;
 }
+
 .makepage-content {
-  display: flex; /* 하단 3개 영역(좌, 중, 우)을 가로로 정렬 */
-  flex-grow: 1; /* Header를 제외한 남은 세로 공간을 모두 차지 */
-  /* Header의 높이(60px)만큼 위에서 시작하도록 마진 */
-  /* calc를 사용하여 정확한 높이를 계산 */
-  height: calc(100vh - 80px); /* 뷰포트 높이 - 헤더 높이 */
-  margin-top: 80px; /* 헤더 아래에서 시작 */
+  display: flex;
+  flex-grow: 1;
+  height: calc(100vh - 80px);
+  margin-top: 80px;
   box-sizing: border-box;
 }
 
@@ -22,9 +23,11 @@
   flex-direction: column;
   align-items: center;
 }
+
 .makepage-wrapper {
   width: 70%;
 }
+
 .makepage-top {
   text-align: left;
   margin-bottom: 20px;
@@ -34,6 +37,9 @@
   display: flex;
   flex: 1;
 }
+
+/* ───────────────────────────── Left column ───────────────────────────── */
+
 .makepage-left {
   flex: 3;
   padding-right: 20px;
@@ -41,12 +47,8 @@
   flex-direction: column;
   height: 400px;
   flex-shrink: 0;
-} 
-.makepage-right {
-  flex: 7;
-  display: flex;
-  flex-direction: column;
 }
+
 .makepage-photo-upload {
   flex: 1;
   border: 2px dashed #ccc;
@@ -57,17 +59,28 @@
   align-items: center;
   justify-content: center;
 }
+
 .image-preview-container {
   margin-top: 10px;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
 }
+
 .image-preview {
   width: 100px;
   height: 100px;
   object-fit: cover;
 }
+
+/* ───────────────────────────── Right column ──────────────────────────── */
+
+.makepage-right {
+  flex: 7;
+  display: flex;
+  flex-direction: column;
+}
+
 .makepage-inputs {
   display: flex;
   flex-direction: column;
@@ -75,87 +88,110 @@
   border-radius: 8px;
 }
 
-.makepage-inputs input {
+/* ───────── Text fields (inputs & textarea) ───────── */
+
+.makepage-inputs input,
+.makepage-inputs textarea,
+.restaurant-search-input {
+  width: 100%;
   height: 60px;
   border-radius: 8px;
   border: 2px solid #ccc;
+  padding: 0 12px;
+  font-family: 'IBM_Plex_Sans_KR';
+  font-size: 14px;
+  box-sizing: border-box;
 }
 
 .makepage-inputs textarea {
   resize: none;
   height: 250px;
+  padding: 12px;
+}
+
+/* unified placeholder styling */
+.makepage-inputs input::placeholder,
+.makepage-inputs textarea::placeholder,
+.restaurant-search-input::placeholder {
+  color: #999;
+  font-size: 14px;
+}
+
+/* ───────── Primary buttons (analysis / save / cancel) ───────── */
+
+.analysis-button,
+.cancel-button,
+.save-button {
+  background-color: black;
+  color: white;
+  border: none;
+  padding: 10px 24px;
   border-radius: 8px;
-  border: 2px solid #ccc;
-  font-family: 'IBM_Plex_Sans_KR';
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .analysis-button {
-  align-self: flex-start;
-  background-color: black;    
-  color: white;                
-  border: none;                
-  padding: 5px 5px;          
-  border-radius: 8px;          
-  font-size: 14px;            
-  cursor: pointer;             
+  align-self: center;
 }
 
-.analysis-button:hover {
-  background-color: #96466E;      
+.analysis-button:hover,
+.analysis-button:disabled,
+.cancel-button:hover,
+.save-button:hover,
+.cancel-button:disabled,
+.save-button:disabled {
+  background-color: #96466E;
   color: #FAF0D2;
-  border: none;                
-  padding: 5px 5px;         
-  border-radius: 8px;          
-  font-size: 14px;             
-  cursor: pointer;
 }
 
-.analysis-button:disabled {
-  background-color: #96466E;      
-  color: #FAF0D2;
-  border: none;                
-  padding: 5px 5px;         
-  border-radius: 8px;          
-  font-size: 14px;             
-  cursor: pointer;
-}
+/* ─────────────────────────── Analysis results / keywords ───────────────── */
 
 .analysis-results {
   margin-top: 20px;
 }
+
 .keyword-sections-container {
   display: flex;
   gap: 20px;
-  flex-direction: row;
+  align-items: stretch;
 }
+
 .keyword-type-section {
-  flex: 1;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
 }
+
 .keyword-type-section h2 {
   text-align: left;
   padding-left: 35px;
 }
+
+/* ─── REVISED: fixed‑size keyword box ─────────────────────────────────── */
 .newpage-keyword-section {
-  border: 1px solid #ccc; /* 테두리 추가 */
-  padding: 10px; /* 내부 여백 추가 */
-  border-radius: 5px; /* 모서리 둥글게 */
-  margin: 0 auto; /* 가운데 정렬 */
+  flex: 1;
+  width: 100%;            /* always stretch full column width          */
+  min-height: 120px;      /* prevents vertical + horizontal collapse   */
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box; /* include padding in width calculations     */
+  /* margin removed so width stays fixed */
 }
-.positive-keyword-section h2,
-.negative-keyword-section h2 {
-  text-align: left;
-}
+
 .keywords {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  justify-content: center; /* 키워드 버튼 가운데 정렬 */
+  justify-content: center;
 }
-.new-positive-button {
-  background-color: #eee;
-  border-radius: 8px;
-  border: none;
-}
+
+.new-positive-button,
 .new-nagative-button {
   background-color: #eee;
   border-radius: 8px;
@@ -164,80 +200,66 @@
 
 .new-positive-button.active {
   background-color: #D4EDDA;
-  border-radius: 8px;
-  border: none;
 }
+
 .new-nagative-button.active {
   background-color: #F8D7DA;
-  border-radius: 8px;
-  border: none;
 }
+
+/* ───────────────────────────── Action buttons wrapper ──────────────────── */
+
 .action-buttons {
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+/* ───────────────────────── Restaurant search UI ───────────────────────── */
+
+.restaurant-search-container {
+  position: relative;
+  width: 100%;
+}
+
+.restaurant-search-input {
+  padding: 0 45px 0 12px;
+}
+
+.restaurant-search-button {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+/* ───────── Dropdown list ───────── */
+
+.restaurant-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
   border-radius: 8px;
+  background: #fff;
+  margin-top: 4px;
+  list-style: none;
+  padding: 0;
 }
 
-.cancel-button {
-  align-self: flex-start;
-  background-color: black;    
-  color: white;                
-  border: none;                
-  padding: 5px 5px;          
-  border-radius: 8px;          
-  font-size: 14px;            
-  cursor: pointer;             
-}
-
-.save-button {
-  align-self: flex-start;
-  background-color: black;    
-  color: white;                
-  border: none;                
-  padding: 5px 5px;          
-  border-radius: 8px;          
-  font-size: 14px;            
-  cursor: pointer;             
-}
-
-.cancel-button:hover {
-  background-color: #96466E;      
-  color: #FAF0D2;
-  border: none;                
-  padding: 5px 5px;         
-  border-radius: 8px;          
-  font-size: 14px;             
+.restaurant-dropdown-item {
+  padding: 10px 16px;
+  text-align: left;
   cursor: pointer;
 }
 
-.save-button:hover {
-  background-color: #96466E;      
-  color: #FAF0D2;
-  border: none;                
-  padding: 5px 5px;         
-  border-radius: 8px;          
-  font-size: 14px;             
-  cursor: pointer;
-}
-
-.cancel-button:disabled {
-  background-color: #96466E;      
-  color: #FAF0D2;
-  border: none;                
-  padding: 5px 5px;         
-  border-radius: 8px;          
-  font-size: 14px;             
-  cursor: pointer;
-}
-
-.save-button:disabled {
-  background-color: #96466E;      
-  color: #FAF0D2;
-  border: none;                
-  padding: 5px 5px;         
-  border-radius: 8px;          
-  font-size: 14px;             
-  cursor: pointer;
+.restaurant-dropdown-item:hover {
+  background: #f0f0f0;
 }
