@@ -9,12 +9,22 @@ function PostDetailModalContent({ selectedPost, isMyPage }) {
     const positiveKeywords = selectedPost.keywords ? selectedPost.keywords.filter(item => item.sentiment === 'positive').map(item => item.keyword) : [];
     const negativeKeywords = selectedPost.keywords ? selectedPost.keywords.filter(item => item.sentiment === 'negative').map(item => item.keyword) : [];
 
+    // 리뷰 아이디
+    const reviewId = selectedPost.id;
+
+    console.log("Selected Post ID:", reviewId);
+
     const navigate = useNavigate();
 
     if (!selectedPost) return null; // selectedPost가 없으면 렌더링하지 않음
 
     const handleEditClick = () => {
-        navigate('/edit');
+        navigate(`/edit/${reviewId}`, {
+            state: { post: selectedPost }
+        });
+        window.scrollTo(0, 0); // 페이지 상단으로 스크롤 이동
+        window.location.reload(); // 페이지 새로고침
+        console.log("Navigating to edit page for post ID:", reviewId);
     };
 
     return (

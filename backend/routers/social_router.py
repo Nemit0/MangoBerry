@@ -1,41 +1,78 @@
 from fastapi import HTTPException, Depends
 from sqlalchemy.orm import Session
 
-from ..connection.mysqldb import get_db, Users
-from ..connection.mongodb import follow_collection
+from ..connection.mysqldb import (
+    get_db,
+    Users,
+    People,
+)
+from ..connection.mongodb import (
+    follow_collection,
+    user_keywords_collection,
+)
 
 from .common_imports import *
 
 router = APIRouter()
 
-def serialize_doc(doc):
+def _serialize_doc(doc: dict) -> dict:
+    """Convert MongoDB’s ObjectId to str for JSON serialisation."""
     doc["_id"] = str(doc["_id"])
     return doc
 
 @router.get("/social/{user_id}", tags=["Social"])
 def get_user_social(user_id: int, db: Session = Depends(get_db)):
+    """
+    Return follower / following statistics **plus** nickname and keyword
+    profile for the given user.
+
+    Response schema
+    ---------------
+    {
+        "user_id":           int,
+        "nickname":          str | None,         # from People
+        "follower_count":    int,
+        "following_count":   int,
+        "following_ids":     list[int],
+        "keywords":          list[dict]          # raw doc from Mongo
+    }
+    """
+    # 1. ── Core user row (for counts & validity)
     user = db.query(Users).filter(Users.user_id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    doc = follow_collection.find_one({"user_id": user_id})
-    follower_ids = doc.get("follower_ids", []) if doc else []
-    following_ids = doc.get("following_ids", []) if doc else []
+    # 2. ── Nickname (People table)
+    person = db.query(People).filter(People.user_id == user_id).first()
+    nickname = person.nickname if person else None
 
-    # Update counts in MySQL if different
+    # 3. ── Follower / following IDs (MongoDB)
+    doc = follow_collection.find_one({"user_id": user_id}) or {}
+    follower_ids = doc.get("follower_ids", [])
+    following_ids = doc.get("following_ids", [])
+
+    # 4. ── Counts – update MySQL cache if stale
     follower_count = len(follower_ids)
     following_count = len(following_ids)
-
-    if user.follower_count != follower_count or user.following_count != following_count:
+    if (user.follower_count != follower_count or
+            user.following_count != following_count):
         user.follower_count = follower_count
         user.following_count = following_count
         db.commit()
 
+    # 5. ── Keyword profile (MongoDB)
+    projection = {"_id": 0, "keywords.name": 1, "keywords.sentiment": 1, "keywords.frequency": 1}
+    kw_doc = user_keywords_collection.find_one({"user_id": user_id}, projection) or {}
+    keywords = kw_doc.get("keywords", [])  # each item: {name, sentiment, frequency, embedding}
+
+    # 6. ── Assemble response
     return {
         "user_id": user_id,
+        "nickname": nickname,
         "follower_count": follower_count,
         "following_count": following_count,
         "following_ids": following_ids,
+        "keywords": keywords,
     }
 
 @router.post("/follow/{user_id}/{target_id}", tags=["Social"])
@@ -110,8 +147,6 @@ def unfollow_user(user_id: int, target_id: int, db: Session = Depends(get_db)):
     return {"message": "Unfollowed successfully"}
 
 
-# Get a user's followers
-# collection.find_one(filter, projection)
 @router.get("/followers/{user_id}", tags=["Social"])
 def get_followers(user_id: int):
     doc = follow_collection.find_one({"user_id": user_id}, {"_id": 0, "follower_ids": 1})
@@ -120,7 +155,6 @@ def get_followers(user_id: int):
     return doc
 
 
-# Get users a user is following
 @router.get("/following/{user_id}", tags=["Social"])
 def get_following(user_id: int):
     doc = follow_collection.find_one({"user_id": user_id}, {"_id": 0, "following_ids": 1})

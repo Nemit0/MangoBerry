@@ -1,9 +1,3 @@
-// NewPage.js
-// Complete component – paste as‑is.
-// React page for writing a restaurant review,
-// uploading photos first (review_id=1000 workaround)
-// and finally posting the review itself.
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -11,12 +5,7 @@ import { TbPhotoPlus } from 'react-icons/tb';
 import { FiSearch }    from 'react-icons/fi';
 import './NewPage.css';
 
-/*
-  NOTE
-  ──────────────────────────────────────────────────────────────
-  • CRA proxy (setupProxy.js) rewrites "/api/**"   →  FastAPI.
-  • Replace `const USER_ID = 1` with the real login context.
-*/
+
 const API_ROOT   = '/api';
 const USER_ID    = 1;      // TODO: auth
 const REVIEW_FIX = 1000;   // temporary review_id for image uploads

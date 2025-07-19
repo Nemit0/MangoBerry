@@ -1,82 +1,74 @@
-/* -----------------------------------------------------------------------
-   EditPage.js ― fully rewritten
-   ‑ Accessed as  /edit/:reviewId      (reviewId URL param)
-   ‑ On mount:    GET  /get_review/{id}        → fill form
-   ‑ On “저장”:    PUT /update_reviews/{id}     (only changed fields)
-   ‑ Structure intentionally mirrors NewPage.js to keep UI consistent.
-   --------------------------------------------------------------------- */
-
 import React, {
   useState, useEffect, useRef, useCallback,
 } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header           from '../components/Header';
 import { TbPhotoPlus }  from 'react-icons/tb';
-import { FiSearch }     from 'react-icons/fi';        // optional: keep search UI
+import { FiSearch }     from 'react-icons/fi';
 import './EditPage.css';
 
-/* ───────────────────────────── constants ────────────────────────────── */
-const API_ROOT = '/api';      // CRA proxy rewrites to FastAPI
-const USER_ID  = 9;           // TODO: auth context
+/* ───────────────────────── constants ───────────────────────── */
+const API_ROOT = '/api';     // CRA proxy rewrites to FastAPI
+const USER_ID  = 9;          // TODO: pull from auth context
 
-/* helpers */
+/* tiny helper */
 const arraysEqual = (a = [], b = []) =>
   a.length === b.length && a.every((v, i) => v === b[i]);
 
-/* ───────────────────────────── component ────────────────────────────── */
+/* ───────────────────────── component ───────────────────────── */
 const EditPage = () => {
-  const { reviewId } = useParams();           // URL param
+  const { reviewId } = useParams();
   const navigate     = useNavigate();
-  const dropdownRef  = useRef(null);          // close restaurant dropdown on click‑away
+  const dropdownRef  = useRef(null);           // click‑away target
+  const originalRef  = useRef(null);           // immutable snapshot
 
-  /* original review snapshot (ref so it never triggers re‑render) */
-  const originalRef = useRef(null);
+  /* photo handling */
+  const [imageFiles, setImageFiles] = useState([]);   // newly picked File[]
+  const [imagePrev,  setImagePrev]  = useState([]);   // previews (existing + new)
 
-  /* ── state mirrors NewPage ── */
-  const [imageFiles, setImageFiles] = useState([]);   // new File[] to upload
-  const [imagePrev,  setImagePrev]  = useState([]);   // preview URLs (existing + new)
-
-  /* editable fields */
-  const [searchQuery,        setSearchQuery]        = useState('');  // restaurant name (display)
+  /* restaurant */
+  const [searchQuery,        setSearchQuery]        = useState('');
   const [selectedRestaurant, setSelectedRestaurant] = useState(null); // { r_id, name }
+  const [restaurantList,     setRestaurantList]     = useState([]);
+  const [showDropdown,       setShowDropdown]       = useState(false);
 
-  const [showDropdown,   setShowDropdown]   = useState(false);
-  const [restaurantList, setRestaurantList] = useState([]);
-
+  /* texts */
   const [oneLiner,   setOneLiner]   = useState('');
   const [reviewText, setReviewText] = useState('');
 
-  const [analysisComplete, setAnalysisComplete] = useState(false);
-  const [positiveKeywords, setPositiveKeywords] = useState({}); // { kw: active }
+  /* keywords */
+  const [analysisComplete, setAnalysisComplete] = useState(false); // controls initial render
+  const [isAnalyzing,      setIsAnalyzing]      = useState(false); // debounce “재분석” clicks
+  const [positiveKeywords, setPositiveKeywords] = useState({});    // { kw: active }
   const [negativeKeywords, setNegativeKeywords] = useState({});
 
-  /* ─────────────────────────── load existing review ──────────────────── */
+  /* ───────────── initial review fetch ───────────── */
   useEffect(() => {
-    /* immediately‑invoked async fn */
     (async () => {
       try {
         const res = await fetch(`${API_ROOT}/get_review/${reviewId}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();          // full review payload
+        const data = await res.json();
         console.log('Loaded review:', data);
-        originalRef.current = data;             // keep raw snapshot
+        originalRef.current = data;                   // save snapshot
 
-        /* fill inputs */
+        /* fill fields */
         setOneLiner(data.comments || '');
         setReviewText(data.review || '');
-        setSearchQuery('');                     // optional: show name later
-        setSelectedRestaurant({ r_id : data.restaurant_id, name : '' });
+        setSearchQuery(data.restaurant_name || '');
+        setSelectedRestaurant({ r_id: data.restaurant_id, name: data.restaurant_name });
 
-        /* keywords → object map */
-        const pos  = {};
-        const neg  = {};
-        data.positive_keywords.forEach((k) => { pos[k] = true; });
-        data.negative_keywords.forEach((k) => { neg[k] = true; });
+        /* keywords → object maps */
+        const pos = {}; data.positive_keywords.forEach((k) => { pos[k] = true; });
+        const neg = {}; data.negative_keywords.forEach((k) => { neg[k] = true; });
         setPositiveKeywords(pos);
         setNegativeKeywords(neg);
 
-        /* existing photos */
+        /* photos */
         setImagePrev(data.photo_urls || []);
+
+        /* ✅ show keyword panes immediately */
+        setAnalysisComplete(true);
       } catch (err) {
         console.error(err);
         alert(`리뷰 정보를 불러오지 못했습니다: ${err.message}`);
@@ -85,7 +77,7 @@ const EditPage = () => {
     })();
   }, [reviewId, navigate]);
 
-  /* ──────────────────────── restaurant search (optional) ─────────────── */
+  /* ───────────── restaurant search helpers ───────────── */
   const searchRestaurants = async () => {
     if (!searchQuery.trim()) return;
     try {
@@ -113,7 +105,7 @@ const EditPage = () => {
     setShowDropdown(false);
   };
 
-  /* click‑outside to close dropdown */
+  /* click‑away to close dropdown */
   useEffect(() => {
     const onClickAway = (e) =>
       dropdownRef.current && !dropdownRef.current.contains(e.target) && setShowDropdown(false);
@@ -121,7 +113,7 @@ const EditPage = () => {
     return () => document.removeEventListener('mousedown', onClickAway);
   }, []);
 
-  /* ───────────────────────── photo picking / preview ─────────────────── */
+  /* ───────────── photo selection ───────────── */
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     const blobs = files.map((f) => URL.createObjectURL(f));
@@ -129,14 +121,16 @@ const EditPage = () => {
     setImagePrev ((prev) => [...prev, ...blobs]);
   };
 
-  /* ───────────────────────── keyword analysis ────────────────────────── */
+  /* ───────────── keyword (re)analysis ───────────── */
   const handleAnalysis = async () => {
+    if (isAnalyzing) return;          // guard
     if (!reviewText.trim()) { alert('리뷰 내용을 입력해주세요.'); return; }
+    setIsAnalyzing(true);
     try {
       const payload = {
-        name: selectedRestaurant?.name || searchQuery || '알수없음',
-        one_liner: oneLiner,
-        text: reviewText,
+        name      : selectedRestaurant?.name || searchQuery || '알수없음',
+        one_liner : oneLiner,
+        text      : reviewText,
       };
       const res = await fetch(`${API_ROOT}/analyze_review`, {
         method : 'POST',
@@ -144,17 +138,19 @@ const EditPage = () => {
         body   : JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const arr = await res.json();           // [{ keyword, sentiment }]
+      const arr = await res.json();     // [{ keyword, sentiment }]
       const pos = {}; const neg = {};
       arr.forEach(({ keyword, sentiment }) =>
         (sentiment === 'positive' ? pos : neg)[keyword] = true
       );
       setPositiveKeywords(pos);
       setNegativeKeywords(neg);
-      setAnalysisComplete(true);
+      setAnalysisComplete(true);        // stays true anyway
     } catch (err) {
       console.error(err);
       alert(`키워드 분석 중 오류: ${err.message}`);
+    } finally {
+      setIsAnalyzing(false);
     }
   };
   const toggleKeyword = (type, kw) => {
@@ -165,24 +161,24 @@ const EditPage = () => {
     }
   };
 
-  /* ─────────────────────────── save (PUT) ────────────────────────────── */
+  /* ───────────── save PATCH ───────────── */
   const handleSave = useCallback(async () => {
-    if (!originalRef.current) return;     // still loading
+    if (!originalRef.current) return;   // still loading
     const orig = originalRef.current;
 
-    /* 1) upload *new* images (if any) */
+    /* 1) upload new images */
     let addedFilenames = [];
     let addedUrls      = [];
     if (imageFiles.length) {
       try {
         const uploadResults = await Promise.all(
           imageFiles.map(async (file) => {
-            const fd  = new FormData();
-            fd.append('file', file);
-            const url = `${API_ROOT}/reviews/${USER_ID}/images?review_id=${reviewId}`;
-            const res = await fetch(url, { method: 'POST', body: fd });
+            const fd = new FormData(); fd.append('file', file);
+            const res = await fetch(`${API_ROOT}/reviews/${USER_ID}/images?review_id=${reviewId}`, {
+              method: 'POST', body: fd,
+            });
             if (!res.ok) throw new Error(`upload HTTP ${res.status}`);
-            return res.json();            // { ok, key, public_url }
+            return res.json();          // { key, public_url }
           })
         );
         addedFilenames = uploadResults.map((x) => x.key);
@@ -194,37 +190,30 @@ const EditPage = () => {
       }
     }
 
-    /* 2) build PATCH payload with only changed fields */
+    /* 2) diff → payload */
     const payload = {};
-
-    /* restaurant change (rare) */
     if (selectedRestaurant?.r_id &&
-        selectedRestaurant.r_id !== orig.restaurant_id) {
-      payload.restaurant_id = selectedRestaurant.r_id;
-    }
+        selectedRestaurant.r_id !== orig.restaurant_id) payload.restaurant_id = selectedRestaurant.r_id;
 
-    if (oneLiner !== orig.comments) payload.comments = oneLiner;
-    if (reviewText !== orig.review) payload.review = reviewText;
+    if (oneLiner   !== orig.comments) payload.comments = oneLiner;
+    if (reviewText !== orig.review)   payload.review   = reviewText;
 
-    /* photos */
     if (addedFilenames.length) {
       payload.photo_filenames = [...(orig.photo_filenames || []), ...addedFilenames];
       payload.photo_urls      = [...(orig.photo_urls      || []), ...addedUrls];
     }
 
-    /* keywords */
     const curPos = Object.keys(positiveKeywords).filter((k) => positiveKeywords[k]);
     const curNeg = Object.keys(negativeKeywords).filter((k) => negativeKeywords[k]);
     if (!arraysEqual(curPos, orig.positive_keywords)) payload.positive_keywords = curPos;
     if (!arraysEqual(curNeg, orig.negative_keywords)) payload.negative_keywords = curNeg;
 
-    /* nothing changed? */
     if (Object.keys(payload).length === 0) {
       alert('수정된 내용이 없습니다.');
       return;
     }
 
-    /* 3) PUT update */
+    /* 3) PUT */
     try {
       const res = await fetch(`${API_ROOT}/update_reviews/${reviewId}`, {
         method : 'PUT',
@@ -241,31 +230,29 @@ const EditPage = () => {
   }, [imageFiles, oneLiner, reviewText, positiveKeywords,
       negativeKeywords, selectedRestaurant, navigate, reviewId]);
 
-  /* ─────────────────────────── cancel ────────────────────────────────── */
+  /* cancel */
   const handleCancel = () =>
     window.confirm('해당 글이 저장되지 않습니다.') && navigate('/');
 
-  /* ─────────────────────────── render ────────────────────────────────── */
+  /* ───────────── render ───────────── */
   return (
     <div className="makepage-container">
       <Header />
       <div className="makepage-content">
-
         <main className="makepage-main">
           <div className="makepage-wrapper">
 
-            {/* header row */}
+            {/* page header */}
             <div className="makepage-top">
               <div className="page-title-with-delete">
                 <h1>글편집</h1>
-                {/* delete button visibility left as‑is */}
                 <button className="delete-button" style={{ visibility: 'hidden' }}>삭제</button>
               </div>
             </div>
 
             {/* two‑column grid */}
             <div className="makepage-bottom">
-              {/* left: photo upload */}
+              {/* left: photos */}
               <div className="makepage-left">
                 <div
                   className="makepage-photo-upload"
@@ -273,16 +260,10 @@ const EditPage = () => {
                 >
                   <TbPhotoPlus size={50} color="#aaa" />
                   <input
-                    id="imageInput"
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    style={{ display: 'none' }}
+                    id="imageInput" type="file" multiple accept="image/*"
+                    onChange={handleImageChange} style={{ display: 'none' }}
                   />
                 </div>
-
-                {/* previews */}
                 <div className="image-preview-container">
                   {imagePrev.map((src, idx) => (
                     <img key={idx} src={src} alt={`preview-${idx}`} className="image-preview" />
@@ -293,20 +274,18 @@ const EditPage = () => {
               {/* right: form */}
               <div className="makepage-right">
                 <div className="makepage-inputs">
-                  {/* restaurant search (optional) */}
+                  {/* restaurant search */}
                   <div className="restaurant-search-container">
                     <input
                       className="restaurant-search-input"
-                      type="text"
-                      placeholder="식당이름 검색"
+                      type="text" placeholder="식당이름 검색"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onKeyDown={handleSearchKeyDown}
                     />
                     <button
                       className="restaurant-search-button"
-                      onClick={searchRestaurants}
-                      aria-label="search"
+                      onClick={searchRestaurants} aria-label="search"
                     >
                       <FiSearch size={18} />
                     </button>
@@ -325,10 +304,9 @@ const EditPage = () => {
                     )}
                   </div>
 
-                  {/* text inputs */}
+                  {/* texts */}
                   <input
-                    type="text"
-                    placeholder="한줄평"
+                    type="text" placeholder="한줄평"
                     value={oneLiner}
                     onChange={(e) => setOneLiner(e.target.value)}
                   />
@@ -338,16 +316,17 @@ const EditPage = () => {
                     onChange={(e) => setReviewText(e.target.value)}
                   />
 
+                  {/* “재분석” button */}
                   <button
                     onClick={handleAnalysis}
                     className="analysis-button"
-                    disabled={analysisComplete}
+                    disabled={isAnalyzing}
                   >
-                    {analysisComplete ? '분석 완료' : '분석 시작'}
+                    {isAnalyzing ? '분석 중…' : '재분석'}
                   </button>
                 </div>
 
-                {/* keyword section + save / cancel */}
+                {/* keywords + action buttons */}
                 {analysisComplete && (
                   <div className="analysis-results">
                     <div className="keyword-sections-container">
@@ -383,7 +362,7 @@ const EditPage = () => {
                       </div>
                     </div>
 
-                    {/* action buttons */}
+                    {/* save / cancel */}
                     <div className="action-buttons">
                       <button onClick={handleCancel} className="cancel-button">취소</button>
                       <button onClick={handleSave}   className="save-button">저장</button>
