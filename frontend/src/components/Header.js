@@ -51,8 +51,8 @@ function Header({ searchTerm, onSearchChange }) { // 검색어 관련 props 받�
                 <nav className="menu-nav">
                     {isLoggedIn ? (
                         <>
-                            <p onClick={goToMyPage} className="nav-link" style={{ cursor: 'pointer' }}>내 프로필</p>
-                            <p onClick={goToNewPage} className="nav-link" style={{ cursor: 'pointer' }}>새글쓰기</p>
+                            <p onClick={goToMyPage} className="nav-link" style={{ cursor: 'pointer' }}>프로필</p>
+                            <p onClick={goToNewPage} className="nav-link" style={{ cursor: 'pointer' }}>글쓰기</p>
                             <p onClick={goToMapPage} className="nav-link" style={{ cursor: 'pointer' }}>지도</p>
                         </>
                     ) : (
