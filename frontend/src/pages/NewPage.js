@@ -198,25 +198,25 @@ const NewPage = () => {
      render
   ────────────────────────────────────────────────────────────── */
   return (
-    <div className="makepage-container">
+    <div className="newpage-container">
       <Header />
-      <div className="makepage-content">
-        <main className="makepage-main">
-          <div className="makepage-wrapper">
+      <div className="newpage-content">
+        <main className="newpage-main">
+          <div className="newpage-wrapper">
 
             {/* header row */}
-            <div className="makepage-top">
+            <div className="newpage-top">
               <div className="page-title-with-delete">
                 <h1>글쓰기</h1>
               </div>
             </div>
 
             {/* ─── main two‑column grid ─── */}
-            <div className="makepage-bottom">
+            <div className="newpage-bottom">
               {/* left: image picker */}
-              <div className="makepage-left">
+              <div className="newpage-left">
                 <div
-                  className="makepage-photo-upload"
+                  className="newpage-photo-upload"
                   onClick={() => document.getElementById('imageInput').click()}
                 >
                   <TbPhotoPlus size={30} color="#aaa" />
@@ -231,9 +231,9 @@ const NewPage = () => {
                 </div>
 
                 {/* previews */}
-                <div className="image-preview-container">
+                <div className="newpage-image-preview-container">
                   {imagePrev.map((src, idx) => (
-                    <div key={idx} className="image-preview-wrapper">
+                    <div key={idx} className="newpage-image-preview-wrapper">
                       <img src={src} alt={`preview-${idx}`} className="image-preview" />
                       <button onClick={() => handleDeleteImage(idx)} className="delete-image-button">X</button>
                     </div>
@@ -242,8 +242,8 @@ const NewPage = () => {
               </div>
 
               {/* right: review form */}
-              <div className="makepage-right">
-                <div className="makepage-inputs">
+              <div className="newpage-right">
+                <div className="newpage-inputs">
                   {/* restaurant finder */}
                   <div className="restaurant-search-container">
                     <input

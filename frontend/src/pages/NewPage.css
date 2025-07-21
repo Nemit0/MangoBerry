@@ -1,6 +1,6 @@
 /* ────────────────────────────── Layout root ───────────────────────────── */
 
-.makepage-container {
+.newpage-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -8,7 +8,7 @@
   margin: 0 auto;
 }
 
-.makepage-content {
+.newpage-content {
   display: flex;
   flex-grow: 1;
   height: calc(100vh - 80px);
@@ -16,7 +16,7 @@
   box-sizing: border-box;
 }
 
-.makepage-main {
+.newpage-main {
   flex: 1;
   padding: 20px;
   display: flex;
@@ -24,23 +24,23 @@
   align-items: center;
 }
 
-.makepage-wrapper {
-  width: 70%;
+.newpage-wrapper {
+  width: 100%;
 }
 
-.makepage-top {
+.newpage-top {
   text-align: left;
   margin-bottom: 20px;
 }
 
-.makepage-bottom {
+.newpage-bottom {
   display: flex;
   flex: 1;
 }
 
 /* ───────────────────────────── Left column ───────────────────────────── */
 
-.makepage-left {
+.newpage-left {
   flex: 3;
   padding-right: 20px;
   display: flex;
@@ -49,7 +49,7 @@
   flex-shrink: 0;
 }
 
-.makepage-photo-upload {
+.newpage-photo-upload {
   height: 40px; /* 고정 높이 */
   border: 2px dashed #ccc;
   padding: 20px;
@@ -60,7 +60,7 @@
   justify-content: center;
 }
 
-.image-preview-container {
+.newpage-image-preview-container {
   margin-top: 10px;
   display: flex;
   flex-wrap: wrap;
@@ -74,7 +74,7 @@
   height: auto;
 }
 
-.image-preview-wrapper {
+.newpage-image-preview-wrapper {
   position: relative;
 }
 
@@ -96,13 +96,13 @@
 
 /* ───────────────────────────── Right column ──────────────────────────── */
 
-.makepage-right {
+.newpage-right {
   flex: 7;
   display: flex;
   flex-direction: column;
 }
 
-.makepage-inputs {
+.newpage-inputs {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -111,8 +111,8 @@
 
 /* ───────── Text fields (inputs & textarea) ───────── */
 
-.makepage-inputs input,
-.makepage-inputs textarea,
+.newpage-inputs input,
+.newpage-inputs textarea,
 .restaurant-search-input {
   width: 100%;
   height: 60px;
@@ -124,15 +124,15 @@
   box-sizing: border-box;
 }
 
-.makepage-inputs textarea {
+.newpage-inputs textarea {
   resize: none;
   height: 250px;
   padding: 12px;
 }
 
 /* unified placeholder styling */
-.makepage-inputs input::placeholder,
-.makepage-inputs textarea::placeholder,
+.newpage-inputs input::placeholder,
+.newpage-inputs textarea::placeholder,
 .restaurant-search-input::placeholder {
   color: #999;
   font-size: 14px;
@@ -188,6 +188,7 @@
 .keyword-type-section h2 {
   text-align: left;
   padding-left: 35px;
+  white-space: nowrap; /* 줄바꿈 방지 */
 }
 
 /* ─── REVISED: fixed‑size keyword box ─────────────────────────────────── */
@@ -279,4 +280,72 @@
 
 .restaurant-dropdown-item:hover {
   background: #f0f0f0;
+}
+
+/* Mobile styles for NewPage (max-width: 360px) */
+@media (max-width: 360px) {
+  .newpage-container {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .newpage-main {
+    margin-top: 20px; /* Header의 새로운 높이에 맞춰 조정 */
+    height: calc(100vh - 20px); /* 남은 공간 계산 */
+  }
+
+  .newpage-wrapper {
+    width: 100%;
+  }
+
+  .newpage-bottom {
+    flex-direction: column;
+  }
+
+  .newpage-left,
+  .newpage-right {
+    flex: none;
+    width: 100%;
+    padding-right: 0;
+  }
+
+  .newpage-photo-upload {
+    height: 150px; /* Adjust as needed */
+  }
+
+  .newpage-image-preview-container {
+    margin-top: 10px;
+  }
+
+  .newpage-inputs input,
+  .newpage-inputs textarea,
+  .restaurant-search-input {
+    height: 40px; /* Adjust input height for smaller screens */
+  }
+
+  .newpage-inputs textarea {
+    height: 150px; /* Adjust textarea height for smaller screens */
+  }
+
+  .keyword-sections-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .keyword-type-section {
+    width: 100%;
+  }
+
+  .keyword-type-section h2 {
+    padding-left: 0;
+    text-align: center;
+  }
+
+  .newpage-keyword-section {
+    min-height: 80px; /* Adjust keyword section height */
+  }
+
+  .action-buttons {
+    justify-content: center;
+  }
 }
