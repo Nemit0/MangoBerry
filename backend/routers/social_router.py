@@ -1,7 +1,12 @@
-from fastapi import HTTPException, Depends, Query
+from fastapi import HTTPException, Depends, Query, UploadFile, File
 from sqlalchemy.orm import Session
-
 from typing import List, Dict, Optional
+import os
+from uuid import uuid4
+
+# Add these constants if not imported elsewhere
+MAX_SIZE_BYTES = 5 * 1024 * 1024  # Example: 5MB limit
+ALLOWED_MIME_PREFIX = "image/"
 
 from ..connection.mysqldb import (
     get_db,
@@ -12,6 +17,8 @@ from ..connection.mongodb import (
     follow_collection,
     user_keywords_collection,
 )
+from ..connection.s3 import BUCKET_NAME, REGION_NAME
+from ..services.s3 import upload_bytes, guess_content_type, delete_object
 
 from .common_imports import *
 
@@ -33,6 +40,7 @@ def get_user_social(user_id: int, db: Session = Depends(get_db)):
     {
         "user_id":           int,
         "nickname":          str | None,         # from People
+        "profile_url":       str | None,         # from Users
         "follower_count":    int,
         "following_count":   int,
         "following_ids":     list[int],
@@ -290,3 +298,61 @@ def get_following(
         })
 
     return {"count": len(following), "following": following}
+
+@router.post("/upload-profile-image/{user_id}", tags=["Social"])
+async def upload_profile_image(                                   # noqa: D401
+    user_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    """
+    Receive one image file, store it under
+    ``profile-images/<user_id>/<uuid>.<ext>`` in S3,
+    delete the user’s previous avatar if there was one,
+    then persist and return the public HTTPS URL.
+
+    Returns
+    -------
+    {
+        "profile_url": str        # e.g.
+                                  # https://<bucket>.s3.<region>.amazonaws.com/profile-images/…
+    }
+    """
+    # ── 1. Verify user exists ───────────────────────────────────────────────
+    user = db.query(Users).filter(Users.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # ── 2. Read & validate upload ───────────────────────────────────────────
+    blob: bytes = await file.read()
+
+    if len(blob) > MAX_SIZE_BYTES:
+        raise HTTPException(status_code=413, detail="File exceeds size limit")
+
+    if not file.content_type.startswith(ALLOWED_MIME_PREFIX):
+        raise HTTPException(status_code=415, detail="Only image uploads allowed")
+
+    # ── 3. Build object‑key & push to S3 ─────────────────────────────────────
+    _, ext = os.path.splitext(file.filename or "")
+    ext = ext.lower() if ext else ".bin"                        # default fallback
+    object_key = f"profile-images/{user_id}/{uuid4().hex}{ext}"
+
+    content_type = file.content_type or guess_content_type(file.filename)
+    upload_bytes(data=blob, key=object_key, content_type=content_type)
+
+    # ── 4. Form the public HTTPS URL (what the frontend expects) ────────────
+    public_url = f"https://{BUCKET_NAME}.s3.{REGION_NAME}.amazonaws.com/{object_key}"
+
+    # ── 5. Trash the previous avatar, if any (best‑effort) ──────────────────
+    if user.profile_image:
+        try:
+            delete_object(user.profile_image)
+        except Exception as err:                       # keep errors non‑fatal
+            print(f"⚠️  Could not delete old avatar: {err}")
+
+    # ── 6. Persist & respond ────────────────────────────────────────────────
+    user.profile_image = public_url
+    db.commit()
+    db.refresh(user)
+
+    return {"profile_url": public_url}

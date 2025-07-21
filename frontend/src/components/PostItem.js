@@ -1,11 +1,18 @@
 import React from 'react';
 import './PostItem.css';
+import { useNavigate } from 'react-router-dom';
 import RatingDisplay from './RatingDisplay';
 import foxImage      from '../assets/photo/circular_image.png';
+import { useAuth } from '../contexts/AuthContext';
 
 function PostItem({ post, onClick }) {
+
+  const navigate = useNavigate();
+  const [profileImg, setProfileImg] = React.useState(post.user_profile || foxImage);
   /* pick first image no matter how it’s nested */
   const thumb = Array.isArray(post.images) ? post.images.flat()[0] : post.images;
+  const { user } = useAuth();
+  const userId = user?.user_id;
 
   const positives = (post.keywords || [])
     .filter(k => k.sentiment === 'positive')
@@ -17,14 +24,24 @@ function PostItem({ post, onClick }) {
     .map(k => k.keyword)
     .slice(0, 3);
 
+  const handleClickProfile = () => {
+    if (post.user_id === userId) {
+      navigate("/mypage");
+    } else {
+      navigate(`/others/${post.user_id}`, {
+        state: { from: "post" }
+      });
+    }
+  }
+
   return (
     <div className="post-card" onClick={() => onClick(post)}>
       <img src={thumb} alt={post.title} className="post-image" />
 
       <div className="post-info">
-        <div className="post-header-meta">
+        <div className="post-header-meta" onClick={handleClickProfile}>
           <div className="post-user-image-container">
-            <img src={foxImage} alt="User" className="post-profile-img" />
+            <img src={profileImg} alt="User" className="post-profile-img" />
           </div>
           <span className="post-user-name">{post.user}</span>
           <span className="post-datePosted">{post.datePosted}</span>

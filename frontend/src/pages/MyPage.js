@@ -1,4 +1,9 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,          // NEW – for hidden file input
+} from "react";
 import { useNavigate } from "react-router-dom";
 
 import Header     from "../components/Header";
@@ -9,8 +14,10 @@ import { useAuth } from "../contexts/AuthContext";
 import "./MyPage.css";
 import foxImage from "../assets/photo/circular_image.png";
 
+/* ───────────────────────── constants ───────────────────────── */
 const API_ROOT = "/api";
 
+/* Tiny stateless helper for profile stats */
 const UserInfo = ({ label, value, onClick, disabled }) => (
   <span
     className={`user-info-item${disabled ? " disabled" : ""}`}
@@ -24,14 +31,13 @@ const UserInfo = ({ label, value, onClick, disabled }) => (
   </span>
 );
 
-/* ─────────────────────────────── component ─────────────────────────── */
-
+/* ───────────────────────── component ───────────────────────── */
 const MyPage = () => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const userID   = user?.user_id ?? null;
+  const navigate    = useNavigate();
+  const { user }    = useAuth();
+  const userID      = user?.user_id ?? null;
 
-  /* social profile state */
+  /* Social profile state */
   const [nickname,        setNickname]        = useState("닉네임");
   const [profileImg,      setProfileImg]      = useState(foxImage);
   const [followerCount,   setFollowerCount]   = useState(0);
@@ -43,8 +49,11 @@ const MyPage = () => {
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState(null);
 
+  /* Refs */
+  const fileInputRef = useRef(null);          // NEW – hidden file chooser
+
   /* ------------------------------------------------------------------ */
-  /* fetch helpers                                                      */
+  /* Fetch helpers                                                      */
   /* ------------------------------------------------------------------ */
   const fetchSocial = useCallback(async () => {
     if (!userID) return;
@@ -53,9 +62,9 @@ const MyPage = () => {
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 
       const json  = await resp.json();
-      setNickname(json.nickname       ?? "닉네임");
-      setProfileImg(json.profile_url  ?? foxImage);
-      setFollowerCount(json.follower_count  ?? 0);
+      setNickname(json.nickname ?? "닉네임");
+      setProfileImg(json.profile_url ? json.profile_url : foxImage);
+      setFollowerCount(json.follower_count ?? 0);
       setFollowingCount(json.following_count ?? 0);
       setKeywords(Array.isArray(json.keywords) ? json.keywords : []);
     } catch (err) {
@@ -80,7 +89,58 @@ const MyPage = () => {
     }
   }, [userID]);
 
-  /* run once per user-change */
+  /* ------------------------------------------------------------------ */
+  /* Avatar upload flow                                                 */
+  /* ------------------------------------------------------------------ */
+  const handleProfileClick = () => {
+    /* 1️⃣ Open native file picker */
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !userID) return;
+
+    /* Optional client‑side validation (size/type) */
+    if (file.size > 5 * 1024 * 1024) {        // 5 MB (same as backend)
+      alert("5MB 이하의 이미지만 업로드 가능합니다.");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      alert("이미지 파일만 선택해주세요.");
+      return;
+    }
+
+    /* 2️⃣ Prepare multipart/form‑data */
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      /* 3️⃣ POST to backend */
+      const resp = await fetch(
+        `${API_ROOT}/upload-profile-image/${userID}`,
+        { method: "POST", body: formData }
+      );
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+      const json = await resp.json();
+      /* 4️⃣ Optimistically update UI */
+      if (json.profile_url) setProfileImg(json.profile_url);
+
+      /* 5️⃣ Refresh other social stats (in case backend mutated anything) */
+      fetchSocial();
+    } catch (err) {
+      console.error("[MyPage] avatar upload failed:", err);
+      alert("프로필 이미지를 업로드하지 못했습니다.");
+    } finally {
+      /* 6️⃣ Reset the file input so selecting the same file twice re‑triggers change */
+      if (fileInputRef.current) fileInputRef.current.value = null;
+    }
+  };
+
+  /* ------------------------------------------------------------------ */
+  /* Lifecycle                                                          */
+  /* ------------------------------------------------------------------ */
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -93,13 +153,13 @@ const MyPage = () => {
   }, [userID, fetchSocial, fetchPostCount]);
 
   /* ------------------------------------------------------------------ */
-  /* click handlers                                                     */
+  /* Click‑handlers for navigation                                      */
   /* ------------------------------------------------------------------ */
   const goFollowers = () => userID && navigate("/follower");
   const goFollowing = () => userID && navigate("/following");
 
   /* ------------------------------------------------------------------ */
-  /* render                                                             */
+  /* Render                                                             */
   /* ------------------------------------------------------------------ */
   if (!userID)
     return (
@@ -120,11 +180,28 @@ const MyPage = () => {
         {!loading && (
           <main className="mypage-middle-area">
 
-            {/* profile card */}
+            {/* Hidden file input – LIVE in the DOM but invisible */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleFileChange}
+            />
+
+            {/* Profile card */}
             <div className="my-user-info">
               <div className="user-info-left">
-                <div className="user-image-container">
-                  <img src={profileImg} alt="profile" className="my-profile-img" />
+                <div
+                  className="user-image-container"
+                  onClick={handleProfileClick}     // NEW – clickable avatar
+                  style={{ cursor: "pointer" }}    // UX hint
+                >
+                  <img
+                    src={profileImg}
+                    alt="profile"
+                    className="my-profile-img"
+                  />
                 </div>
                 <div className="user-nickname">{nickname}</div>
               </div>
@@ -136,14 +213,13 @@ const MyPage = () => {
               </div>
             </div>
 
-            {/* posts + word-cloud */}
+            {/* Posts + word‑cloud */}
             <div className="my-user-post">
               <section className="post-left-part">
                 <PostList isMyPage={true} user_id={userID} columns={1} />
               </section>
 
               <aside className="post-right-part">
-                {/* unified container with internal title + cloud */}
                 <div className="word-cloud-container">
                   <h3 className="word-cloud-title">워드&nbsp;클라우드</h3>
                   <div className="word-cloud-content">

@@ -1,5 +1,6 @@
 import mimetypes
 import io
+import re
 from pathlib import Path
 from botocore.exceptions import ClientError
 from typing import Optional
@@ -32,7 +33,7 @@ def upload_bytes(data: bytes, key: str, content_type: Optional[str] = None) -> N
     data
         Raw bytes to be stored.
     key
-        Destination object key (e.g. "user-uploads/abc123.png").
+        Destination object key (e.g. "user-uploads/abc123.png")a.
     content_type
         MIME type; if *None*, we try to guess from *key*.
     """
@@ -75,3 +76,24 @@ def generate_presigned_url(key: str, expires_in: int = 3600) -> str:
     except ClientError as err:
         raise RuntimeError(f"Could not create presigned URL: {err}") from err
     return url
+
+def delete_object(key_or_url: str) -> None:
+    """
+    Delete an object from S3 by its key or S3 URL.
+    """
+    # If input looks like a URL, extract the key
+    if key_or_url.startswith("s3://") or key_or_url.startswith("https://"):
+        # s3://bucket/key or https://bucket.s3.amazonaws.com/key
+        match = re.search(r"/([^/]+)/(.*)$", key_or_url)
+        if match:
+            key = match.group(2)
+        else:
+            raise ValueError(f"Could not extract key from URL: {key_or_url}")
+    else:
+        key = key_or_url
+
+    try:
+        s3.Object(BUCKET_NAME, key).delete()
+        print(f"→ Deleted s3://{BUCKET_NAME}/{key}")
+    except ClientError as err:
+        raise RuntimeError(f"Could not delete object {key}: {err}") from err

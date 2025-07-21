@@ -50,7 +50,7 @@ const OthersPage = () => {
     const json = await resp.json();
 
     setNickname(json.nickname        ?? "닉네임");
-    setProfileImg(json.profile_url   ?? foxImage);
+    setProfileImg(json.profile_url ? json.profile_url : foxImage);
     setFollowerCount(json.follower_count  ?? 0);
     setFollowingCount(json.following_count ?? 0);
     setKeywords(Array.isArray(json.keywords) ? json.keywords : []);

@@ -162,12 +162,11 @@ const EditPage = () => {
     }
   };
   const handleDeleteReview = () => {
-    const payload = { review_id: reviewId };
+    console.log('Deleting review:', reviewId);
     if (window.confirm('이 리뷰를 정말 삭제하시겠습니까?')) {
-      fetch(`${API_ROOT}/delete_reviews`, {
-        method : 'POST',
+      fetch(`${API_ROOT}/delete_reviews/${reviewId}`, {
+        method : 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body   : JSON.stringify(payload),
       })
         .then((res) => {
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
