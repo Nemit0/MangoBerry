@@ -128,6 +128,11 @@ def search_review_es(  # noqa: C901 – single endpoint contains all logic
     for h in hits:
         src = h["_source"]
 
+        # First get the profile image url for the review
+        profile_url:str = (
+            db.query(Users.profile_image).filter(Users.user_id == src["user_id"]).scalar() or ""
+        )
+
         # 3-a. Relational enrichment (restaurant name + state_id)
         r_obj = rest_map.get(src["restaurant_id"])
         restaurant_name: str | None = getattr(r_obj, "name", None)
@@ -169,6 +174,7 @@ def search_review_es(  # noqa: C901 – single endpoint contains all logic
                 "restaurant_id": src["restaurant_id"],
                 "restaurant_name": restaurant_name,
                 "user_id": src["user_id"],
+                "profile_url": profile_url,
                 "nickname": src.get("nickname") or "Unknown",
                 "comments": src.get("comments", ""),
                 "review": src.get("review", ""),

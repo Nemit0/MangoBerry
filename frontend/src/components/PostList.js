@@ -57,6 +57,7 @@ function PostList({
             r_name:        raw.restaurant_name ? [raw.restaurant_name] : [],
             title:         raw.comments        ? [raw.comments]        : [],
             user:          raw.nickname        ?? "Unknown",
+            user_profile:  raw.profile_url     ?? "",
             rating:        raw.rating          ?? 0,
             content:       raw.review          ?? "",
             datePosted:    (raw.created_at ?? "").split("T")[0].replace(/-/g, "."),

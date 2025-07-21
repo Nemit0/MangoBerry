@@ -1,36 +1,31 @@
+// FollowerPage.js
+// Detailed list of users who follow `targetID`, showing compatibility stars
 import React, { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { useSearchParams } from "react-router-dom";
 import "./FollowerPage.css";
 import foxImage from "../assets/photo/circular_image.png";
 import Header from "../components/Header";
-import RatingDisplay from '../components/RatingDisplay';
+import RatingDisplay from "../components/RatingDisplay";
 
 const API_ROOT = "/api";
 
 const FollowerPage = () => {
-  /* ──────────────────────────── viewer & target ──────────────────────────── */
-  const { user }     = useAuth();
-  const viewerID     = user?.user_id ?? null;
-  const navigate     = useNavigate();
+  /* ─────────────────────────── viewer & target ─────────────────────────── */
+  const { user } = useAuth();
+  const viewerID = user?.user_id ?? null;
+  const navigate = useNavigate();
 
-  const handleProfileClick = (userId) => {
-    if (userId === viewerID) {
-      navigate("/my");
-    } else {
-      navigate(`/others/${userId}`);
-    }
-  };
+  const handleProfileClick = (userId) =>
+    userId === viewerID ? navigate("/my") : navigate(`/others/${userId}`);
 
-  /* target user:  /follower?user={id}
-     – default to “me” when no query-string is supplied                            */
+  /* target user:  /follower?user={id} – default to “me” */
   const [searchParams] = useSearchParams();
   const targetIDParam  = searchParams.get("user");
   const targetID       = targetIDParam ? Number(targetIDParam) : viewerID;
 
   /* ───────────────────────────── state ───────────────────────────── */
-  const [followers, setFollowers] = useState([]);     // [{user_id, nickname, profile_url, isFollowing}]
+  const [followers, setFollowers] = useState([]);   // [{user_id, nickname, ...}]
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState(null);
 
@@ -38,21 +33,27 @@ const FollowerPage = () => {
   const fetchFollowers = useCallback(async () => {
     if (!targetID) return;
     setLoading(true);
+
     try {
-      // perspective = viewer (if logged-in) else target (anonymous)
       const perspectiveID = viewerID ?? targetID;
       const resp = await fetch(
         `${API_ROOT}/followers/${targetID}?perspective_id=${perspectiveID}`
       );
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const json = await resp.json();
+
       setFollowers(
-        (json.followers ?? []).map(u => ({
-          user_id:     u.user_id,
-          nickname:    u.nickname ?? "알 수 없음",
-          profile_url: u.profile_url ?? foxImage,
-          isFollowing: !!u.is_following,           // already viewer→them?
-        }))
+        (json.followers ?? []).map((u) => {
+          const compat = u.compatibility ?? 0;                // 0‑100
+          const rating = Math.round(compat / 20);             // 0‑5
+          return {
+            user_id:     u.user_id,
+            nickname:    u.nickname      ?? "알 수 없음",
+            profile_url: u.profile_url   ?? foxImage,
+            isFollowing: !!u.is_following,
+            rating,
+          };
+        })
       );
       setError(null);
     } catch (err) {
@@ -76,8 +77,8 @@ const FollowerPage = () => {
     try {
       const resp = await fetch(endpoint, { method: "POST" });
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      setFollowers(prev =>
-        prev.map(f =>
+      setFollowers((prev) =>
+        prev.map((f) =>
           f.user_id === targetUserID ? { ...f, isFollowing: !currentlyFollowing } : f
         )
       );
@@ -87,10 +88,10 @@ const FollowerPage = () => {
     }
   };
 
-  /* ───────────────────────────── render ──────────────────────────── */
-  if (!targetID)  return <p>사용자 정보가 없습니다.</p>;
-  if (loading)    return <p>불러오는 중…</p>;
-  if (error)      return <p>{error}</p>;
+  /* ───────────────────────────── render ─────────────────────────── */
+  if (!targetID) return <p>사용자 정보가 없습니다.</p>;
+  if (loading)   return <p>불러오는 중…</p>;
+  if (error)     return <p>{error}</p>;
 
   return (
     <div className="follower-page">
@@ -100,8 +101,12 @@ const FollowerPage = () => {
         <div className="follower-count">ALL&nbsp;{followers.length}</div>
 
         <div className="keyword-result-container">
-          {followers.map(f => (
-            <div key={f.user_id} className="keyword-box" onClick={() => handleProfileClick(f.user_id)}>
+          {followers.map((f) => (
+            <div
+              key={f.user_id}
+              className="keyword-box"
+              onClick={() => handleProfileClick(f.user_id)}
+            >
               <div className="profile-image-container">
                 <img
                   src={f.profile_url}
@@ -111,7 +116,7 @@ const FollowerPage = () => {
               </div>
 
               <div className="user-name">{f.nickname}</div>
-              <RatingDisplay score={3} width={50} height={50} />
+              <RatingDisplay score={f.rating / 10} width={50} height={50} />
               <button
                 className={`follow-button ${f.isFollowing ? "following" : "follow"}`}
                 onClick={() => toggleFollow(f.user_id, f.isFollowing)}
@@ -123,7 +128,6 @@ const FollowerPage = () => {
           ))}
         </div>
       </div>
-      
     </div>
   );
 };
