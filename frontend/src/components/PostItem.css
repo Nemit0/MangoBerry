@@ -8,7 +8,7 @@
     overflow: hidden; /* 이미지 오버플로우 방지 */
     display: flex;
     flex-direction: column;
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 1 / 1.2;
     cursor: pointer;
 }
 
