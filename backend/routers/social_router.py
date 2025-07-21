@@ -1,6 +1,8 @@
 from fastapi import HTTPException, Depends
 from sqlalchemy.orm import Session
 
+from typing import List, Dict
+
 from ..connection.mysqldb import (
     get_db,
     Users,
@@ -148,18 +150,105 @@ def unfollow_user(user_id: int, target_id: int, db: Session = Depends(get_db)):
 
     return {"message": "Unfollowed successfully"}
 
-
 @router.get("/followers/{user_id}", tags=["Social"])
-def get_followers(user_id: int):
-    doc = follow_collection.find_one({"user_id": user_id}, {"_id": 0, "follower_ids": 1})
-    if not doc:
-        return {"follower_ids": []}
-    return doc
+def get_followers(user_id: int, db: Session = Depends(get_db)):
+    """
+    Detailed list of *people who follow* ``user_id``.
+
+    Response
+    --------
+    {
+        "count": int,
+        "followers": [
+            {
+                "user_id":      int,
+                "nickname":     str | None,
+                "profile_url":  str | None,
+                "is_following": bool   # True ⇢ we already follow them back
+            }
+        ]
+    }
+    """
+    # 1. ── User must exist
+    user_row = db.query(Users).filter(Users.user_id == user_id).first()
+    if not user_row:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # 2. ── Pull this user’s social doc (contains both lists)
+    doc = follow_collection.find_one({"user_id": user_id}) or {}
+    follower_ids: List[int]  = doc.get("follower_ids", [])
+    following_ids: List[int] = doc.get("following_ids", [])
+
+    if not follower_ids:                         # early‑out for empty case
+        return {"count": 0, "followers": []}
+
+    # 3. ── Fetch profile info in **one** round‑trip per table
+    people_rows  = db.query(People).filter(People.user_id.in_(follower_ids)).all()
+    users_rows   = db.query(Users).filter(Users.user_id.in_(follower_ids)).all()
+
+    nick_map     = {row.user_id: row.nickname      for row in people_rows}
+    avatar_map   = {row.user_id: row.profile_image for row in users_rows}
+
+    # 4. ── Assemble payload (preserve original ordering)
+    followers: List[Dict] = []
+    for fid in follower_ids:
+        followers.append({
+            "user_id":      fid,
+            "nickname":     nick_map.get(fid),
+            "profile_url":  avatar_map.get(fid),
+            "is_following": fid in following_ids          # mutual?
+        })
+
+    return {"count": len(followers), "followers": followers}
 
 
 @router.get("/following/{user_id}", tags=["Social"])
-def get_following(user_id: int):
-    doc = follow_collection.find_one({"user_id": user_id}, {"_id": 0, "following_ids": 1})
-    if not doc:
-        return {"following_ids": []}
-    return doc
+def get_following(user_id: int, db: Session = Depends(get_db)):
+    """
+    Detailed list of *people whom* ``user_id`` *is following*.
+
+    Response
+    --------
+    {
+        "count": int,
+        "following": [
+            {
+                "user_id":        int,
+                "nickname":       str | None,
+                "profile_url":    str | None,
+                "is_followed_by": bool   # True ⇢ they follow us back
+            }
+        ]
+    }
+    """
+    # 1. ── Validate user
+    user_row = db.query(Users).filter(Users.user_id == user_id).first()
+    if not user_row:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # 2. ── Social lists for this user
+    doc = follow_collection.find_one({"user_id": user_id}) or {}
+    following_ids: List[int] = doc.get("following_ids", [])
+    follower_ids: List[int]  = doc.get("follower_ids", [])
+
+    if not following_ids:
+        return {"count": 0, "following": []}
+
+    # 3. ── Profile look‑ups (batch)
+    people_rows = db.query(People).filter(People.user_id.in_(following_ids)).all()
+    users_rows  = db.query(Users).filter(Users.user_id.in_(following_ids)).all()
+
+    nick_map   = {row.user_id: row.nickname      for row in people_rows}
+    avatar_map = {row.user_id: row.profile_image for row in users_rows}
+
+    # 4. ── Build response list
+    following: List[Dict] = []
+    for fid in following_ids:
+        following.append({
+            "user_id":        fid,
+            "nickname":       nick_map.get(fid),
+            "profile_url":    avatar_map.get(fid),
+            "is_followed_by": fid in follower_ids
+        })
+
+    return {"count": len(following), "following": following}
