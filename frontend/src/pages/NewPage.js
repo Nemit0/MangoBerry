@@ -144,7 +144,7 @@ const NewPage = () => {
         imageFiles.map(async (file) => {
           const fd  = new FormData();
           fd.append('file', file);
-          const url = `${API_ROOT}/reviews/${USER_ID}/images?review_id=${REVIEW_FIX}`;
+          const url = `${API_ROOT}/reviews/${userID}/images?review_id=${REVIEW_FIX}`;
           const res = await fetch(url, { method: 'POST', body: fd });
           if (!res.ok) throw new Error(`Image upload failed (${res.status})`);
           return res.json(); // { ok, key, public_url }
@@ -156,7 +156,7 @@ const NewPage = () => {
 
       /* 2) build review payload */
       const body = {
-        user_id          : USER_ID,
+        user_id          : userID,
         restaurant_id    : selectedRestaurant.r_id,
         comments         : oneLiner,
         review           : reviewText,
