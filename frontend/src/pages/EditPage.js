@@ -161,6 +161,25 @@ const EditPage = () => {
       setIsAnalyzing(false);
     }
   };
+  const handleDeleteReview = () => {
+    const payload = { review_id: reviewId };
+    if (window.confirm('이 리뷰를 정말 삭제하시겠습니까?')) {
+      fetch(`${API_ROOT}/delete_reviews`, {
+        method : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body   : JSON.stringify(payload),
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          alert('리뷰가 삭제되었습니다.');
+          navigate('/');
+        })
+        .catch((err) => {
+          console.error(err);
+          alert(`삭제 실패: ${err.message}`);
+        });
+    }
+  }
   const toggleKeyword = (type, kw) => {
     if (type === 'positive') {
       setPositiveKeywords((prev) => ({ ...prev, [kw]: !prev[kw] }));
@@ -254,7 +273,7 @@ const EditPage = () => {
             <div className="makepage-top">
               <div className="page-title-with-delete">
                 <h1>글편집</h1>
-                <button className="delete-button">삭제</button>
+                <button className="delete-button" onClick={handleDeleteReview}>삭제</button>
               </div>
             </div>
 
