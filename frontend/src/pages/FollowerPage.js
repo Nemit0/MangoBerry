@@ -5,6 +5,7 @@ import { useSearchParams } from "react-router-dom";
 import "./FollowerPage.css";
 import foxImage from "../assets/photo/circular_image.png";
 import Header from "../components/Header";
+import RatingDisplay from '../components/RatingDisplay';
 
 const API_ROOT = "/api";
 
@@ -110,7 +111,7 @@ const FollowerPage = () => {
               </div>
 
               <div className="user-name">{f.nickname}</div>
-
+              <RatingDisplay score={3} width={50} height={50} />
               <button
                 className={`follow-button ${f.isFollowing ? "following" : "follow"}`}
                 onClick={() => toggleFollow(f.user_id, f.isFollowing)}
