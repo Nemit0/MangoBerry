@@ -1,8 +1,23 @@
 .homepage-layout {
-    width: 60%;
+    width: 100%; /* 기본 너비를 100%로 설정 */
+    max-width: 1200px; /* 데스크톱에서 최대 너비 제한 */
     margin: 0 auto; /* 화면 중앙에 배치 */
     height: 100vh; /* 뷰포트 높이 100%를 차지 */
     overflow: hidden; /* 페이지 전체 스크롤바 방지 */
+}
+
+/* 화면이 1200px 이하일 때, 좌우 마진을 줄임 */
+@media (max-width: 1200px) {
+    .homepage-layout {
+        width: 95%; /* 화면 너비의 95%를 차지 */
+    }
+}
+
+/* 화면이 768px 이하일 때, 좌우 마진을 거의 없앰 */
+@media (max-width: 768px) {
+    .homepage-layout {
+        width: 100%; /* 화면 전체를 차지 */
+    }
 }
 
 .home-main-content-wrapper {
