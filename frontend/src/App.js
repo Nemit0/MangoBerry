@@ -27,16 +27,19 @@ function App() {
           <Route path="/register"       element={<RegisterPage />} />
           <Route path="/map"            element={<MapPage />} />
           <Route path="/restaurantInfo" element={<RestaurantInfoPage />} />
-          <Route path="/others"         element={<OthersPage />} />
+
+          {/* NOTE: dynamic target user id */}
+          <Route path="/others/:userId" element={<OthersPage />} />
 
           {/* 보호된 라우트 */}
           <Route path="/my"        element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
           <Route path="/new"       element={<ProtectedRoute><NewPage /></ProtectedRoute>} />
-          {/* NOTE: reviewId param is required */}
           <Route path="/edit/:reviewId"
                  element={<ProtectedRoute><EditPage /></ProtectedRoute>} />
-          <Route path="/follower"  element={<ProtectedRoute><FollowerPage /></ProtectedRoute>} />
-          <Route path="/following" element={<ProtectedRoute><FollowingPage /></ProtectedRoute>} />
+          <Route path="/follower"
+                 element={<ProtectedRoute><FollowerPage /></ProtectedRoute>} />
+          <Route path="/following"
+                 element={<ProtectedRoute><FollowingPage /></ProtectedRoute>} />
 
           {/* 404 */}
           <Route path="*" element={<NotFoundPage />} />
