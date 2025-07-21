@@ -235,3 +235,10 @@
     padding: 20px;
     font-size: 0.9em;
 }
+
+.following-checkbox {
+    margin-left: auto;    /* push to the far right */
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}

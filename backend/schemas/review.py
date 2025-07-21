@@ -25,3 +25,7 @@ class ReviewUpdate(BaseModel):
     state_id: Optional[int] = None
     positive_keywords: Optional[List[str]] = None
     negative_keywords: Optional[List[str]] = None
+
+class KeywordInitRequest(BaseModel):
+    user_id: str
+    keywords: List[str]
