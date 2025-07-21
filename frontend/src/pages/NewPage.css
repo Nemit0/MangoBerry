@@ -283,7 +283,7 @@
 }
 
 /* Mobile styles for NewPage (max-width: 360px) */
-@media (max-width: 360px) {
+@media (max-width: 700px) {
   .newpage-container {
     width: 100%;
     padding: 10px;

@@ -131,7 +131,7 @@
 }
 
 /* 모바일 화면 (360px 이하) */
-@media (max-width: 360px) {
+@media (max-width: 700px) {
     .mypage-layout {
         width: 100%; /* 전체 너비 사용 */
         padding: 10px; /* 패딩 조정 */
