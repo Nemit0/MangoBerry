@@ -262,14 +262,14 @@ const EditPage = () => {
 
   /* ───────────── render ───────────── */
   return (
-    <div className="makepage-container">
+    <div className="editpage-container">
       <Header />
-      <div className="makepage-content">
-        <main className="makepage-main">
-          <div className="makepage-wrapper">
+      <div className="editpage-content">
+        <main className="editpage-main">
+          <div className="editpage-wrapper">
 
             {/* page header */}
-            <div className="makepage-top">
+            <div className="editpage-top">
               <div className="page-title-with-delete">
                 <h1>글편집</h1>
                 <button className="delete-button" onClick={handleDeleteReview}>삭제</button>
@@ -277,11 +277,11 @@ const EditPage = () => {
             </div>
 
             {/* two‑column grid */}
-            <div className="makepage-bottom">
+            <div className="editpage-bottom">
               {/* left: photos */}
-              <div className="makepage-left">
+              <div className="editpage-left">
                 <div
-                  className="makepage-photo-upload"
+                  className="editpage-photo-upload"
                   onClick={() => document.getElementById('imageInput').click()}
                 >
                   <TbPhotoPlus size={30} color="#aaa" />
@@ -296,9 +296,9 @@ const EditPage = () => {
                 </div>
 
                 {/* previews */}
-                <div className="image-preview-container">
+                <div className="editpage-image-preview-container">
                   {imagePrev.map((src, idx) => (
-                    <div key={idx} className="image-preview-wrapper">
+                    <div key={idx} className="editpage-image-preview-wrapper">
                       <img src={src} alt={`preview-${idx}`} className="image-preview" />
                       <button onClick={() => handleDeleteImage(idx)} className="delete-image-button">X</button>
                     </div>
@@ -307,8 +307,8 @@ const EditPage = () => {
               </div>
 
               {/* right: form */}
-              <div className="makepage-right">
-                <div className="makepage-inputs">
+              <div className="editpage-right">
+                <div className="editpage-inputs">
                   {/* restaurant search */}
                   <div className="restaurant-search-container">
                     <input

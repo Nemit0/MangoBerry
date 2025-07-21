@@ -13,10 +13,50 @@
     z-index: 1000;
 }
 
+@media (max-width: 1200px) {
+    .header-container {
+        width: 95%;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-container {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .header-search-area {
+        display: none;
+    }
+
+    .menu-nav, .header-nav {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+@media (max-width: 360px) {
+    .header-nav-container {
+        flex-direction: row; /* 가로줄로 변경 */
+        justify-content: center; /* 중앙 정렬 */
+        min-width: unset; /* 최소 너비 제한 해제 */
+        flex-wrap: wrap; /* 공간 부족 시 줄바꿈 허용 */
+    }
+
+    .menu-nav, .header-nav {
+        flex-direction: row; /* 가로줄로 변경 */
+        align-items: center;
+        gap: 10px; /* 항목 간 간격 추가 */
+    }
+
+    .nav-link {
+        padding: 5px 10px; /* 가로 배열에 맞게 패딩 조정 */
+    }
+}
+
 .logo {
     font-size: 30px;
     color: #672091;
-    margin-right: 20px;
     font-weight: bold;
 }
 

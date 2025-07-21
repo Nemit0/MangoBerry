@@ -129,3 +129,49 @@
   max-width: 100%;
   max-height: 100%;
 }
+
+/* 모바일 화면 (360px 이하) */
+@media (max-width: 360px) {
+    .mypage-layout {
+        width: 100%; /* 전체 너비 사용 */
+        padding: 10px; /* 패딩 조정 */
+    }
+
+    .mypage-main-wrapper {
+      margin-top: 110px; /* Header의 새로운 높이에 맞춰 조정 */
+      height: calc(100vh - 110px); /* 남은 공간 계산 */
+    }
+
+    .my-user-info {
+        flex-direction: column; /* 세로 정렬 */
+        align-items: flex-start; /* 왼쪽 정렬 */
+        gap: 15px; /* 간격 조정 */
+        padding: 15px;
+    }
+
+    .user-info-right {
+        flex-direction: column; /* 세로 정렬 */
+        align-items: flex-start; /* 왼쪽 정렬 */
+        gap: 10px; /* 간격 조정 */
+        width: 100%; /* 전체 너비 사용 */
+    }
+
+    .user-info-item {
+        width: 100%; /* 전체 너비 사용 */
+        text-align: left; /* 텍스트 왼쪽 정렬 */
+    }
+
+    .my-user-post {
+        flex-direction: column; /* 세로 정렬 */
+        gap: 20px;
+    }
+
+    .post-left-part,
+    .post-right-part {
+        width: 100%; /* 전체 너비 사용 */
+    }
+
+    .word-cloud-container {
+        height: auto; /* 높이 자동 조절 */
+    }
+}

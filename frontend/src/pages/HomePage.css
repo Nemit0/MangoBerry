@@ -31,6 +31,14 @@
     box-sizing: border-box;
 }
 
+/* 화면 너비 360px 이하일 때 Header 높이에 맞춰 PostList 조정 */
+@media (max-width: 360px) {
+    .home-main-content-wrapper {
+        margin-top: 162px; /* Header의 새로운 높이에 맞춰 조정 */
+        height: calc(100vh - 162px); /* 남은 공간 계산 */
+    }
+}
+
 /* 중간 게시물 영역 (PostList가 들어갈 곳) */
 .homepage-middle-posts-area {
     flex-grow: 1; /* 남은 수평 공간을 모두 차지하도록 */

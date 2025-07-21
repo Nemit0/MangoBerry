@@ -5,7 +5,7 @@
 
 /* ────────────────────────────── Layout root ───────────────────────────── */
 
-.makepage-container {
+.editpage-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -13,7 +13,7 @@
   margin: 0 auto;
 }
 
-.makepage-content {
+.editpage-content {
   display: flex;
   flex-grow: 1;
   height: calc(100vh - 80px); /* header height offset */
@@ -21,7 +21,7 @@
   box-sizing: border-box;
 }
 
-.makepage-main {
+.editpage-main {
   flex: 1;
   padding: 20px;
   display: flex;
@@ -29,11 +29,11 @@
   align-items: center;
 }
 
-.makepage-wrapper {
+.editpage-wrapper {
   width: 70%;
 }
 
-.makepage-top {
+.editpage-top {
   text-align: left;
   margin-bottom: 20px;
 }
@@ -48,7 +48,12 @@
 
 /* ───────────────────────────── Left column ───────────────────────────── */
 
-.makepage-left {
+.editpage-bottom {
+  display: flex;
+  flex: 1;
+}
+
+.editpage-left {
   flex: 3;
   padding-right: 20px;
   display: flex;
@@ -57,7 +62,7 @@
   flex-shrink: 0;
 }
 
-.makepage-photo-upload {
+.editpage-photo-upload {
   height: 40px; /* 고정 높이 */
   border: 2px dashed #ccc;
   padding: 20px;
@@ -68,7 +73,7 @@
   justify-content: center;
 }
 
-.image-preview-container {
+.editpage-image-preview-container {
   margin-top: 10px;
   display: flex;
   flex-wrap: wrap;
@@ -82,7 +87,7 @@
   height: auto;
 }
 
-.image-preview-wrapper {
+.editpage-image-preview-wrapper {
   position: relative;
 }
 
@@ -104,13 +109,13 @@
 
 /* ───────────────────────────── Right column ──────────────────────────── */
 
-.makepage-right {
+.editpage-right {
   flex: 7;
   display: flex;
   flex-direction: column;
 }
 
-.makepage-inputs {
+.editpage-inputs {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -118,8 +123,8 @@
 
 /* ───────── Text fields (inputs & textarea) ───────── */
 
-.makepage-inputs input,
-.makepage-inputs textarea,
+.editpage-inputs input,
+.editpage-inputs textarea,
 .restaurant-search-input {
   width: 100%;
   height: 60px;
@@ -131,15 +136,15 @@
   box-sizing: border-box;
 }
 
-.makepage-inputs textarea {
+.editpage-inputs textarea {
   resize: none;
   height: 250px;
   padding: 12px;
 }
 
 /* unified placeholder styling */
-.makepage-inputs input::placeholder,
-.makepage-inputs textarea::placeholder,
+.editpage-inputs input::placeholder,
+.editpage-inputs textarea::placeholder,
 .restaurant-search-input::placeholder {
   color: #999;
   font-size: 14px;
@@ -194,6 +199,7 @@
 .keyword-type-section h2 {
   text-align: left;
   padding-left: 35px;
+  white-space: nowrap; /* 줄바꿈 방지 */
 }
 
 /* fixed‑size keyword box */
@@ -217,7 +223,7 @@
   background-color: #eee;
   border-radius: 8px;
   border: none;
-  padding: 4px 10px;
+  /* padding: 4px 10px; */
 }
 
 .edit-positive-button.active { background-color: #D4EDDA; }
@@ -280,4 +286,72 @@
 
 .restaurant-dropdown-item:hover {
   background: #f0f0f0;
+}
+
+/* Mobile styles for NewPage (max-width: 360px) */
+@media (max-width: 360px) {
+  .editpage-container {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .editpage-main {
+    margin-top: 20px; /* Header의 새로운 높이에 맞춰 조정 */
+    height: calc(100vh - 20px); /* 남은 공간 계산 */
+  }
+
+  .editpage-wrapper {
+    width: 100%;
+  }
+
+  .editpage-bottom {
+    flex-direction: column;
+  }
+
+  .editpage-left,
+  .editpage-right {
+    flex: none;
+    width: 100%;
+    padding-right: 0;
+  }
+
+  .editpage-photo-upload {
+    height: 150px; /* Adjust as needed */
+  }
+
+  .editpage-image-preview-container {
+    margin-top: 10px;
+  }
+
+  .editpage-inputs input,
+  .editpage-inputs textarea,
+  .restaurant-search-input {
+    height: 40px; /* Adjust input height for smaller screens */
+  }
+
+  .editpage-inputs textarea {
+    height: 150px; /* Adjust textarea height for smaller screens */
+  }
+
+  .keyword-sections-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .keyword-type-section {
+    width: 100%;
+  }
+
+  .keyword-type-section h2 {
+    padding-left: 0;
+    text-align: center;
+  }
+
+  .editpage-keyword-section {
+    min-height: 80px; /* Adjust keyword section height */
+  }
+
+  .action-buttons {
+    justify-content: center;
+  }
 }
