@@ -43,7 +43,7 @@ function PostItem({ post, onClick }) {
           <div className="post-user-image-container">
             <img src={profileImg} alt="User" className="post-profile-img" />
           </div>
-          <span className="post-user-name">{post.user}</span>
+          <span className="post-user-name">@{post.user}</span>
           <span className="post-datePosted">{post.datePosted}</span>
         </div>
 

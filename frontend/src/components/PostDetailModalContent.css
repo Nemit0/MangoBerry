@@ -36,22 +36,43 @@
     height: auto;
 }
 
-.name-date {
+.modal-info {
     display: flex;
-    width: 100%;
-    justify-content: space-between;
+    align-items: center;
+    gap: 3px;
+    margin-bottom: 10px;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.modal-user-image-container {
+    width: 25px; /* 프로필 이미지 크기를 5px로 설정 */
+    height: 25px; /* 프로필 이미지 크기를 5px로 설정 */
+    border-radius: 50%; /* 원형으로 자르기 */
+    overflow: hidden; /* 컨테이너 밖으로 나가는 이미지 자르기 */
+    display: flex; /* 내부 이미지를 중앙 정렬 */
+    justify-content: center;
+    align-items: center;
+    background-color: #eee; /* 이미지가 로드되기 전의 배경색 */
+    flex-shrink: 0; /* 공간이 부족해도 축소되지 않도록 */
+}
+
+.modal-profile-img {
+    width: 100%; /* 컨테이너에 꽉 채우기 */
+    height: 100%; /* 컨테이너에 꽉 채우기 */
+    object-fit: cover; /* 이미지 비율 유지하며 컨테이너 채우기 */
+    display: block; /* 이미지 하단 여백 제거 */
 }
 
 .modal-user-name {
     font-size: 1em;
-    margin-bottom: 15px; /* 사용자 이름과 이미지 사이 간격 */
     color: #000000;
 }
 
 .modal-date-posted {
     font-size: 1.0em;
     color: #000000;
-    margin-bottom: 15px;
+    margin-left: auto;
 }
 
 
