@@ -1,15 +1,11 @@
-/* OthersPage.js
-   Mirror of MyPage for /others/:userId
-   2025‑07‑21 rev‑2: unified layout, added postCount.
-*/
 import React, { useEffect, useState, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Header       from "../components/Header";
 import PostList     from "../components/PostList";
 import WordCloud    from "../components/WordCloud";
 import { useAuth }  from "../contexts/AuthContext";
 
-import "./OthersPage.css";          // extends MyPage styles
+import "./OthersPage.css";
 import foxImage from "../assets/photo/circular_image.png";
 
 const API_ROOT = "/api";
@@ -28,10 +24,11 @@ const UserInfo = ({ label, value, onClick, disabled }) => (
 );
 
 const OthersPage = () => {
-  const { userId } = useParams();               // /others/:userId
-  const targetId   = Number(userId);
-  const { user }   = useAuth();
-  const viewerId   = user?.user_id ?? null;
+  const navigate     = useNavigate();
+  const { userId }   = useParams();               // /others/:userId
+  const targetId     = Number(userId);
+  const { user }     = useAuth();
+  const viewerId     = user?.user_id ?? null;
 
   /* ─────── profile state ─────── */
   const [nickname,       setNickname]       = useState("닉네임");
@@ -72,8 +69,9 @@ const OthersPage = () => {
     if (!viewerId) return;
     const resp = await fetch(`${API_ROOT}/following/${viewerId}`);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const { following_ids } = await resp.json();
-    setIsFollowing(Array.isArray(following_ids) && following_ids.includes(targetId));
+    const { following } = await resp.json();
+    const ids = (following ?? []).map(u => u.user_id);
+    setIsFollowing(ids.includes(targetId));
   }, [viewerId, targetId]);
 
   /* initial load */
@@ -105,16 +103,20 @@ const OthersPage = () => {
       setIsFollowing(prev => !prev);
       setFollowerCount(prev => (isFollowing ? prev - 1 : prev + 1));
     } catch (err) {
-      alert(`Failed to ${action}: ${err.message}`);
+      alert(`요청 실패: ${err.message}`);
     }
   };
+
+  /* ─────── navigation to follower / following list ─────── */
+  const goFollowers  = () => navigate(`/follower?user=${targetId}`);
+  const goFollowing  = () => navigate(`/following?user=${targetId}`);
 
   /* ─────── render ─────── */
   if (Number.isNaN(targetId))
     return <p style={{ padding: "2rem" }}>잘못된 URL입니다.</p>;
 
   return (
-    <div className="mypage-layout">{/* same wrapper as MyPage */}
+    <div className="mypage-layout">
       <Header />
 
       <div className="mypage-main-wrapper">
@@ -133,9 +135,9 @@ const OthersPage = () => {
               </div>
 
               <div className="user-info-right">
-                <UserInfo label="팔로워"  value={followerCount} />
-                <UserInfo label="팔로잉"  value={followingCount} />
-                <UserInfo label="게시물" value={postCount} disabled />
+                <UserInfo label="팔로워"  value={followerCount}  onClick={goFollowers} />
+                <UserInfo label="팔로잉"  value={followingCount} onClick={goFollowing} />
+                <UserInfo label="게시물" value={postCount}      disabled />
                 <div className="follow-button">
                   <button
                     onClick={toggleFollow}
@@ -148,7 +150,7 @@ const OthersPage = () => {
               </div>
             </div>
 
-            {/* posts + word‑cloud */}
+            {/* posts + word-cloud */}
             <div className="my-user-post">
               <section className="post-left-part">
                 <PostList user_id={targetId} columns={1} />

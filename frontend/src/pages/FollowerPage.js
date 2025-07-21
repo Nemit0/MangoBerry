@@ -1,51 +1,119 @@
-import React, { useState } from "react"; // useState를 import 합니다.
+import React, { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { useSearchParams } from "react-router-dom";
 import "./FollowerPage.css";
-import foxImage from '../assets/photo/circular_image.png';
+import foxImage from "../assets/photo/circular_image.png";
+
+const API_ROOT = "/api";
 
 const FollowerPage = () => {
-  // dummyFollower 데이터를 상태로 관리하여 버튼 클릭 시 업데이트 가능하게 합니다.
-  const [followers, setFollowers] = useState([
-    { name: "유준영", isFollowing: true, profileImg: foxImage},  // 이미 팔로잉 중인 상태; true (메세지)
-    { name: "권별아", isFollowing: true, profileImg: foxImage}, // 아직 팔로잉하지 않는 상태; false (맞팔로우우)
-    { name: "김태완", isFollowing: true, profileImg: foxImage},
-    { name: "정지원", isFollowing: true, profileImg: foxImage},
-    { name: "정민희", isFollowing: true, profileImg: foxImage},
-    { name: "임호규", isFollowing: false, profileImg: foxImage},  // 이미 팔로잉 중인 상태; true (메세지)
-    { name: "이정두", isFollowing: false, profileImg: foxImage}, // 아직 팔로잉하지 않는 상태; false (팔로잉)
-    { name: "박지연", isFollowing: false, profileImg: foxImage},
-    { name: "최진욱", isFollowing: false, profileImg: foxImage},
-    { name: "김병천", isFollowing: false, profileImg: foxImage}
-      ]);
+  /* ──────────────────────────── viewer & target ──────────────────────────── */
+  const { user }     = useAuth();
+  const viewerID     = user?.user_id ?? null;
+  const navigate     = useNavigate();
 
-
-  // 팔로잉 상태를 토글하는 함수
-  const toggleFollow = (nameToToggle) => {
-    setFollowers(prevFollowers =>
-      prevFollowers.map(follower =>
-        follower.name === nameToToggle
-          ? { ...follower, isFollowing: !follower.isFollowing }
-          : follower
-      )
-    );
+  const handleProfileClick = (userId) => {
+    if (userId === viewerID) {
+      navigate("/my");
+    } else {
+      navigate(`/others/${userId}`);
+    }
   };
 
+  /* target user:  /follower?user={id}
+     – default to “me” when no query-string is supplied                            */
+  const [searchParams] = useSearchParams();
+  const targetIDParam  = searchParams.get("user");
+  const targetID       = targetIDParam ? Number(targetIDParam) : viewerID;
+
+  /* ───────────────────────────── state ───────────────────────────── */
+  const [followers, setFollowers] = useState([]);     // [{user_id, nickname, profile_url, isFollowing}]
+  const [loading,   setLoading]   = useState(true);
+  const [error,     setError]     = useState(null);
+
+  /* ───────────────────────────── helpers ─────────────────────────── */
+  const fetchFollowers = useCallback(async () => {
+    if (!targetID) return;
+    setLoading(true);
+    try {
+      // perspective = viewer (if logged-in) else target (anonymous)
+      const perspectiveID = viewerID ?? targetID;
+      const resp = await fetch(
+        `${API_ROOT}/followers/${targetID}?perspective_id=${perspectiveID}`
+      );
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const json = await resp.json();
+      setFollowers(
+        (json.followers ?? []).map(u => ({
+          user_id:     u.user_id,
+          nickname:    u.nickname ?? "알 수 없음",
+          profile_url: u.profile_url ?? foxImage,
+          isFollowing: !!u.is_following,           // already viewer→them?
+        }))
+      );
+      setError(null);
+    } catch (err) {
+      console.error("[FollowerPage] fetch failed:", err);
+      setError("팔로워 목록을 불러오지 못했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  }, [targetID, viewerID]);
+
+  /* mount / reload */
+  useEffect(() => { fetchFollowers(); }, [fetchFollowers]);
+
+  /* ───── follow / unfollow toggle ───── */
+  const toggleFollow = async (targetUserID, currentlyFollowing) => {
+    if (!viewerID || viewerID === targetUserID) return;
+    const endpoint = currentlyFollowing
+      ? `${API_ROOT}/unfollow/${viewerID}/${targetUserID}`
+      : `${API_ROOT}/follow/${viewerID}/${targetUserID}`;
+
+    try {
+      const resp = await fetch(endpoint, { method: "POST" });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      setFollowers(prev =>
+        prev.map(f =>
+          f.user_id === targetUserID ? { ...f, isFollowing: !currentlyFollowing } : f
+        )
+      );
+    } catch (err) {
+      console.error("[FollowerPage] toggle failed:", err);
+      alert("요청을 처리하지 못했습니다.");
+    }
+  };
+
+  /* ───────────────────────────── render ──────────────────────────── */
+  if (!targetID)  return <p>사용자 정보가 없습니다.</p>;
+  if (loading)    return <p>불러오는 중…</p>;
+  if (error)      return <p>{error}</p>;
 
   return (
     <div className="follower-page">
       <h2 className="follower-title">팔로워</h2>
-      <div className="follower-count">ALL {followers.length}</div>
+      <div className="follower-count">ALL&nbsp;{followers.length}</div>
+
       <div className="keyword-result-container">
-        {followers.map((user, index) => (
-          <div key={index} className="keyword-box">
+        {followers.map(f => (
+          <div key={f.user_id} className="keyword-box" onClick={() => handleProfileClick(f.user_id)}>
             <div className="profile-image-container">
-                <img src={user.profileImg} alt={`${user.name}'s profile`} className="profile-img" />
+              <img
+                src={f.profile_url}
+                alt={`${f.nickname} profile`}
+                className="profile-img"
+              />
             </div>
-            <div className="user-name">{user.name}</div>
+
+            <div className="user-name">{f.nickname}</div>
+
             <button
-              className={`follow-button ${user.isFollowing ? 'following' : 'follow'}`}
-              onClick={() => toggleFollow(user.name)}
+              className={`follow-button ${f.isFollowing ? "following" : "follow"}`}
+              onClick={() => toggleFollow(f.user_id, f.isFollowing)}
+              disabled={!viewerID || viewerID === f.user_id}
             >
-              {user.isFollowing ? '메세지' : '맞팔로우'}
+              {f.isFollowing ? "팔로잉" : "팔로우"}
             </button>
           </div>
         ))}

@@ -1,7 +1,7 @@
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException, Depends, Query
 from sqlalchemy.orm import Session
 
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from ..connection.mysqldb import (
     get_db,
@@ -151,9 +151,27 @@ def unfollow_user(user_id: int, target_id: int, db: Session = Depends(get_db)):
     return {"message": "Unfollowed successfully"}
 
 @router.get("/followers/{user_id}", tags=["Social"])
-def get_followers(user_id: int, db: Session = Depends(get_db)):
+def get_followers(
+    user_id: int,
+    perspective_id: Optional[int] = Query(
+        None,
+        description=(
+            "User ID from whose point of view we check mutual status. "
+            "If omitted, defaults to ``user_id`` itself."
+        ),
+    ),
+    db: Session = Depends(get_db),
+):
     """
     Detailed list of *people who follow* ``user_id``.
+
+    Parameters
+    ----------
+    user_id : int
+        The profile owner whose followers we want to list.
+    perspective_id : int | None, optional
+        The viewer’s user ID.  Mutual‑status flags are computed **from this
+        user’s perspective** (defaults to ``user_id``).
 
     Response
     --------
@@ -164,46 +182,61 @@ def get_followers(user_id: int, db: Session = Depends(get_db)):
                 "user_id":      int,
                 "nickname":     str | None,
                 "profile_url":  str | None,
-                "is_following": bool   # True ⇢ we already follow them back
+                "is_following": bool   # True ⇢ perspective user follows them
             }
         ]
     }
     """
-    # 1. ── User must exist
+    # 1. ── Validate profile owner
     user_row = db.query(Users).filter(Users.user_id == user_id).first()
     if not user_row:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # 2. ── Pull this user’s social doc (contains both lists)
-    doc = follow_collection.find_one({"user_id": user_id}) or {}
-    follower_ids: List[int]  = doc.get("follower_ids", [])
-    following_ids: List[int] = doc.get("following_ids", [])
+    # 2. ── Perspective defaults to profile owner (current behaviour)
+    perspective_id = perspective_id or user_id
 
-    if not follower_ids:                         # early‑out for empty case
+    # 3. ── Grab social docs once
+    doc_profile     = follow_collection.find_one({"user_id": user_id}) or {}
+    doc_perspective = follow_collection.find_one({"user_id": perspective_id}) or {}
+
+    follower_ids:  List[int] = doc_profile.get("follower_ids", [])
+    following_ids: List[int] = doc_perspective.get("following_ids", [])  # viewer’s “following”
+
+    if not follower_ids:                                      # early‑out
         return {"count": 0, "followers": []}
 
-    # 3. ── Fetch profile info in **one** round‑trip per table
-    people_rows  = db.query(People).filter(People.user_id.in_(follower_ids)).all()
-    users_rows   = db.query(Users).filter(Users.user_id.in_(follower_ids)).all()
+    # 4. ── Batch‑fetch profile data
+    people_rows = db.query(People).filter(People.user_id.in_(follower_ids)).all()
+    users_rows  = db.query(Users).filter(Users.user_id.in_(follower_ids)).all()
 
-    nick_map     = {row.user_id: row.nickname      for row in people_rows}
-    avatar_map   = {row.user_id: row.profile_image for row in users_rows}
+    nick_map   = {row.user_id: row.nickname      for row in people_rows}
+    avatar_map = {row.user_id: row.profile_image for row in users_rows}
 
-    # 4. ── Assemble payload (preserve original ordering)
+    # 5. ── Assemble response (order preserved)
     followers: List[Dict] = []
     for fid in follower_ids:
         followers.append({
             "user_id":      fid,
             "nickname":     nick_map.get(fid),
             "profile_url":  avatar_map.get(fid),
-            "is_following": fid in following_ids          # mutual?
+            "is_following": fid in following_ids,            # perspective mutual?
         })
 
     return {"count": len(followers), "followers": followers}
 
 
 @router.get("/following/{user_id}", tags=["Social"])
-def get_following(user_id: int, db: Session = Depends(get_db)):
+def get_following(
+    user_id: int,
+    perspective_id: Optional[int] = Query(
+        None,
+        description=(
+            "User ID from whose point of view we check mutual status. "
+            "If omitted, defaults to ``user_id``."
+        ),
+    ),
+    db: Session = Depends(get_db),
+):
     """
     Detailed list of *people whom* ``user_id`` *is following*.
 
@@ -216,39 +249,44 @@ def get_following(user_id: int, db: Session = Depends(get_db)):
                 "user_id":        int,
                 "nickname":       str | None,
                 "profile_url":    str | None,
-                "is_followed_by": bool   # True ⇢ they follow us back
+                "is_followed_by": bool   # True ⇢ they follow perspective user
             }
         ]
     }
     """
-    # 1. ── Validate user
+    # 1. ── Validate profile owner
     user_row = db.query(Users).filter(Users.user_id == user_id).first()
     if not user_row:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # 2. ── Social lists for this user
-    doc = follow_collection.find_one({"user_id": user_id}) or {}
-    following_ids: List[int] = doc.get("following_ids", [])
-    follower_ids: List[int]  = doc.get("follower_ids", [])
+    # 2. ── Perspective defaults to profile owner
+    perspective_id = perspective_id or user_id
+
+    # 3. ── Social docs
+    doc_profile     = follow_collection.find_one({"user_id": user_id}) or {}
+    doc_perspective = follow_collection.find_one({"user_id": perspective_id}) or {}
+
+    following_ids: List[int] = doc_profile.get("following_ids", [])
+    follower_ids:  List[int] = doc_perspective.get("follower_ids", [])   # who follows viewer?
 
     if not following_ids:
         return {"count": 0, "following": []}
 
-    # 3. ── Profile look‑ups (batch)
+    # 4. ── Batch profile look‑ups
     people_rows = db.query(People).filter(People.user_id.in_(following_ids)).all()
     users_rows  = db.query(Users).filter(Users.user_id.in_(following_ids)).all()
 
     nick_map   = {row.user_id: row.nickname      for row in people_rows}
     avatar_map = {row.user_id: row.profile_image for row in users_rows}
 
-    # 4. ── Build response list
+    # 5. ── Build payload
     following: List[Dict] = []
     for fid in following_ids:
         following.append({
             "user_id":        fid,
             "nickname":       nick_map.get(fid),
             "profile_url":    avatar_map.get(fid),
-            "is_followed_by": fid in follower_ids
+            "is_followed_by": fid in follower_ids,           # reciprocal to perspective?
         })
 
     return {"count": len(following), "following": following}
