@@ -48,7 +48,6 @@
     display: flex; /* 내부 이미지를 중앙 정렬 */
     justify-content: center;
     align-items: center;
-    margin-right: 10px; /* 사용자 이름과의 간격 */
     background-color: #eee; /* 이미지가 로드되기 전의 배경색 */
     flex-shrink: 0; /* 공간이 부족해도 축소되지 않도록 */
 }

@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './PostDetailModalContent.css';
 import RatingDisplay from './RatingDisplay';
+import foxImage      from '../assets/photo/circular_image.png';
 
 function PostDetailModalContent({ selectedPost, isMyPage }) {
 
@@ -50,9 +51,12 @@ function PostDetailModalContent({ selectedPost, isMyPage }) {
                 
                 <h3 className='modal-post-title'>{selectedPost.title}</h3>
 
-                <div className='name-date'>
-                    <p className="modal-user-name">@{selectedPost.user}</p>
-                    <p className="modal-date-posted">{selectedPost.datePosted}</p>
+                <div className='modal-info'>
+                    <div className='modal-user-image-container'>
+                        <img src={foxImage} alt="User" className="modal-profile-img" />
+                    </div>
+                    <span className="modal-user-name">@{selectedPost.user}</span>
+                    <span className="modal-date-posted">{selectedPost.datePosted}</span>
                 </div>
 
                 {/* post-positive-tags */}

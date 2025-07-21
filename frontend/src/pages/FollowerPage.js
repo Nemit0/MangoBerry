@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useSearchParams } from "react-router-dom";
 import "./FollowerPage.css";
 import foxImage from "../assets/photo/circular_image.png";
+import Header from "../components/Header";
 
 const API_ROOT = "/api";
 
@@ -92,32 +93,36 @@ const FollowerPage = () => {
 
   return (
     <div className="follower-page">
-      <h2 className="follower-title">팔로워</h2>
-      <div className="follower-count">ALL&nbsp;{followers.length}</div>
+      <Header />
+      <div className="follower-wrapper">
+        <h2 className="follower-title">팔로워</h2>
+        <div className="follower-count">ALL&nbsp;{followers.length}</div>
 
-      <div className="keyword-result-container">
-        {followers.map(f => (
-          <div key={f.user_id} className="keyword-box" onClick={() => handleProfileClick(f.user_id)}>
-            <div className="profile-image-container">
-              <img
-                src={f.profile_url}
-                alt={`${f.nickname} profile`}
-                className="profile-img"
-              />
+        <div className="keyword-result-container">
+          {followers.map(f => (
+            <div key={f.user_id} className="keyword-box" onClick={() => handleProfileClick(f.user_id)}>
+              <div className="profile-image-container">
+                <img
+                  src={f.profile_url}
+                  alt={`${f.nickname} profile`}
+                  className="profile-img"
+                />
+              </div>
+
+              <div className="user-name">{f.nickname}</div>
+
+              <button
+                className={`follow-button ${f.isFollowing ? "following" : "follow"}`}
+                onClick={() => toggleFollow(f.user_id, f.isFollowing)}
+                disabled={!viewerID || viewerID === f.user_id}
+              >
+                {f.isFollowing ? "팔로잉" : "팔로우"}
+              </button>
             </div>
-
-            <div className="user-name">{f.nickname}</div>
-
-            <button
-              className={`follow-button ${f.isFollowing ? "following" : "follow"}`}
-              onClick={() => toggleFollow(f.user_id, f.isFollowing)}
-              disabled={!viewerID || viewerID === f.user_id}
-            >
-              {f.isFollowing ? "팔로잉" : "팔로우"}
-            </button>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
+      
     </div>
   );
 };
