@@ -7,17 +7,25 @@
   overflow-y: auto;
 }
 
+.following-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 80px); /* 뷰포트 높이 - 헤더 높이 */
+    margin-top: 80px; /* 헤더 아래에서 시작 */
+    box-sizing: border-box;
+}
+
 html, body {
   height: 100%;
   overflow-y: auto;
 }
 
-.follower-title {
+h2.following-title {
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 30px;
-  border-bottom: 1px solid #999;
-  display: inline-block;
+  text-decoration: underline;
+  text-underline-offset: 5px;
 }
 
 .follower-count {
