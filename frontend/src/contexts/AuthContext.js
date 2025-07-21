@@ -1,16 +1,3 @@
-// src/contexts/AuthContext.js
-/*
- * Global authentication / user context
- * ─────────────────────────────────────
- * Stores:
- *   • isLoggedIn   → boolean
- *   • user         → { user_id, email, nickname, … } | null
- *   • showWelcomePopup, hasSeenWelcomePopup
- *
- * `login(userData)` expects the payload you receive from
- * POST /login (see backend), e.g. { user_id, email, verified, … }.
- */
-
 import React, {
   createContext,
   useContext,
@@ -20,9 +7,10 @@ import React, {
 } from "react";
 
 const AuthContext = createContext(null);
+const API_ROOT    = "/api";
 
 export const AuthProvider = ({ children }) => {
-  // ─── persistent auth state ───────────────────────────────
+  /* ───────────────────── persistent auth state ───────────────────── */
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     return localStorage.getItem("isLoggedIn") === "true";
   });
@@ -32,11 +20,11 @@ export const AuthProvider = ({ children }) => {
     return cached ? JSON.parse(cached) : null;
   });
 
-  // ─── welcome-popup state ─────────────────────────────────
+  /* ─────────────────── welcome‑popup / onboarding ─────────────────── */
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
   const [hasSeenWelcomePopup, setHasSeenWelcomePopup] = useState(false);
 
-  // ─── side-effects to keep localStorage in sync ───────────
+  /* ───────────────────── side‑effects: localStorage ────────────────── */
   useEffect(() => {
     localStorage.setItem("isLoggedIn", String(isLoggedIn));
   }, [isLoggedIn]);
@@ -46,39 +34,49 @@ export const AuthProvider = ({ children }) => {
     else localStorage.removeItem("user");
   }, [user]);
 
-  // ─── auth helpers ────────────────────────────────────────
+  /* ───────────────────── helper: fetch keyword count ───────────────── */
+  const decideWelcomePopup = useCallback(async (uid) => {
+    try {
+      const resp = await fetch(`${API_ROOT}/social/${uid}`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+      const data = await resp.json();
+      const hasKeywords = Array.isArray(data.keywords) && data.keywords.length > 0;
+
+      if (hasKeywords) {
+        /* User already completed onboarding – no popup. */
+        setShowWelcomePopup(false);
+        setHasSeenWelcomePopup(true);
+      } else {
+        /* Zero keywords → show onboarding popup. */
+        setShowWelcomePopup(true);
+        setHasSeenWelcomePopup(false);
+      }
+    } catch (err) {
+      console.error("[AuthContext] Failed to fetch keyword profile:", err);
+      /* On error, be safe and show the popup. */
+      setShowWelcomePopup(true);
+      setHasSeenWelcomePopup(false);
+    }
+  }, []);
+
+  /* ───────────────────────── auth helpers ──────────────────────────── */
   const login = useCallback(
     (userData) => {
+      /* 1. Basic auth state */
       setIsLoggedIn(true);
       setUser(userData); // { user_id, email, … }
 
-      // TODO: 백엔드에서 사용자 키워드 유무를 확인하는 API 호출 (나중에 구현)
-      // 예시:
-      // fetch(`/api/user/${userData.user_id}/keywords`)
-      //   .then(response => response.json())
-      //   .then(data => {
-      //     if (data.keywords && data.keywords.length > 0) {
-      //       // 키워드가 있으면 웰컴 팝업을 띄우지 않음
-      //       setShowWelcomePopup(false);
-      //       setHasSeenWelcomePopup(true); // 웰컴 팝업을 본 것으로 처리
-      //     } else {
-      //       // 키워드가 없으면 웰컴 팝업을 띄움
-      //       setShowWelcomePopup(true);
-      //       setHasSeenWelcomePopup(false);
-      //     }
-      //   })
-      //   .catch(error => {
-      //     console.error("Error fetching user keywords:", error);
-      //     // 에러 발생 시 기본적으로 웰컴 팝업을 띄움
-      //     setShowWelcomePopup(true);
-      //     setHasSeenWelcomePopup(false);
-      //   });
-
-      // 임시: 키워드 API 구현 전까지는 항상 웰컴 팝업을 띄우도록 설정
-      setShowWelcomePopup(true);
-      setHasSeenWelcomePopup(false);
+      /* 2. Check onboarding status asynchronously */
+      if (userData?.user_id) {
+        decideWelcomePopup(userData.user_id);
+      } else {
+        /* Edge case: no user_id available */
+        setShowWelcomePopup(true);
+        setHasSeenWelcomePopup(false);
+      }
     },
-    []
+    [decideWelcomePopup]
   );
 
   const logout = useCallback(() => {
@@ -92,11 +90,12 @@ export const AuthProvider = ({ children }) => {
     setShowWelcomePopup(false);
   };
 
+  /* ───────────────────── expose context values ─────────────────────── */
   return (
     <AuthContext.Provider
       value={{
         isLoggedIn,
-        user, // ← access user.user_id anywhere
+        user, // ← can access user.user_id anywhere in the app
         login,
         logout,
         showWelcomePopup,
@@ -109,6 +108,7 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+/* ─────────────────────── custom hook wrapper ───────────────────────── */
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
   if (ctx === undefined)

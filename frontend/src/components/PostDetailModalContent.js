@@ -3,12 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import './PostDetailModalContent.css';
 import RatingDisplay from './RatingDisplay';
 import foxImage      from '../assets/photo/circular_image.png';
+import { useAuth } from '../contexts/AuthContext';
 
 function PostDetailModalContent({ selectedPost, isMyPage }) {
-
     // 긍정 및 부정 키워드 분리
     const positiveKeywords = selectedPost.keywords ? selectedPost.keywords.filter(item => item.sentiment === 'positive').map(item => item.keyword) : [];
     const negativeKeywords = selectedPost.keywords ? selectedPost.keywords.filter(item => item.sentiment === 'negative').map(item => item.keyword) : [];
+    const { user } = useAuth(); // Get user info
+    const userId = user?.user_id;
+
+    const [profileImg, setProfileImg] = React.useState(selectedPost.user_profile || foxImage);
 
     // 리뷰 아이디
     const reviewId = selectedPost.id;
@@ -26,6 +30,16 @@ function PostDetailModalContent({ selectedPost, isMyPage }) {
         window.scrollTo(0, 0); // 페이지 상단으로 스크롤 이동
         window.location.reload(); // 페이지 새로고침
         console.log("Navigating to edit page for post ID:", reviewId);
+    };
+
+    const handleClickProfile = () => {
+        if (selectedPost.user_id === userId) {
+            navigate("/my");
+        } else {
+            navigate(`/others/${selectedPost.user_id}`, {
+                state: { from: "post" }
+            });
+        }
     };
 
     return (
@@ -52,10 +66,11 @@ function PostDetailModalContent({ selectedPost, isMyPage }) {
                 <h3 className='modal-post-title'>{selectedPost.title}</h3>
 
                 <div className='modal-info'>
-                    <div className='modal-user-image-container'>
-                        <img src={foxImage} alt="User" className="modal-profile-img" />
+                    <div className='modal-user-image-container' onClick={handleClickProfile}>
+                        <img src={profileImg} alt="User" className="modal-profile-img" />
                     </div>
-                    <span className="modal-user-name">@{selectedPost.user}</span>
+                    <span className="modal-user-name" onClick={handleClickProfile} style={{ cursor: 'pointer' }}
+                    >@{selectedPost.user}</span>
                     <span className="modal-date-posted">{selectedPost.datePosted}</span>
                 </div>
 

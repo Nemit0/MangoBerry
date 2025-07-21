@@ -26,7 +26,7 @@ function PostItem({ post, onClick }) {
 
   const handleClickProfile = () => {
     if (post.user_id === userId) {
-      navigate("/mypage");
+      navigate("/my");
     } else {
       navigate(`/others/${post.user_id}`, {
         state: { from: "post" }
