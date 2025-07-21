@@ -3,16 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { TbPhotoPlus } from 'react-icons/tb';
 import { FiSearch }    from 'react-icons/fi';
+import { useAuth } from '../contexts/AuthContext';
 import './NewPage.css';
 
-
 const API_ROOT   = '/api';
-const USER_ID    = 1;      // TODO: auth
+const USER_ID    = 1;      // FALLBACK
 const REVIEW_FIX = 1000;   // temporary review_id for image uploads
 
 const NewPage = () => {
   /* ─────────── navigation ─────────── */
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const userID   = user?.user_id ?? USER_ID;
 
   /* ───── refs ───── */
   const dropdownRef = useRef(null);
