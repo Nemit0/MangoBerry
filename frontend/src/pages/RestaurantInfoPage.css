@@ -1,10 +1,12 @@
+/* RestaurantInfoPage.css */
+
 .restaurantInfopage-layout {
     display: flex;
     flex-direction: column;
     height: 100vh;
     overflow: hidden;
     width: 60%;
-    margin: 0 auto; /* 화면 중앙에 배치 */
+    margin: 0 auto;
 }
 
 .main-content-wrapper {
@@ -16,111 +18,84 @@
 }
 
 .rIpage-middle-area {
-    flex-grow: 1; /* 남은 수평 공간을 모두 차지하도록 */
+    flex-grow: 1;
     background-color: #ffffff;
-    padding: 20px; /* PostList 컴포넌트 주변 여백 */
+    padding: 20px;
     box-sizing: border-box;
-
-    /* **게시물 영역 스크롤 설정 (핵심)** */
-    overflow-y: auto; /* 내용이 넘칠 때 세로 스크롤바 생성 */
-    max-height: 100%; /* 부모(main-content-wrapper)의 높이를 넘지 않도록 */
-    padding-top: 0%;
-    display: flex; /* rIpage-left-part와 rIpage-right-part를 옆으로 나란히 배치 */
+    overflow-y: auto;
+    max-height: 100%;
+    display: flex;            /* two columns */
 }
 
-.rIpage-left-part {
-    width: 50%;
-    padding-right: 20px; /* 오른쪽 부분과 간격 추가 */
-    box-sizing: border-box;
-}
-
-.rIpage-right-part {
-    width: 50%;
-}
+.rIpage-left-part  { width: 50%; padding-right: 20px; box-sizing: border-box; }
+.rIpage-right-part { width: 50%; }
 
 .restaurant-info-container {
     display: flex;
     flex-direction: column;
-    align-items: center; /* 가운데 정렬 */
+    align-items: center;
     text-align: center;
     margin-top: 10px;
 }
 
+/* ───────── Thumbnail ───────── */
 .restaurant-image {
     width: 100%;
-    max-width: 400px; /* 이미지 최대 너비 설정 */
+    max-width: 400px;      /* reference size */
     height: auto;
     border-radius: 8px;
     margin-bottom: 20px;
 }
 
+/* ───────── Text meta ───────── */
 .restaurant-name {
-    font-size: 2rem; /* 폰트 크기 키움 */
+    font-size: 2rem;
     font-weight: bold;
     margin-bottom: 10px;
-    text-align: left;
-    width: 100%;
-    max-width: 400px;
+    align-self: flex-start;
 }
 
 .restaurant-address {
     font-size: 1.1rem;
     color: #555;
     margin-bottom: 20px;
-    text-align: left;
+    align-self: flex-start;
+}
+
+/* ───────── Word‑cloud box – matches thumbnail width ───────── */
+.word-cloud-container {
+    width: 100%;            /* stretch inside flex column */
+    max-width: 400px;       /* identical to .restaurant-image */
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    justify-content: flex-start;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    padding: 20px;
+    height: 420px;
+    box-sizing: border-box;
+}
+
+.word-cloud-title {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #555;
+}
+
+.word-cloud-content {
+    flex: 1;
     width: 100%;
-    max-width: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
-.keyword-section {
-    width: 100%;
-    max-width: 400px;
-    margin-bottom: 20px;
-}
-
-.keyword-section h3 {
-    font-size: 1.3rem;
-    margin-bottom: 10px;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 5px;
-    text-align: left;
-}
-
-.keywords-positive,
-.keywords-negative {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    display: flex; /* 태그들을 가로로 나열 */
-    flex-wrap: wrap; /* 공간이 부족하면 다음 줄로 넘김 */
-    gap: 8px; /* 태그들 사이의 간격 */
-}
-
-.keywords span {
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-weight: 500;
-}
-
-.keywords-positive span { /* 긍정 키워드 배경색 */
-    display: inline-block; /* 태그 크기에 맞게 */
-    padding: 8px 15px; /* 내부 여백 */
-    border: 1px solid rgba(30, 150, 0, 1); /* 초록색 테두리 */
-    color: rgba(30, 150, 0, 1); /* 초록색 글씨 */
-    background-color: #ffffff; /* 연한 초록색 배경 */
-    border-radius: 20px; /* 둥근 모서리 */
-    font-size: 0.9em;
-    font-weight: bold;
-    white-space: nowrap; /* 태그 내용이 한 줄에 표시되도록 */
-}
-
-.keywords-negative span {/* 부정 키워드 배경색 */
-    display: inline-block;
-    padding: 8px 15px;
-    border: 1px solid rgba(150, 0, 0, 1); /* 빨간색 테두리 */
-    color: rgba(150, 0, 0, 1); /* 빨간색 글씨 */
-    background-color: #ffffff; /* 연한 빨간색 배경 */
-    border-radius: 20px;
-    font-size: 0.9em;
-    font-weight: bold;
-    white-space: nowrap;
+.word-cloud-content svg {
+    max-width: 100%;
+    max-height: 100%;
 }

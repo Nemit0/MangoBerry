@@ -1,89 +1,106 @@
-// src/pages/RestaurantInfoPage.js
 import './RestaurantInfoPage.css';
-import Header from '../components/Header';
-import PostList from '../components/PostList';
-import fox from '../assets/photo/fox.png';
-import { useEffect, useState } from 'react';
+import Header     from '../components/Header';
+import PostList   from '../components/PostList';
+import WordCloud  from '../components/WordCloud';
+import { useEffect, useState, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
 
-const parseTags = (tagString) => {
-    if (!tagString) return [];
-    return tagString.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
-};
+const API_ROOT = '/api';
 
-function RestaurantInfoPage () {
-    // DB에서 데이터를 가져오는 함수 (예시)
-    // 실제로는 API 호출 코드가 들어갑니다.
-    const fetchRestaurantData = async () => {
-        // --- DB 연결 부분 ---
-        // 예: const response = await fetch('/api/restaurants/{restaurantId}');
-        //     const data = await response.json();
-        //     return data;
-        // --------------------
+/* helper: [{ keyword, frequency }] ➜ [{ name, frequency }] */
+const mapKeywords = (arr = []) =>
+  arr.map(({ keyword, frequency }) => ({ name: keyword, frequency }));
 
-        // 지금은 더미 데이터를 반환합니다.
-        return {
-            id: 1,
-            name: '맛있는 돈까스',
-            address: '서울시 강남구 테헤란로 123',
-            image: fox, // 실제로는 이미지 URL을 받아옵니다.
-            positiveKeywords: '바삭바삭, 육즙가득, 친절한',
-            negativeKeywords: '웨이팅, 좁은 공간',
-        };
-    };
+function RestaurantInfoPage() {
+  /* ─────────── routing param ─────────── */
+  const { restaurantId } = useParams();          // comes from /restaurantInfo/:restaurantId
 
-    const [restaurant, setRestaurant] = useState(null);
+  /* ─────────── state ─────────── */
+  const [restaurant, setRestaurant] = useState(null); // filled after fetch
+  const [error,      setError]      = useState(null); // string | null
+  const [loading,    setLoading]    = useState(true); // simple spinner flag
 
-    useEffect(() => {
-        // 컴포넌트가 마운트될 때 데이터를 가져옵니다.
-        fetchRestaurantData().then(data => {
-            setRestaurant(data);
-        });
-    }, []); // 빈 배열을 전달하여 한 번만 실행되도록 합니다.
+  /* ─────────── data fetch ─────────── */
+  const fetchRestaurantData = useCallback(async (id) => {
+    setLoading(true);
+    setError(null);
 
-    if (!restaurant) {
-        return <div>로딩 중...</div>; // 데이터가 로드되기 전에 보여줄 UI
+    try {
+      const res = await fetch(`${API_ROOT}/restaurant_info/${id}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const { success, data } = await res.json();
+      if (!success || !data) throw new Error('API returned failure');
+
+      setRestaurant({
+        id      : data.id,
+        name    : data.name,
+        address : data.address ?? '주소 정보 없음',
+        image   : data.image,                       // may be null
+        keywords: mapKeywords(data.keywords || []),
+      });
+    } catch (err) {
+      console.error(err);
+      setError(`식당 정보를 가져오지 못했습니다: ${err.message}`);
+    } finally {
+      setLoading(false);
     }
+  }, []);
 
-    return (
-        <div className='restaurantInfopage-layout'>
-            <Header />
-            <div className='main-content-wrapper'>
+  /* kick off fetch when component (or id) mounts */
+  useEffect(() => {
+    if (restaurantId) fetchRestaurantData(restaurantId);
+  }, [restaurantId, fetchRestaurantData]);
 
-                <main className='rIpage-middle-area'>
-                    <div className='rIpage-left-part'>
-                        <div className='restaurant-info-container'>
-                            <img src={restaurant.image} alt={restaurant.name} className='restaurant-image' />
-                            <h2 className='restaurant-name'>{restaurant.name}</h2>
-                            <p className='restaurant-address'>{restaurant.address}</p>
-                            
-                            <div className='keyword-section'>
-                                <h3>긍정 키워드</h3>
-                                <div className='keywords-positive'>
-                                    {parseTags(restaurant.positiveKeywords).map((keyword, index) => (
-                                        <span key={index}>{keyword}</span>
-                                    ))}
-                                </div>
-                            </div>
+  /* ─────────── render ─────────── */
+  if (loading) return <div className="loading-screen">로딩 중…</div>;
+  if (error)   return <div className="error-screen">{error}</div>;
+  if (!restaurant) return null; // defensive – shouldn't normally happen
 
-                            <div className='keyword-section'>
-                                <h3>부정 키워드</h3>
-                                <div className='keywords-negative'>
-                                    {parseTags(restaurant.negativeKeywords).map((keyword, index) => (
-                                        <span key={index}>{keyword}</span>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+  return (
+    <div className="restaurantInfopage-layout">
+      <Header />
 
-                    <div className='rIpage-right-part'>
-                        <PostList />
-                    </div>
-                </main>
-                
+      <div className="main-content-wrapper">
+        <main className="rIpage-middle-area">
+
+          {/* ───────── Left column ───────── */}
+          <div className="rIpage-left-part">
+            <div className="restaurant-info-container">
+
+              <img
+                src={restaurant.image ?? '/default_restaurant.jpg'}  // fallback
+                alt={restaurant.name}
+                className="restaurant-image"
+              />
+
+              <h2 className="restaurant-name">{restaurant.name}</h2>
+              <p className="restaurant-address">{restaurant.address}</p>
+
+              {/* Word‑cloud – same width as thumbnail */}
+              {restaurant.keywords.length > 0 && (
+                <div className="word-cloud-container">
+                  <h3 className="word-cloud-title">워드&nbsp;클라우드</h3>
+                  <div className="word-cloud-content">
+                    <WordCloud
+                      keywords={restaurant.keywords}
+                      uniformColour="#7c3aed"   /* violet‑500 */
+                    />
+                  </div>
+                </div>
+              )}
             </div>
-        </div>
-    )
-};
+          </div>
+
+          {/* ───────── Right column ───────── */}
+          <div className="rIpage-right-part">
+            {/* PostList already handles its own fetching when given restaurant_id */}
+            <PostList columns={1} restaurant_id={restaurant.id} />
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
 
 export default RestaurantInfoPage;

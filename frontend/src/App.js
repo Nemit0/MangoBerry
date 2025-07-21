@@ -26,7 +26,7 @@ function App() {
           <Route path="/login"          element={<LoginPage />} />
           <Route path="/register"       element={<RegisterPage />} />
           <Route path="/map"            element={<MapPage />} />
-          <Route path="/restaurantInfo" element={<RestaurantInfoPage />} />
+          <Route path="/restaurantInfo/:restaurantId" element={<RestaurantInfoPage />} />
 
           {/* NOTE: dynamic target user id */}
           <Route path="/others/:userId" element={<OthersPage />} />

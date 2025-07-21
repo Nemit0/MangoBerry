@@ -44,12 +44,12 @@ const FollowerPage = () => {
 
       setFollowers(
         (json.followers ?? []).map((u) => {
-          const compat = u.compatibility ?? 0;                // 0‑100
-          const rating = Math.round(compat / 20);             // 0‑5
+          console.log(u.compatibility);
+          const rating = u.compatibility ?? 0;
           return {
             user_id:     u.user_id,
             nickname:    u.nickname      ?? "알 수 없음",
-            profile_url: u.profile_url   ?? foxImage,
+            profile_url: u.profile_url ? u.profile_url : foxImage,
             isFollowing: !!u.is_following,
             rating,
           };
@@ -105,17 +105,17 @@ const FollowerPage = () => {
             <div
               key={f.user_id}
               className="keyword-box"
-              onClick={() => handleProfileClick(f.user_id)}
             >
               <div className="profile-image-container">
                 <img
                   src={f.profile_url}
                   alt={`${f.nickname} profile`}
                   className="profile-img"
+                  onClick={() => handleProfileClick(f.user_id)}
                 />
               </div>
 
-              <div className="user-name">{f.nickname}</div>
+              <div className="user-name" onClick={() => handleProfileClick(f.user_id)}>{f.nickname}</div>
               <RatingDisplay score={f.rating / 10} width={50} height={50} />
               <button
                 className={`follow-button ${f.isFollowing ? "following" : "follow"}`}
