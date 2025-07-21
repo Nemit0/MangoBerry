@@ -22,7 +22,7 @@ def main():
     """
     Iterates through a range of review IDs and attempts to delete each one.
     """
-    for review_id in range(141, 145):  # Deletes IDs from 37 to 107 inclusive
+    for review_id in range(0, 500):
         delete_review_by_id(review_id)
 
 if __name__ == "__main__":
