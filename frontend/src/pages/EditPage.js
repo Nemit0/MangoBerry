@@ -5,11 +5,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Header           from '../components/Header';
 import { TbPhotoPlus }  from 'react-icons/tb';
 import { FiSearch }     from 'react-icons/fi';
+import { useAuth } from '../contexts/AuthContext';
 import './EditPage.css';
 
 /* ───────────────────────── constants ───────────────────────── */
 const API_ROOT = '/api';     // CRA proxy rewrites to FastAPI
-const USER_ID  = 9;          // TODO: pull from auth context
+const USER_ID  = 9;          // Fallback
 
 /* tiny helper */
 const arraysEqual = (a = [], b = []) =>
@@ -19,8 +20,10 @@ const arraysEqual = (a = [], b = []) =>
 const EditPage = () => {
   const { reviewId } = useParams();
   const navigate     = useNavigate();
-  const dropdownRef  = useRef(null);           // click‑away target
-  const originalRef  = useRef(null);           // immutable snapshot
+  const dropdownRef  = useRef(null);
+  const originalRef  = useRef(null);
+  const { user }     = useAuth();
+  const userID       = user?.user_id ?? USER_ID;
 
   /* photo handling */
   const [imageFiles, setImageFiles] = useState([]);   // newly picked File[]
@@ -179,7 +182,7 @@ const EditPage = () => {
         const uploadResults = await Promise.all(
           imageFiles.map(async (file) => {
             const fd = new FormData(); fd.append('file', file);
-            const res = await fetch(`${API_ROOT}/reviews/${USER_ID}/images?review_id=${reviewId}`, {
+            const res = await fetch(`${API_ROOT}/reviews/${userID}/images?review_id=${reviewId}`, {
               method: 'POST', body: fd,
             });
             if (!res.ok) throw new Error(`upload HTTP ${res.status}`);
