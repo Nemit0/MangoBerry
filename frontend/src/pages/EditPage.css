@@ -58,7 +58,7 @@
 }
 
 .makepage-photo-upload {
-  flex: 1;
+  height: 40px; /* 고정 높이 */
   border: 2px dashed #ccc;
   padding: 20px;
   text-align: center;
@@ -73,12 +73,33 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  flex-grow: 1; /* 남은 공간을 모두 차지 */
+  overflow-y: auto; /* 이미지가 많아지면 스크롤 */
 }
 
 .image-preview {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
+  max-width: 100%;
+  height: auto;
+}
+
+.image-preview-wrapper {
+  position: relative;
+}
+
+.delete-image-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  line-height: 20px;
+  text-align: center;
 }
 
 /* ───────────────────────────── Right column ──────────────────────────── */
@@ -150,7 +171,7 @@
 .cancel-button:disabled,
 .save-button:disabled,
 .delete-button:disabled {
-  background-color: #96466E;
+  background-color: #672091;
   color: #FAF0D2;
 }
 
@@ -187,13 +208,8 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-}
-
-.keywords {
-  display: flex;
-  flex-wrap: wrap;
   gap: 10px;
-  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .edit-positive-button,
@@ -211,6 +227,7 @@
 
 .action-buttons {
   margin-top: 20px;
+  margin-bottom: 20px;
   display: flex;
   justify-content: flex-end;
   gap: 10px;

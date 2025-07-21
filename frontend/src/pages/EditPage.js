@@ -121,6 +121,11 @@ const EditPage = () => {
     setImagePrev ((prev) => [...prev, ...blobs]);
   };
 
+  const handleDeleteImage = (index) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePrev((prev) => prev.filter((_, i) => i !== index));
+  };
+
   /* ───────────── keyword (re)analysis ───────────── */
   const handleAnalysis = async () => {
     if (isAnalyzing) return;          // guard
@@ -246,7 +251,7 @@ const EditPage = () => {
             <div className="makepage-top">
               <div className="page-title-with-delete">
                 <h1>글편집</h1>
-                <button className="delete-button" style={{ visibility: 'hidden' }}>삭제</button>
+                <button className="delete-button">삭제</button>
               </div>
             </div>
 
@@ -258,17 +263,26 @@ const EditPage = () => {
                   className="makepage-photo-upload"
                   onClick={() => document.getElementById('imageInput').click()}
                 >
-                  <TbPhotoPlus size={50} color="#aaa" />
+                  <TbPhotoPlus size={30} color="#aaa" />
                   <input
-                    id="imageInput" type="file" multiple accept="image/*"
-                    onChange={handleImageChange} style={{ display: 'none' }}
+                    id="imageInput"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    style={{ display: 'none' }}
                   />
                 </div>
+
+                {/* previews */}
                 <div className="image-preview-container">
                   {imagePrev.map((src, idx) => (
-                    <img key={idx} src={src} alt={`preview-${idx}`} className="image-preview" />
+                    <div key={idx} className="image-preview-wrapper">
+                      <img src={src} alt={`preview-${idx}`} className="image-preview" />
+                      <button onClick={() => handleDeleteImage(idx)} className="delete-image-button">X</button>
+                    </div>
                   ))}
-                </div>
+                  </div>
               </div>
 
               {/* right: form */}

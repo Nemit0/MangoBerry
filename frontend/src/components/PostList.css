@@ -3,7 +3,7 @@
 .post-list-wrapper {
     /* 이 Wrapper는 PostList의 전체 높이를 차지하며 PostList 컨테이너를 포함 */
     height: 100%; /* 부모(middle-posts-area)로부터 100% 높이를 받음 */
-    padding: 0 10px; /* HomePage의 middle-posts-area의 padding과 겹칠 수 있으므로 조정 */
+    padding: 0px; /* HomePage의 middle-posts-area의 padding과 겹칠 수 있으므로 조정 */
     box-sizing: border-box;
     overflow-y: auto; /* PostList 영역 자체의 스크롤바 (HomePage.css에서 middle-posts-area에 적용되었으므로 제거 가능) */
     /* 다만, PostList 내부의 스크롤만 유지하려면 여기에 overflow-y: auto;를 유지하고,
@@ -17,7 +17,8 @@
 .post-grid-container {
     display: grid;
     gap: 5px; /* 그리드 아이템 간의 간격 */
-    padding: 10px; /* 내부 패딩 */
+    padding: 0px; /* 내부 패딩 */
+    padding-top: 10px;
     box-sizing: border-box;
 }
 
@@ -31,13 +32,19 @@
     grid-template-columns: 1fr;
 }
 
-/* Mobile (768px 이하) */
-@media (max-width: 1000px) {
-    .post-grid-container {
-        grid-template-columns: 1fr; /* 모든 그리드를 1열로 변경 */
+/* Tablet & Mobile (1200px 이하) */
+@media (max-width: 1200px) {
+    .post-grid-container.columns-3 {
+        grid-template-columns: repeat(2, 1fr); /* 2열로 변경 */
     }
 }
 
+/* Tablet & Mobile (784px 이하) */
+@media (max-width: 784px) {
+    .post-grid-container.columns-3 {
+        grid-template-columns: 1fr; /* 1열로 변경 */
+    }
+}
 
 .no-results {
     text-align: center;

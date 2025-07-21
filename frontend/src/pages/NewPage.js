@@ -80,6 +80,11 @@ const NewPage = () => {
     setImagePrev ((prev) => [...prev, ...blobs]);
   };
 
+  const handleDeleteImage = (index) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePrev((prev) => prev.filter((_, i) => i !== index));
+  };
+
   /* ──────────────────────────────────────────────────────────────
      Helper: toggle keyword on/off
   ────────────────────────────────────────────────────────────── */
@@ -201,7 +206,6 @@ const NewPage = () => {
             <div className="makepage-top">
               <div className="page-title-with-delete">
                 <h1>글쓰기</h1>
-                <button className="delete-button" style={{ visibility: 'hidden' }}>삭제</button>
               </div>
             </div>
 
@@ -213,7 +217,7 @@ const NewPage = () => {
                   className="makepage-photo-upload"
                   onClick={() => document.getElementById('imageInput').click()}
                 >
-                  <TbPhotoPlus size={50} color="#aaa" />
+                  <TbPhotoPlus size={30} color="#aaa" />
                   <input
                     id="imageInput"
                     type="file"
@@ -227,7 +231,10 @@ const NewPage = () => {
                 {/* previews */}
                 <div className="image-preview-container">
                   {imagePrev.map((src, idx) => (
-                    <img key={idx} src={src} alt={`preview-${idx}`} className="image-preview" />
+                    <div key={idx} className="image-preview-wrapper">
+                      <img src={src} alt={`preview-${idx}`} className="image-preview" />
+                      <button onClick={() => handleDeleteImage(idx)} className="delete-image-button">X</button>
+                    </div>
                   ))}
                 </div>
               </div>
