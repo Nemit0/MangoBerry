@@ -43,7 +43,6 @@ app.add_middleware(
 app.include_router(admin_router.router)
 app.include_router(restaurant_router.router)
 app.include_router(social_router.router)
-
 app.include_router(review_router.router)
 app.include_router(review_search_router.router)
 app.include_router(review_image_router.router)

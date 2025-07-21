@@ -39,6 +39,7 @@ def get_user_social(user_id: int, db: Session = Depends(get_db)):
     """
     # 1. ── Core user row (for counts & validity)
     user = db.query(Users).filter(Users.user_id == user_id).first()
+    profile_url = user.profile_image if user else None
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -68,6 +69,7 @@ def get_user_social(user_id: int, db: Session = Depends(get_db)):
     # 6. ── Assemble response
     return {
         "user_id": user_id,
+        "profile_url": profile_url,
         "nickname": nickname,
         "follower_count": follower_count,
         "following_count": following_count,
