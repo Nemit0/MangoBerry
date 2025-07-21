@@ -32,7 +32,7 @@
 }
 
 /* 화면 너비 360px 이하일 때 Header 높이에 맞춰 PostList 조정 */
-@media (max-width: 360px) {
+@media (max-width: 700px) {
     .home-main-content-wrapper {
         margin-top: 162px; /* Header의 새로운 높이에 맞춰 조정 */
         height: calc(100vh - 162px); /* 남은 공간 계산 */

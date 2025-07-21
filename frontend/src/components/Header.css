@@ -19,7 +19,7 @@
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 700px) {
     .header-container {
         width: 100%;
         flex-direction: column;
@@ -35,7 +35,7 @@
     }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 700px) {
     .header-nav-container {
         flex-direction: row; /* 가로줄로 변경 */
         justify-content: center; /* 중앙 정렬 */
