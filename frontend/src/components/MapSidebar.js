@@ -1,130 +1,238 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './MapSidebar.css';
-import { FaSearch, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
+import { useNavigate } from "react-router-dom";
+import { FaSearch, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useAuth } from "../contexts/AuthContext";
+import foxImage from "../assets/photo/circular_image.png";
+import "./MapSidebar.css";
 
-const preferenceFilters = ['취향률 90% 이상', '취향률 80% 이상', '취향률 70% 이상', '취향률 60% 이상'];
-
-const followingList = [
-    { id: 1, name: '팔로잉1', avatar: 'https://via.placeholder.com/40' },
-    { id: 2, name: '팔로잉2', avatar: 'https://via.placeholder.com/40' },
-    { id: 3, name: '팔로잉3', avatar: 'https://via.placeholder.com/40' },
-    { id: 4, name: '팔로잉4', avatar: 'https://via.placeholder.com/40' },
-    { id: 5, name: '팔로잉5', avatar: 'https://via.placeholder.com/40' },
-    { id: 6, name: '팔로잉6', avatar: 'https://via.placeholder.com/40' },
-    { id: 7, name: '팔로잉7', avatar: 'https://via.placeholder.com/40' },
-    { id: 8, name: '팔로잉8', avatar: 'https://via.placeholder.com/40' },
-    { id: 9, name: '팔로잉9', avatar: 'https://via.placeholder.com/40' },
-    
+/* ───────────────────────── constants ───────────────────────── */
+const API_URL = "/api";
+const preferenceFilters = [
+  "취향률 90% 이상",
+  "취향률 80% 이상",
+  "취향률 70% 이상",
+  "취향률 60% 이상",
 ];
 
-const MapSidebar = ({ onSearch, searchResults, currentKeyword, onResultItemClick }) => {
-    const [isCollapsed, setIsCollapsed] = useState(false);
-    const [searchInputValue, setSearchInputValue] = useState(currentKeyword || '');
-    const [showSearchResults, setShowSearchResults] = useState(false); // 검색 결과 표시 여부 상태
-    const searchBarRef = useRef(null); // 검색바 전체를 감싸는 div에 대한 ref
+/* ───────────────────────── component ───────────────────────── */
+const MapSidebar = ({
+  onSearch,
+  searchResults,
+  currentKeyword,
+  onResultItemClick,
+}) => {
+  /* viewer info (NULL when not logged‑in) */
+  const { user } = useAuth();
+  const viewerID = user?.user_id ?? null;
 
-    useEffect(() => {
-        setSearchInputValue(currentKeyword || '');
-    }, [currentKeyword]);
+  /* UI state */
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [searchInputValue, setSearchInputValue] = useState(
+    currentKeyword || ""
+  );
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
-    // 외부 클릭 감지하여 검색 결과 숨기기
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (searchBarRef.current && !searchBarRef.current.contains(event.target)) {
-                setShowSearchResults(false);
-            }
-        };
+  /* 팔로잉 목록 – fetched from backend */
+  const [followingList, setFollowingList] = useState([]);       // [{ id, name, avatar }]
+  const [followError, setFollowError] = useState(null);
 
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [searchBarRef]);
+  /* refs */
+  const searchBarRef = useRef(null);
 
-    const handleSearchButtonClick = () => {
-        if (onSearch) {
-            onSearch(searchInputValue);
-            setShowSearchResults(true); // 검색 버튼 클릭 시 결과 표시
-        }
+  /* ─────────────────────── helpers ──────────────────────── */
+  const navigate = useNavigate();
+  const goToHomePage = () => navigate("/");
+
+  const handleProfileClick = (targetID) =>
+    targetID === viewerID ? navigate("/my") : navigate(`/others/${targetID}`);
+
+  const fetchFollowing = useCallback(async () => {
+    if (!viewerID) {
+      setFollowingList([]);
+      return;
+    }
+
+    try {
+      const resp = await fetch(`${API_URL}/following/${viewerID}`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+      const json = await resp.json();
+      const raw = json.following ?? [];
+
+      setFollowingList(
+        raw.map((u) => ({
+          id: u.user_id,
+          name: u.nickname ?? "알 수 없음",
+          avatar: u.profile_url ? u.profile_url : foxImage,
+        }))
+      );
+      setFollowError(null);
+    } catch (err) {
+      console.error("[MapSidebar] fetchFollowing failed:", err);
+      setFollowError("팔로잉 목록을 불러오지 못했습니다.");
+    }
+  }, [viewerID]);
+
+  /* fetch 팔로잉 once (and whenever viewerID changes) */
+  useEffect(() => {
+    fetchFollowing();
+  }, [fetchFollowing]);
+
+  /* keep local input in sync with prop */
+  useEffect(() => {
+    setSearchInputValue(currentKeyword || "");
+  }, [currentKeyword]);
+
+  /* hide search results when clicking outside */
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        searchBarRef.current &&
+        !searchBarRef.current.contains(event.target)
+      ) {
+        setShowSearchResults(false);
+      }
     };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-    const handleResultClick = (place) => {
-        if (onResultItemClick) {
-            onResultItemClick(place); // MapPage의 onResultItemClick 함수 호출
-        }
-        console.log('Clicked place:', place);
-        setShowSearchResults(false); // 결과 클릭 시 결과 숨기기
-    };
+  /* ─────────────────────── event handlers ─────────────────────── */
+  const handleSearchButtonClick = () => {
+    if (onSearch) {
+      onSearch(searchInputValue);
+      setShowSearchResults(true);
+    }
+  };
 
-    const navigate = useNavigate();
-    const goToHomePage = () => navigate('/');
-    
+  const handleResultClick = (place) => {
+    onResultItemClick?.(place);
+    setShowSearchResults(false);
+  };
 
-    return (
-        <div className={`map-sidebar-container ${isCollapsed ? 'collapsed' : ''}`}>
-            <div className="sidebar-content">
-                <p className='map-logo' onClick={goToHomePage} style={{ cursor: 'pointer' }}>GUMIO</p>
-                <h2 className="sidebar-title">지도 내 검색</h2>
-                
-                <div className="sidebar-search-bar" ref={searchBarRef}> {/* ref 추가 */}
-                    <input 
-                        type="text" 
-                        placeholder="장소, 주소 검색"
-                        value={searchInputValue}
-                        onChange={(e) => setSearchInputValue(e.target.value)}
-                        onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                                handleSearchButtonClick();
-                            }
-                        }}
-                        onFocus={() => setShowSearchResults(true)} // 검색창 포커스 시 결과 표시
-                    />
-                    <button onClick={handleSearchButtonClick} className="search-icon-button"><FaSearch /></button>
+  /* ───────────────────────── render ───────────────────────── */
+  return (
+    <div className={`map-sidebar-container ${isCollapsed ? "collapsed" : ""}`}>
+      <div className="sidebar-content">
+        <p className="map-logo" onClick={goToHomePage} style={{ cursor: "pointer" }}>
+          GUMIO
+        </p>
 
-                    {showSearchResults && (searchResults.length > 0 ? (
-                        <div className="search-results-list">
-                            {searchResults.map((place) => (
-                                <div key={place.id} className="search-result-item" onClick={() => handleResultClick(place)}>
-                                    <p className="place-name">{place.place_name}</p>
-                                    <p className="place-address">{place.address_name}</p>
-                                    {place.phone && <p className="place-phone">{place.phone}</p>}
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        searchInputValue && (
-                            <div className="search-results-list">
-                                <p className="no-results-message">검색 결과가 없습니다.</p>
-                            </div>
-                        )
-                    ))}
+        {/* ── 검색 박스 ── */}
+        <h2 className="sidebar-title">지도 내 검색</h2>
+
+        <div className="sidebar-search-bar" ref={searchBarRef}>
+          <input
+            type="text"
+            placeholder="장소, 주소 검색"
+            value={searchInputValue}
+            onChange={(e) => setSearchInputValue(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && handleSearchButtonClick()}
+            onFocus={() => setShowSearchResults(true)}
+          />
+          <button
+            onClick={handleSearchButtonClick}
+            className="search-icon-button"
+          >
+            <FaSearch />
+          </button>
+
+          {showSearchResults &&
+            (searchResults.length > 0 ? (
+              <div className="search-results-list">
+                {searchResults.map((place) => (
+                  <div
+                    key={place.id}
+                    className="search-result-item"
+                    onClick={() => handleResultClick(place)}
+                  >
+                    <p className="place-name">{place.place_name}</p>
+                    <p className="place-address">{place.address_name}</p>
+                    {place.phone && (
+                      <p className="place-phone">{place.phone}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              searchInputValue && (
+                <div className="search-results-list">
+                  <p className="no-results-message">검색 결과가 없습니다.</p>
                 </div>
-                
-                <h3 className="sidebar-subtitle">취향률</h3>
-                <div className="sidebar-filter-group">
-                    {preferenceFilters.map(filter => (
-                        <button key={filter} className="sidebar-custom-button sidebar-custom-button-like">{filter}</button>
-                    ))}
-                </div>
-
-                <h3 className="sidebar-subtitle">팔로잉</h3>
-                <ul className="sidebar-following-list">
-                    {followingList.map(user => (
-                        <li key={user.id} className="following-item">
-                            <img src={user.avatar} alt={user.name} className="following-avatar" />
-                            <span className="following-name">{user.name}</span>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-            <button onClick={() => setIsCollapsed(!isCollapsed)} className="sidebar-toggle-button">
-                {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
-                
-            </button>
+              )
+            ))}
         </div>
-    );
+
+        {/* ── 취향률 필터 ── */}
+        <h3 className="sidebar-subtitle">취향률</h3>
+        <div className="sidebar-filter-group">
+          {preferenceFilters.map((filter) => (
+            <button
+              key={filter}
+              className="sidebar-custom-button sidebar-custom-button-like"
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
+
+        {/* ── 팔로잉 목록 ── */}
+        <h3 className="sidebar-subtitle">팔로잉</h3>
+        {followError ? (
+          <p className="fetch-error">{followError}</p>
+        ) : (
+          <ul className="sidebar-following-list">
+            {followingList.map((u) => (
+              <li
+                key={u.id}
+                className="following-item"
+                onClick={() => handleProfileClick(u.id)}
+              >
+                <img
+                  src={u.avatar}
+                  alt={u.name}
+                  className="following-avatar"
+                />
+                <span className="following-name">{u.name}</span>
+
+                {/* ── NEW: tiny checkbox for future batch actions ── */}
+                <input
+                  type="checkbox"
+                  className="following-checkbox"
+                  onClick={(e) => e.stopPropagation()} // don’t trigger profile nav when ticking
+                />
+              </li>
+            ))}
+
+            {viewerID && followingList.length === 0 && (
+              <li className="following-empty">
+                아직 팔로잉한 사용자가 없습니다.
+              </li>
+            )}
+            {!viewerID && (
+              <li className="following-empty">
+                로그인하면 팔로잉 목록이 표시됩니다.
+              </li>
+            )}
+          </ul>
+        )}
+      </div>
+
+      {/* ── collapse toggle ── */}
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="sidebar-toggle-button"
+      >
+        {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
+      </button>
+    </div>
+  );
 };
 
 export default MapSidebar;
-

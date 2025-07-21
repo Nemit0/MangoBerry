@@ -1,9 +1,3 @@
-// WelcomePopup.js
-// A first‑time “interest keyword” selector.
-// When the user presses “선택 완료”, the chosen keywords are sent to
-//   POST /api/initialize_keywords   { user_id, keywords }
-// to create their initial keyword profile.
-
 import React, { useState } from "react";
 import "./WelcomePopup.css";
 import { useAuth } from "../contexts/AuthContext";   // current user context

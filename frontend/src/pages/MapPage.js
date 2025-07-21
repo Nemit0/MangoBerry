@@ -7,6 +7,7 @@ import MapMarker from '../assets/photo/MapMarker_36.png';
 
 // 카카오 지도 API 키를 환경 변수에서 가져옴
 const KAKAO_MAP_APP_KEY = process.env.REACT_APP_KAKAO_MAP_APP_KEY;
+const API_URL = "/api";
 
 const dummyPlaces = [
     { place_name: '강남역', y: 37.497935, x: 127.027619 },

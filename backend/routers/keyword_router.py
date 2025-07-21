@@ -2,7 +2,7 @@ from fastapi import HTTPException
 
 from ..services.keyword_extract import extract_keyword_from_review
 from ..services.generate_embedding import embed_small
-from ..schemas.review import Review
+from ..schemas.review import Review, KeywordInitRequest
 from ..connection.mongodb import user_keywords_collection
 
 from typing import Optional, List
@@ -17,11 +17,10 @@ def analyze_review(review: Review):
     return keywords
 
 @router.post("/initialize_keywords", tags=["Keyword"])
-def initialize_keywords(user_id: str, keywords: Optional[List[str]] = None):
-    """
-    Initialize keywords for a user.
-    This function creates an empty keyword list for the user if it does not exist.
-    """
+def initialize_keywords(req: KeywordInitRequest):
+    user_id  = req.user_id
+    user_id = int(user_id)
+    keywords = req.keywords
     existing_keywords = user_keywords_collection.find_one({"user_id": user_id})
     
     if existing_keywords:
