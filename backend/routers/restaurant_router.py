@@ -1,6 +1,15 @@
-from fastapi import Query, Request
+from fastapi import Depends, HTTPException, Query, Request
+from sqlalchemy.orm import Session
+from collections import Counter
 
 from ..connection.elasticdb import es_client as es
+from ..connection.mysqldb import get_db, Restaurant, Review
+from ..connection.mongodb import (
+    restaurant_keywords_collection,
+    review_keywords_collection,   # review‑level keyword docs (with sentiment)
+    photo_collection,             # review‑>photo URLs
+)
+
 from ..services.utilities import get_location_from_ip
 
 from .common_imports import *
@@ -99,3 +108,67 @@ def nearby_restaurant_es(request: Request, distance: str = "5km", size: int = 10
         }
     except Exception as e:
         return {"success": False, "error": str(e)}
+
+@router.get("/restaurant_info/{restaurant_id}", tags=["Restaurant"])
+def get_restaurant_info(
+    restaurant_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Consolidated information needed by **RestaurantInfoPage**.
+
+    Returns
+    -------
+    {
+        "success": True,
+        "data": {
+            "id":               int,
+            "name":             str,
+            "address":          str | None,
+            "image":            str | None,   # first photo URL (if any)
+            "keywords": {
+                "keyword": str,
+                "frequency": int
+            }
+        }
+    }
+    """
+    # 1 ── Basic profile (MySQL)
+    row = (
+        db.query(Restaurant)
+        .filter(Restaurant.restaurant_id == restaurant_id)
+        .first()
+    )
+    if not row:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+
+    # 2 ── Keywords (aggregate across all reviews; MongoDB)
+    projection = {"_id": 0, "keywords.keyword": 1, "keywords.frequency": 1}
+    kw_doc = restaurant_keywords_collection.find_one({"r_id": restaurant_id}, projection=projection) or {}
+    keywords = kw_doc.get("keywords", [])
+
+    # 3 ── Thumbnail (first photo URL tied to any review)
+    thumb_url: str | None = None
+    first_review = (
+        db.query(Review.review_id)
+        .filter(Review.restaurant_id == restaurant_id)
+        .order_by(Review.created_at.asc())
+        .first()
+    )
+    if first_review:
+        photo_doc = photo_collection.find_one({"review_id": first_review[0]}) or {}
+        urls = photo_doc.get("photo_urls", [])
+        if urls:
+            thumb_url = urls[0]
+
+    # 4 ── Assemble payload
+    return {
+        "success": True,
+        "data": {
+            "id":               restaurant_id,
+            "name":             row.name,
+            "address":          getattr(row, "location", None),
+            "image":            thumb_url,
+            "keywords":         keywords
+        },
+    }

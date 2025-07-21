@@ -56,12 +56,11 @@ const FollowingPage = () => {
       /* 3) merge + map */
       setFollowing(
         base.map((u) => {
-          const compat = u.compatibility ?? 0;                // 0‑100
-          const rating = Math.round(compat / 20);             // 0‑5
+          const rating = u.compatibility ?? 0;
           return {
             user_id:     u.user_id,
             nickname:    u.nickname      ?? "알 수 없음",
-            profile_url: u.profile_url   ?? foxImage,
+            profile_url: u.profile_url ? u.profile_url : foxImage,
             isFollowing: viewerFollowingIds.includes(u.user_id),
             rating,
           };
@@ -117,17 +116,17 @@ const FollowingPage = () => {
             <div
               key={u.user_id}
               className="keyword-box"
-              onClick={() => handleProfileClick(u.user_id)}
             >
               <div className="profile-image-container">
                 <img
                   src={u.profile_url}
                   alt={`${u.nickname} profile`}
                   className="profile-img"
+                  onClick={() => handleProfileClick(u.user_id)}
                 />
               </div>
 
-              <div className="user-name">{u.nickname}</div>
+              <div className="user-name" onClick={() => handleProfileClick(u.user_id)}>{u.nickname}</div>
               <RatingDisplay score={u.rating / 10} width={50} height={50} />
               <button
                 className={`follow-button ${u.isFollowing ? "following" : "follow"}`}

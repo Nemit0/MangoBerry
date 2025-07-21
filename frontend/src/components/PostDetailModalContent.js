@@ -42,6 +42,12 @@ function PostDetailModalContent({ selectedPost, isMyPage }) {
         }
     };
 
+    const handleRestaurantClick = () => {
+        navigate(`/restaurantInfo/${selectedPost.restaurant_id}`, {
+            state: { from: "post" }
+        });
+    };
+
     return (
         <div className='post-detail-modal-content' style={{ display: 'flex' }}>
             {/* ⭐⭐ 좌측 영역: modal-left ⭐⭐ */}
@@ -61,8 +67,7 @@ function PostDetailModalContent({ selectedPost, isMyPage }) {
             {/* ⭐⭐ 우측 영역: modal-right ⭐⭐ */}
             <div className="modal-right">
                 <RatingDisplay score={selectedPost.rating/10} width={50} height={50} />
-                <h2 className="modal-post-restaurant-name">{selectedPost.r_name}</h2>
-                
+                <h2 className="modal-post-restaurant-name" onClick={handleRestaurantClick}>{selectedPost.r_name}</h2>
                 <h3 className='modal-post-title'>{selectedPost.title}</h3>
 
                 <div className='modal-info'>

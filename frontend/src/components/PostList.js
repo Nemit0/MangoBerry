@@ -11,8 +11,9 @@ const DEFAULT_IMAGE =
 function PostList({
   searchTerm = "",
   isMyPage   = false,
-  user_id    = null,     // ← NEW: target user’s id for OthersPage
-  columns    = 3,        // optional grid width tweak
+  user_id    = null,
+  restaurant_id = null,
+  columns    = 3
 }) {
   /* ─────────────── state ─────────────── */
   const [posts,       setPosts]       = useState([]);
@@ -36,6 +37,10 @@ function PostList({
         /* owner filter */
         if (isMyPage && viewerId)        url += `&user_id=${viewerId}`;
         else if (!isMyPage && user_id)   url += `&user_id=${user_id}`;
+
+        if (restaurant_id) {
+          url += `&restaurant_id=${restaurant_id}`;
+        }
 
         const resp = await fetch(url, { headers: { "Content-Type": "application/json" } });
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);

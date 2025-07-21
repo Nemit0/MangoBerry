@@ -34,6 +34,12 @@ function PostItem({ post, onClick }) {
     }
   }
 
+  const handleRestaurantClick = () => {
+    navigate(`/restaurantInfo/${post.restaurant_id}`, {
+      state: { from: "post" }
+    });
+  }
+
   return (
     <div className="post-card" onClick={() => onClick(post)}>
       <img src={thumb} alt={post.title} className="post-image" />
@@ -47,7 +53,7 @@ function PostItem({ post, onClick }) {
           <span className="post-datePosted">{post.datePosted}</span>
         </div>
 
-        <h3 className="post-restaurant-name">{post.r_name}</h3>
+        <h3 className="post-restaurant-name" onClick={handleRestaurantClick}>{post.r_name}</h3>
         <RatingDisplay score={post.rating / 10} width={15} height={15} />
 
         <h4 className="post-title">{post.title}</h4>
