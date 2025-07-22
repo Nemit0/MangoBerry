@@ -130,6 +130,26 @@
   max-height: 100%;
 }
 
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  backdrop-filter: blur(1px);
+  background: rgba(255,255,255,0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  z-index: 9999;
+}
+
+.spinner {
+  font-size: 3rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
 /* 모바일 화면 (360px 이하) */
 @media (max-width: 700px) {
     .mypage-layout {

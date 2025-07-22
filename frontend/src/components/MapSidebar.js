@@ -1,78 +1,59 @@
 import React, {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
+  useState, useEffect, useRef, useCallback,
 } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate }                           from "react-router-dom";
 import { FaSearch, FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { useAuth } from "../contexts/AuthContext";
-import foxImage from "../assets/photo/circular_image.png";
+import { useAuth }                               from "../contexts/AuthContext";
+import foxImage                                  from "../assets/photo/circular_image.png";
 import "./MapSidebar.css";
 
 /* ───────────────────────── constants ───────────────────────── */
 const API_URL = "/api";
 const preferenceFilters = [
-  "취향률 90% 이상",
-  "취향률 80% 이상",
-  "취향률 70% 이상",
-  "취향률 60% 이상",
+  { label: "취향률 90% 이상", value: 90 },
+  { label: "취향률 80% 이상", value: 80 },
+  { label: "취향률 70% 이상", value: 70 },
+  { label: "취향률 60% 이상", value: 60 },
 ];
 
 /* ───────────────────────── component ───────────────────────── */
 const MapSidebar = ({
-  onSearch,
-  searchResults,
-  currentKeyword,
-  onResultItemClick,
-  isOpen,
-  onClose,
+  restaurants,                       // viewer + followers amalgam, for list view
+  onPreferenceFilterChange,
+  currentThreshold,
+  onFollowerSelectionChange,
+  onRestaurantClick,                // NEW – parent callback
 }) => {
-  /* viewer info (NULL when not logged‑in) */
+  /* viewer info */
   const { user } = useAuth();
   const viewerID = user?.user_id ?? null;
 
   /* UI state */
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [searchInputValue, setSearchInputValue] = useState(
-    currentKeyword || ""
-  );
+  const [isCollapsed, setIsCollapsed]         = useState(false);
+  const [searchInputValue, setSearchInputValue] = useState("");
+  const [searchResults, setSearchResults]     = useState([]);   // [{ restaurant_id, name, x, y, … }]
   const [showSearchResults, setShowSearchResults] = useState(false);
-
-  /* 팔로잉 목록 – fetched from backend */
-  const [followingList, setFollowingList] = useState([]);       // [{ id, name, avatar }]
-  const [followError, setFollowError] = useState(null);
+  const [followingList, setFollowingList]     = useState([]);
+  const [followError, setFollowError]         = useState(null);
+  const [selectedFollowers, setSelectedFollowers] = useState(new Set());
 
   /* refs */
   const searchBarRef = useRef(null);
+  const navigate     = useNavigate();
 
-  /* ─────────────────────── helpers ──────────────────────── */
-  const navigate = useNavigate();
-  const goToHomePage = () => navigate("/");
-
-  const handleProfileClick = (targetID) =>
-    targetID === viewerID ? navigate("/my") : navigate(`/others/${targetID}`);
-
+  /* ─────────────────── following fetch ─────────────────── */
   const fetchFollowing = useCallback(async () => {
-    if (!viewerID) {
-      setFollowingList([]);
-      return;
-    }
-
+    if (!viewerID) { setFollowingList([]); return; }
     try {
       const resp = await fetch(`${API_URL}/following/${viewerID}`);
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-
-      const json = await resp.json();
-      const raw = json.following ?? [];
-
-      setFollowingList(
-        raw.map((u) => ({
-          id: u.user_id,
-          name: u.nickname ?? "알 수 없음",
-          avatar: u.profile_url ? u.profile_url : foxImage,
-        }))
-      );
+      const { following = [] } = await resp.json();
+      const mapped = following.map((u) => ({
+        id:     u.user_id,
+        name:   u.nickname ?? "알 수 없음",
+        avatar: u.profile_url || foxImage,
+      }));
+      setFollowingList(mapped);
       setFollowError(null);
     } catch (err) {
       console.error("[MapSidebar] fetchFollowing failed:", err);
@@ -80,107 +61,110 @@ const MapSidebar = ({
     }
   }, [viewerID]);
 
-  /* fetch 팔로잉 once (and whenever viewerID changes) */
-  useEffect(() => {
-    fetchFollowing();
-  }, [fetchFollowing]);
+  useEffect(() => { fetchFollowing(); }, [fetchFollowing]);
 
-  /* keep local input in sync with prop */
-  useEffect(() => {
-    setSearchInputValue(currentKeyword || "");
-  }, [currentKeyword]);
-
-  /* hide search results when clicking outside */
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        searchBarRef.current &&
-        !searchBarRef.current.contains(event.target)
-      ) {
-        setShowSearchResults(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  /* ─────────────────────── event handlers ─────────────────────── */
-  const handleSearchButtonClick = () => {
-    if (onSearch) {
-      onSearch(searchInputValue);
+  /* ─────────────────── restaurant search (new API) ─────────────────── */
+  const runSearch = async () => {
+    if (!searchInputValue.trim()) return;
+    try {
+      const url = `${API_URL}/search_restaurant_es?name=${encodeURIComponent(searchInputValue.trim())}&size=20`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.result)) {
+        setSearchResults(data.result);
+        setShowSearchResults(true);
+      } else { setSearchResults([]); setShowSearchResults(true); }
+    } catch (err) {
+      console.error("[MapSidebar] runSearch failed:", err);
+      setSearchResults([]);
       setShowSearchResults(true);
     }
   };
 
-  const handleResultClick = (place) => {
-    onResultItemClick?.(place);
+  const handleSearchButtonClick = () => runSearch();
+  const handleKeyPress          = (e) => e.key === "Enter" && runSearch();
+
+  const handleResultClick = (rest) => {
+    setSearchInputValue(rest.name);
     setShowSearchResults(false);
+    if (onRestaurantClick) onRestaurantClick(rest);
   };
 
-  /* ───────────────────────── render ───────────────────────── */
+  /* click‑outside to close dropdown */
+  useEffect(() => {
+    const clickOutside = (e) => {
+      if (searchBarRef.current && !searchBarRef.current.contains(e.target)) {
+        setShowSearchResults(false);
+      }
+    };
+    document.addEventListener("mousedown", clickOutside);
+    return () => document.removeEventListener("mousedown", clickOutside);
+  }, []);
+
+  /* ─────────────────── preference filter ─────────────────── */
+  const handlePrefClick = (val) => onPreferenceFilterChange(val);
+
+  /* ─────────────────── follower select (single) ─────────────────── */
+  const toggleFollower = (id) => {
+    const next = new Set();
+    if (!selectedFollowers.has(id)) next.add(id);
+    setSelectedFollowers(next);
+    onFollowerSelectionChange([...next]);
+  };
+
+  /* ─────────────────── render ─────────────────── */
   return (
-    <div className={`map-sidebar-container ${isCollapsed ? "collapsed" : ""} ${isOpen ? "open" : ""}`}>
-      <button className="mobile-sidebar-close-button" onClick={onClose}>×</button>
+    <div className={`map-sidebar-container ${isCollapsed ? "collapsed" : ""}`}>
       <div className="sidebar-content">
-        <p className="map-logo" onClick={goToHomePage} style={{ cursor: "pointer" }}>
+        <p className="map-logo" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
           GUMIO
         </p>
 
         {/* ── 검색 박스 ── */}
         <h2 className="sidebar-title">지도 내 검색</h2>
-
         <div className="sidebar-search-bar" ref={searchBarRef}>
           <input
             type="text"
-            placeholder="장소, 주소 검색"
+            placeholder="식당 이름 검색"
             value={searchInputValue}
             onChange={(e) => setSearchInputValue(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSearchButtonClick()}
+            onKeyPress={handleKeyPress}
             onFocus={() => setShowSearchResults(true)}
           />
-          <button
-            onClick={handleSearchButtonClick}
-            className="search-icon-button"
-          >
+          <button onClick={handleSearchButtonClick} className="search-icon-button">
             <FaSearch />
           </button>
 
-          {showSearchResults &&
-            (searchResults.length > 0 ? (
-              <div className="search-results-list">
-                {searchResults.map((place) => (
-                  <div
-                    key={place.id}
-                    className="search-result-item"
-                    onClick={() => handleResultClick(place)}
-                  >
-                    <p className="place-name">{place.place_name}</p>
-                    <p className="place-address">{place.address_name}</p>
-                    {place.phone && (
-                      <p className="place-phone">{place.phone}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              searchInputValue && (
-                <div className="search-results-list">
-                  <p className="no-results-message">검색 결과가 없습니다.</p>
+          {showSearchResults && (
+            <div className="search-results-list">
+              {searchResults.map((r) => (
+                <div
+                  key={r.restaurant_id}
+                  className="search-result-item"
+                  onClick={() => handleResultClick(r)}
+                >
+                  <p className="place-name">{r.name}</p>
+                  <p className="place-address">{r.address}</p>
                 </div>
-              )
-            ))}
+              ))}
+              {searchInputValue && searchResults.length === 0 && (
+                <p className="no-results-message">검색 결과가 없습니다.</p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* ── 취향률 필터 ── */}
         <h3 className="sidebar-subtitle">취향률</h3>
         <div className="sidebar-filter-group">
-          {preferenceFilters.map((filter) => (
+          {preferenceFilters.map(({ label, value }) => (
             <button
-              key={filter}
-              className="sidebar-custom-button sidebar-custom-button-like"
+              key={value}
+              className={`sidebar-custom-button sidebar-custom-button-like${currentThreshold === value ? " active" : ""}`}
+              onClick={() => handlePrefClick(value)}
             >
-              {filter}
+              {label}
             </button>
           ))}
         </div>
@@ -192,45 +176,33 @@ const MapSidebar = ({
         ) : (
           <ul className="sidebar-following-list">
             {followingList.map((u) => (
-              <li
-                key={u.id}
-                className="following-item"
-                onClick={() => handleProfileClick(u.id)}
-              >
-                <img
-                  src={u.avatar}
-                  alt={u.name}
-                  className="following-avatar"
-                />
+              <li key={u.id} className="following-item" onClick={() => toggleFollower(u.id)}>
+                <img src={u.avatar} alt={u.name} className="following-avatar" />
                 <span className="following-name">{u.name}</span>
-
-                {/* ── NEW: tiny checkbox for future batch actions ── */}
                 <input
                   type="checkbox"
                   className="following-checkbox"
-                  onClick={(e) => e.stopPropagation()} // don’t trigger profile nav when ticking
+                  checked={selectedFollowers.has(u.id)}
+                  readOnly
+                  onClick={(e) => e.stopPropagation()}
                 />
               </li>
             ))}
-
             {viewerID && followingList.length === 0 && (
-              <li className="following-empty">
-                아직 팔로잉한 사용자가 없습니다.
-              </li>
+              <li className="following-empty">아직 팔로잉한 사용자가 없습니다.</li>
             )}
             {!viewerID && (
-              <li className="following-empty">
-                로그인하면 팔로잉 목록이 표시됩니다.
-              </li>
+              <li className="following-empty">로그인하면 팔로잉 목록이 표시됩니다.</li>
             )}
           </ul>
         )}
       </div>
 
-      {/* ── collapse toggle ── */}
+      {/* collapse toggle */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
         className="sidebar-toggle-button"
+        aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
       </button>
