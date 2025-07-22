@@ -38,6 +38,7 @@ const OthersPage = () => {
   const [postCount,      setPostCount]      = useState(0);
   const [keywords,       setKeywords]       = useState([]);
   const [isFollowing,    setIsFollowing]    = useState(false);
+  const [windowWidth,     setWindowWidth]     = useState(window.innerWidth); // 워드클라우드 크기 변경
 
   /* UX flags */
   const [loading, setLoading] = useState(true);
@@ -73,6 +74,13 @@ const OthersPage = () => {
     const ids = (following ?? []).map(u => u.user_id);
     setIsFollowing(ids.includes(targetId));
   }, [viewerId, targetId]);
+
+  // 워드클라우드 크기 변경
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   /* initial load */
   useEffect(() => {
@@ -144,23 +152,26 @@ const OthersPage = () => {
                     className={isFollowing ? "following" : ""}
                     disabled={!viewerId || viewerId === targetId}
                   >
-                    {viewerId === targetId ? "본인" : isFollowing ? "following" : "follow"}
+                    {viewerId === targetId ? "본인" : isFollowing ? "팔로잉" : "팔로우"}
                   </button>
                 </div>
               </div>
             </div>
 
             {/* posts + word-cloud */}
-            <div className="my-user-post">
+            <div className={`my-user-post ${window.innerWidth <= 700 ? 'mobile-layout' : ''}`}>
               <section className="post-left-part">
                 <PostList user_id={targetId} columns={1} />
               </section>
 
               <aside className="post-right-part">
-                <div className="word-cloud-container">
-                  <h3 className="word-cloud-title">워드&nbsp;클라우드</h3>
-                  <div className="word-cloud-content">
-                    <WordCloud keywords={keywords} />
+                <div className="mypage-word-cloud-container">
+                  <div className="mypage-word-cloud-content">
+                    <WordCloud 
+                      keywords={keywords}
+                      width={windowWidth <= 700 ? 600 : 300}
+                      height={windowWidth <= 700 ? 200 : 300}
+                    />
                   </div>
                 </div>
               </aside>

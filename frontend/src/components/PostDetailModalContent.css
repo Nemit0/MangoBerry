@@ -199,7 +199,7 @@
     }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 700px) {
     .post-detail-modal-content {
         flex-direction: column; /* 세로 정렬 */
         width: 100%; /* 전체 너비 사용 */

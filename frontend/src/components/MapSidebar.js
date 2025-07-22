@@ -25,6 +25,8 @@ const MapSidebar = ({
   searchResults,
   currentKeyword,
   onResultItemClick,
+  isOpen,
+  onClose,
 }) => {
   /* viewer info (NULL when not logged‑in) */
   const { user } = useAuth();
@@ -118,7 +120,8 @@ const MapSidebar = ({
 
   /* ───────────────────────── render ───────────────────────── */
   return (
-    <div className={`map-sidebar-container ${isCollapsed ? "collapsed" : ""}`}>
+    <div className={`map-sidebar-container ${isCollapsed ? "collapsed" : ""} ${isOpen ? "open" : ""}`}>
+      <button className="mobile-sidebar-close-button" onClick={onClose}>×</button>
       <div className="sidebar-content">
         <p className="map-logo" onClick={goToHomePage} style={{ cursor: "pointer" }}>
           GUMIO

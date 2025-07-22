@@ -116,7 +116,7 @@ function PostList({
           <p className="no-results">
             {searchTerm
               ? `"${searchTerm}"에 대한 결과가 없습니다.`
-              : "게시물이 없습니다."}
+              : "게시물을 불러오는 중입니다"}
           </p>
         )}
       </div>

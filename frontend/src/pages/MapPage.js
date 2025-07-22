@@ -31,6 +31,7 @@ function MapPage() {
     const [searchResults, setSearchResults] = useState([]);
     // 현재 검색어를 저장하는 상태
     const [keyword, setKeyword] = useState('');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // 현재 위치를 가져오는 함수 (Geolocation API 우선 사용, 실패 시 ipinfo.io 폴백)
     const fetchCurrentLocation = useCallback(async () => {
@@ -259,9 +260,14 @@ function MapPage() {
                             mapInstance.current.setCenter(new window.kakao.maps.LatLng(place.y, place.x));
                         }
                     }}
+                    isOpen={isSidebarOpen}
+                    onClose={() => setIsSidebarOpen(false)}
                 />
                 {/* 지도 영역 */}
                 <main id="map" className="map-area" ref={mapContainer}></main>
+                <button className="mobile-sidebar-toggle-button" onClick={() => setIsSidebarOpen(true)}>
+                    탐색
+                </button>
             </div>
         </div>
     );
