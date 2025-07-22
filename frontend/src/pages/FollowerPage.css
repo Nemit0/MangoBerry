@@ -153,8 +153,8 @@
   }
 
   .follower-wrapper {
-    margin-top: 60px; /* 헤더가 작아졌을 경우를 대비해 마진 조정 */
-    height: calc(100vh - 60px); /* 헤더 높이에 맞춰 조정 */
+    margin-top: 110px; /* 헤더가 작아졌을 경우를 대비해 마진 조정 */
+    height: calc(100vh - 110px); /* 헤더 높이에 맞춰 조정 */
     width: 100%; /* 너비 100%로 설정하여 스크롤 방지 */
     box-sizing: border-box; /* 패딩 포함 너비 계산 */
   }
@@ -198,10 +198,10 @@
 
   .user-name {
     font-size: 16px; /* 닉네임 폰트 크기 줄임 */
-    flex-grow: 1; /* 남은 공간을 채우도록 */
     white-space: nowrap; /* 닉네임이 길어도 한 줄에 표시 */
     overflow: hidden; /* 넘치는 부분 숨김 */
     text-overflow: ellipsis; /* 숨겨진 부분 ...으로 표시 */
+    margin-left: 10px; /* 프로필 이미지와 이름 사이 간격 */
   }
 
   .follow-button {

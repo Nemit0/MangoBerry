@@ -1,0 +1,38 @@
+/* src/components/LoadingSpinner.css */
+.spinner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.spinner {
+  position: relative;
+  width: 90px;
+  height: 90px;
+}
+
+.spinner-bar {
+  position: absolute;
+  width: 6px; /* 짧고 뭉툭한 막대 */
+  height: 18px; /* 짧고 뭉툭한 막대 */
+  background: #8A2BE2; /* 기본 보라색 */
+  border-radius: 3px;
+  transform-origin: 50% 50%;
+  animation: fadeAndRotate 1.2s linear infinite;
+}
+
+@keyframes fadeAndRotate {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.2;
+  }
+}

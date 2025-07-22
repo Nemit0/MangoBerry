@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import { TbPhotoPlus } from 'react-icons/tb';
 import { FiSearch }    from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
+import LoadingSpinner from '../components/LoadingSpinner';
 import './NewPage.css';
 
 const API_ROOT   = '/api';
@@ -211,6 +212,7 @@ const NewPage = () => {
   return (
     <div className="newpage-container">
       <Header />
+      {isAnalyzing && <LoadingSpinner />}
       <div className="newpage-content">
         <main className="newpage-main">
           <div className="newpage-wrapper">

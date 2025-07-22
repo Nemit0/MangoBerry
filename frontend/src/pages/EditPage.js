@@ -6,6 +6,7 @@ import Header           from '../components/Header';
 import { TbPhotoPlus }  from 'react-icons/tb';
 import { FiSearch }     from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
+import LoadingSpinner from '../components/LoadingSpinner';
 import './EditPage.css';
 
 /* ───────────────────────── constants ───────────────────────── */
@@ -264,6 +265,7 @@ const EditPage = () => {
   return (
     <div className="editpage-container">
       <Header />
+      {isAnalyzing && <LoadingSpinner />}
       <div className="editpage-content">
         <main className="editpage-main">
           <div className="editpage-wrapper">
