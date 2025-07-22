@@ -6,21 +6,23 @@
 
 /* follow button */
 .follow-button button {
-  padding: 6px 18px;
-  border: 1px solid #ff7b00;
-  border-radius: 20px;
-  background: #fff;
+  padding: 5px 3px;
+  border: 1px solid #672091;
+  border-radius: 8px;
+  background: white;
   font-size: 0.9rem;
   cursor: pointer;
   transition: background 0.2s ease;
+  min-width: 75px; /* Add this line */
+  text-align: center; /* Add this line */
 }
 .follow-button button:hover {
-  background: #ffe6cc;
+  background: #6820917e;
 }
 .follow-button button.following {
-  background: #ff7b00;
-  border-color: #ff7b00;
-  color: #fff;
+  background: #672091;
+  border-color: #672091;
+  color: white;
 }
 .follow-button button:disabled {
   opacity: 0.5;

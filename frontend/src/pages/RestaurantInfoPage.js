@@ -80,11 +80,12 @@ function RestaurantInfoPage() {
               {/* Word‑cloud – same width as thumbnail */}
               {restaurant.keywords.length > 0 && (
                 <div className="word-cloud-container">
-                  <h3 className="word-cloud-title">워드&nbsp;클라우드</h3>
                   <div className="word-cloud-content">
                     <WordCloud
                       keywords={restaurant.keywords}
-                      uniformColour="#7c3aed"   /* violet‑500 */
+                      uniformColour="#672091"   /* violet‑500 */
+                      height={150}
+                      width={600}
                     />
                   </div>
                 </div>
