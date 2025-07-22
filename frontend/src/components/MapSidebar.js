@@ -1,10 +1,10 @@
 import React, {
   useState, useEffect, useRef, useCallback,
 } from "react";
-import { useNavigate }                 from "react-router-dom";
+import { useNavigate }                           from "react-router-dom";
 import { FaSearch, FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { useAuth }                     from "../contexts/AuthContext";
-import foxImage                        from "../assets/photo/circular_image.png";
+import { useAuth }                               from "../contexts/AuthContext";
+import foxImage                                  from "../assets/photo/circular_image.png";
 import "./MapSidebar.css";
 
 /* ───────────────────────── constants ───────────────────────── */
@@ -18,35 +18,36 @@ const preferenceFilters = [
 
 /* ───────────────────────── component ───────────────────────── */
 const MapSidebar = ({
-  restaurants,
+  restaurants,                       // viewer + followers amalgam, for list view
   onPreferenceFilterChange,
   currentThreshold,
   onFollowerSelectionChange,
+  onRestaurantClick,                // NEW – parent callback
 }) => {
   /* viewer info */
   const { user } = useAuth();
   const viewerID = user?.user_id ?? null;
 
   /* UI state */
-  const [isCollapsed, setIsCollapsed]       = useState(false);
+  const [isCollapsed, setIsCollapsed]         = useState(false);
   const [searchInputValue, setSearchInputValue] = useState("");
+  const [searchResults, setSearchResults]     = useState([]);   // [{ restaurant_id, name, x, y, … }]
   const [showSearchResults, setShowSearchResults] = useState(false);
-  const [followingList, setFollowingList]   = useState([]);   // [{ id, name, avatar }]
-  const [followError, setFollowError]       = useState(null);
-  const [selectedFollowers, setSelectedFollowers] = useState(new Set()); // 0 or 1 id
+  const [followingList, setFollowingList]     = useState([]);
+  const [followError, setFollowError]         = useState(null);
+  const [selectedFollowers, setSelectedFollowers] = useState(new Set());
 
   /* refs */
   const searchBarRef = useRef(null);
   const navigate     = useNavigate();
 
-  /* ─────────────────── data fetch ─────────────────── */
+  /* ─────────────────── following fetch ─────────────────── */
   const fetchFollowing = useCallback(async () => {
     if (!viewerID) { setFollowingList([]); return; }
     try {
       const resp = await fetch(`${API_URL}/following/${viewerID}`);
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const { following = [] } = await resp.json();
-
       const mapped = following.map((u) => ({
         id:     u.user_id,
         name:   u.nickname ?? "알 수 없음",
@@ -62,14 +63,35 @@ const MapSidebar = ({
 
   useEffect(() => { fetchFollowing(); }, [fetchFollowing]);
 
-  /* ─────────────────── search helpers ─────────────────── */
-  const handleSearchButtonClick = () => setShowSearchResults(true);
-  const handleResultClick       = (rest) => {
-    setSearchInputValue(rest.name);
-    setShowSearchResults(false);
+  /* ─────────────────── restaurant search (new API) ─────────────────── */
+  const runSearch = async () => {
+    if (!searchInputValue.trim()) return;
+    try {
+      const url = `${API_URL}/search_restaurant_es?name=${encodeURIComponent(searchInputValue.trim())}&size=20`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.result)) {
+        setSearchResults(data.result);
+        setShowSearchResults(true);
+      } else { setSearchResults([]); setShowSearchResults(true); }
+    } catch (err) {
+      console.error("[MapSidebar] runSearch failed:", err);
+      setSearchResults([]);
+      setShowSearchResults(true);
+    }
   };
 
-  /* click‑outside close */
+  const handleSearchButtonClick = () => runSearch();
+  const handleKeyPress          = (e) => e.key === "Enter" && runSearch();
+
+  const handleResultClick = (rest) => {
+    setSearchInputValue(rest.name);
+    setShowSearchResults(false);
+    if (onRestaurantClick) onRestaurantClick(rest);
+  };
+
+  /* click‑outside to close dropdown */
   useEffect(() => {
     const clickOutside = (e) => {
       if (searchBarRef.current && !searchBarRef.current.contains(e.target)) {
@@ -86,9 +108,9 @@ const MapSidebar = ({
   /* ─────────────────── follower select (single) ─────────────────── */
   const toggleFollower = (id) => {
     const next = new Set();
-    if (!selectedFollowers.has(id)) next.add(id);     // select new (single)
+    if (!selectedFollowers.has(id)) next.add(id);
     setSelectedFollowers(next);
-    onFollowerSelectionChange([...next]);             // array (0 or 1 id)
+    onFollowerSelectionChange([...next]);
   };
 
   /* ─────────────────── render ─────────────────── */
@@ -107,7 +129,7 @@ const MapSidebar = ({
             placeholder="식당 이름 검색"
             value={searchInputValue}
             onChange={(e) => setSearchInputValue(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSearchButtonClick()}
+            onKeyPress={handleKeyPress}
             onFocus={() => setShowSearchResults(true)}
           />
           <button onClick={handleSearchButtonClick} className="search-icon-button">
@@ -116,23 +138,18 @@ const MapSidebar = ({
 
           {showSearchResults && (
             <div className="search-results-list">
-              {restaurants
-                .filter((r) => r.name.includes(searchInputValue))
-                .slice(0, 20)
-                .map((r) => (
-                  <div
-                    key={r.restaurant_id}
-                    className="search-result-item"
-                    onClick={() => handleResultClick(r)}
-                  >
-                    <p className="place-name">{r.name}</p>
-                    <p className="place-address">{r.address}</p>
-                    <p className="place-phone">취향률 {r.mean_rating.toFixed(0)}%</p>
-                  </div>
-                ))}
-              {searchInputValue &&
-                restaurants.filter((r) => r.name.includes(searchInputValue)).length === 0 && (
-                  <p className="no-results-message">검색 결과가 없습니다.</p>
+              {searchResults.map((r) => (
+                <div
+                  key={r.restaurant_id}
+                  className="search-result-item"
+                  onClick={() => handleResultClick(r)}
+                >
+                  <p className="place-name">{r.name}</p>
+                  <p className="place-address">{r.address}</p>
+                </div>
+              ))}
+              {searchInputValue && searchResults.length === 0 && (
+                <p className="no-results-message">검색 결과가 없습니다.</p>
               )}
             </div>
           )}
@@ -144,9 +161,7 @@ const MapSidebar = ({
           {preferenceFilters.map(({ label, value }) => (
             <button
               key={value}
-              className={`sidebar-custom-button sidebar-custom-button-like${
-                currentThreshold === value ? " active" : ""
-              }`}
+              className={`sidebar-custom-button sidebar-custom-button-like${currentThreshold === value ? " active" : ""}`}
               onClick={() => handlePrefClick(value)}
             >
               {label}
@@ -161,11 +176,7 @@ const MapSidebar = ({
         ) : (
           <ul className="sidebar-following-list">
             {followingList.map((u) => (
-              <li
-                key={u.id}
-                className="following-item"
-                onClick={() => toggleFollower(u.id)}
-              >
+              <li key={u.id} className="following-item" onClick={() => toggleFollower(u.id)}>
                 <img src={u.avatar} alt={u.name} className="following-avatar" />
                 <span className="following-name">{u.name}</span>
                 <input

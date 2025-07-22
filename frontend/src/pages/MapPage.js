@@ -1,6 +1,7 @@
 import React, {
   useEffect, useRef, useState, useCallback,
 } from "react";
+import { useNavigate }      from "react-router-dom";
 import MapSidebar           from "../components/MapSidebar";
 import "../pages/HomePage.css";
 import "./MapPage.css";
@@ -9,17 +10,16 @@ import { useAuth }          from "../contexts/AuthContext";
 import { FaSpinner }        from "react-icons/fa";
 
 /* ───────────────────────── constants ───────────────────────── */
-const KAKAO_MAP_APP_KEY     = process.env.REACT_APP_KAKAO_MAP_APP_KEY;
-const API_URL               = "/api";
-const DEFAULT_DISTANCE      = "5km";
-const MAX_RESULTS           = 500;
-const DEBOUNCE_MS           = 600;
+const KAKAO_MAP_APP_KEY = process.env.REACT_APP_KAKAO_MAP_APP_KEY;
+const API_URL           = "/api";
+const DEFAULT_DISTANCE  = "5km";
+const MAX_RESULTS       = 500;
+const DEBOUNCE_MS       = 600;
 
 /* ───────────────────────── helpers ───────────────────────── */
 const average = (arr = []) =>
   arr.length === 0 ? 0 : arr.reduce((a, b) => a + b, 0) / arr.length;
 
-/* distance parsing  ("5km" → 5) */
 const parseDistanceKm = (d) => {
   const num = parseFloat(String(d).replace(/[^0-9.+-]/g, ""));
   return Number.isFinite(num) ? num : 5;
@@ -29,7 +29,7 @@ const DISTANCE_THRESHOLD_KM = parseDistanceKm(DEFAULT_DISTANCE);
 /* haversine distance (km) */
 const haversineDistanceKm = (lat1, lon1, lat2, lon2) => {
   const toRad = (deg) => deg * (Math.PI / 180);
-  const R     = 6371;                                          // earth radius (km)
+  const R     = 6371;
   const dLat  = toRad(lat2 - lat1);
   const dLon  = toRad(lon2 - lon1);
   const a     = Math.sin(dLat / 2) ** 2
@@ -39,31 +39,32 @@ const haversineDistanceKm = (lat1, lon1, lat2, lon2) => {
 
 /* ───────────────────────── component ───────────────────────── */
 function MapPage () {
-  /* DOM refs */
+  /* refs */
   const mapContainer          = useRef(null);
   const mapInstance           = useRef(null);
   const markersRef            = useRef([]);
   const idleTimerRef          = useRef(null);
   const isProgrammaticMoveRef = useRef(false);
-  const originRef             = useRef(null);                  // keep latest origin in ref
+  const originRef             = useRef(null);
 
-  /* Viewer info */
-  const { user }   = useAuth();
-  const viewerID   = user?.user_id ?? null;
+  /* services */
+  const { user } = useAuth();
+  const viewerID = user?.user_id ?? null;
+  const navigate = useNavigate();
 
-  /* State */
-  const [origin,          setOrigin]          = useState(null);   // { lat, lon }
-  const [restaurants,     setRestaurants]     = useState([]);     // viewer list
-  const [followerRatings, setFollowerRatings] = useState({});     // { fid: { rid: rating } }
-  const [threshold,       setThreshold]       = useState(0);      // preference %
-  const [selectedFol,     setSelectedFol]     = useState([]);     // max 1 element
-  const [displayed,       setDisplayed]       = useState([]);     // places rendered
+  /* state */
+  const [origin,          setOrigin]          = useState(null);
+  const [restaurants,     setRestaurants]     = useState([]);
+  const [followerRatings, setFollowerRatings] = useState({});
+  const [threshold,       setThreshold]       = useState(0);
+  const [selectedFol,     setSelectedFol]     = useState([]);
+  const [displayed,       setDisplayed]       = useState([]);
   const [loading,         setLoading]         = useState(false);
 
-  /* keep origin ref updated */
+  /* keep origin ref fresh */
   useEffect(() => { originRef.current = origin; }, [origin]);
 
-  /* ─────────────────── location utilities ─────────────────── */
+  /* ─────────────────── geo helpers ─────────────────── */
   const fetchFromIpInfo = async () => {
     try {
       const resp = await fetch("https://ipinfo.io/json");
@@ -72,8 +73,8 @@ function MapPage () {
         const [lat, lon] = data.loc.split(",").map(Number);
         return { lat, lon };
       }
-    } catch { /* ignore */ }
-    return { lat: 37.566826, lon: 126.9786567 };      // Seoul fallback
+    } catch {/* ignore */}
+    return { lat: 37.566826, lon: 126.9786567 }; // Seoul fallback
   };
 
   const fetchCurrentLocation = useCallback(() => new Promise((resolve) => {
@@ -88,7 +89,7 @@ function MapPage () {
     }
   }), []);
 
-  /* ─────────────────── Kakao map init ─────────────────── */
+  /* ─────────────────── map bootstrap ─────────────────── */
   useEffect(() => {
     const loadMapSDK = () => new Promise((res, rej) => {
       if (window.kakao?.maps) return res();
@@ -108,55 +109,33 @@ function MapPage () {
       const center = new window.kakao.maps.LatLng(originPos.lat, originPos.lon);
       mapInstance.current = new window.kakao.maps.Map(mapContainer.current, { center, level: 3 });
 
-      /* viewer marker */
       const viewerMarker = new window.kakao.maps.Marker({ map: mapInstance.current, position: center });
       new window.kakao.maps.InfoWindow({
         content: '<div style="padding:5px;font-size:12px;">현재 내 위치</div>',
       }).open(mapInstance.current, viewerMarker);
 
-      /* idle handler with distance guard */
       const handleIdle = () => {
         if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
         idleTimerRef.current = setTimeout(() => {
-          /* ignore moves triggered by our own setBounds */
-          if (isProgrammaticMoveRef.current) {
-            isProgrammaticMoveRef.current = false;
-            return;
-          }
-
+          if (isProgrammaticMoveRef.current) { isProgrammaticMoveRef.current = false; return; }
           const c          = mapInstance.current.getCenter();
           const newOrigin  = { lat: c.getLat(), lon: c.getLng() };
           const currOrigin = originRef.current;
-
-          /* no previous origin */
-          if (!currOrigin) {
-            setOrigin(newOrigin);
-            return;
-          }
-
-          /* distance check */
-          const distKm = haversineDistanceKm(
-            currOrigin.lat, currOrigin.lon, newOrigin.lat, newOrigin.lon,
-          );
-
-          if (distKm >= DISTANCE_THRESHOLD_KM) {
-            setOrigin(newOrigin);         // triggers downstream effects
-          }
+          if (!currOrigin) { setOrigin(newOrigin); return; }
+          const distKm = haversineDistanceKm(currOrigin.lat, currOrigin.lon, newOrigin.lat, newOrigin.lon);
+          if (distKm >= DISTANCE_THRESHOLD_KM) setOrigin(newOrigin);
         }, DEBOUNCE_MS);
       };
       window.kakao.maps.event.addListener(mapInstance.current, "idle", handleIdle);
-
-      /* cleanup */
       return () => window.kakao.maps.event.removeListener(mapInstance.current, "idle", handleIdle);
     })().catch((e) => alert(`Kakao Map init failed: ${e}`));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* ─────────────────── fetch helper ─────────────────── */
+  /* ─────────────────── API helpers ─────────────────── */
   const fetchNearby = useCallback(async (viewer, center) => {
     if (!center) return [];
     const url = new URL(`${API_URL}/nearby_restaurant_es`, window.location.origin);
-
     url.searchParams.set("distance", DEFAULT_DISTANCE);
     url.searchParams.set("size",      MAX_RESULTS);
     if (viewer) url.searchParams.set("viewer_id", viewer);
@@ -171,12 +150,10 @@ function MapPage () {
       const json = await resp.json();
       if (!json.success) throw new Error(json.error || "Unknown error");
       return json.results;
-    } finally {
-      clearTimeout(timer);
-    }
+    } finally { clearTimeout(timer); }
   }, []);
 
-  /* ─────────────────── viewer list ─────────────────── */
+  /* ─────────────────── initial + updated viewer list ─────────────────── */
   useEffect(() => {
     (async () => {
       if (!origin) return;
@@ -184,36 +161,29 @@ function MapPage () {
       try {
         const data = await fetchNearby(viewerID, origin);
         setRestaurants(data);
-      } catch (err) {
-        console.error("[MapPage] fetchNearby (viewer) failed:", err);
-      } finally {
-        setLoading(false);
-      }
+      } catch (err) { console.error("[MapPage] fetchNearby (viewer) failed:", err); }
+      finally      { setLoading(false); }
     })();
   }, [origin, viewerID, fetchNearby]);
 
-  /* ─────────────────── follower list(s) ─────────────────── */
+  /* ─────────────────── followers lists ─────────────────── */
   useEffect(() => {
     if (!origin || selectedFol.length === 0) return;
     const fid = selectedFol[0];
     if (followerRatings[fid]) return;
-
     (async () => {
       try {
-        const list             = await fetchNearby(fid, origin);
-        const ratingsByRestID  = Object.fromEntries(list.map((r) => [r.restaurant_id, r.rating]));
+        const list            = await fetchNearby(fid, origin);
+        const ratingsByRestID = Object.fromEntries(list.map((r) => [r.restaurant_id, r.rating]));
         setFollowerRatings((prev) => ({ ...prev, [fid]: ratingsByRestID }));
-      } catch (err) {
-        console.error("[MapPage] fetchNearby (follower) failed:", err);
-      }
+      } catch (err) { console.error("[MapPage] fetchNearby (follower) failed:", err); }
     })();
   }, [selectedFol, origin, fetchNearby, followerRatings]);
 
-  /* ─────────────────── mean calculation + filters ─────────────────── */
+  /* ─────────────────── mean calc + filter ─────────────────── */
   useEffect(() => {
     if (restaurants.length === 0) return;
-
-    const calcMeanRating = (r) => {
+    const calcMean = (r) => {
       const ratings = [r.rating];
       selectedFol.forEach((fid) => {
         const fr = followerRatings[fid]?.[r.restaurant_id];
@@ -221,21 +191,16 @@ function MapPage () {
       });
       return average(ratings);
     };
-
-    const withMean = restaurants.map((r) => ({ ...r, mean_rating: calcMeanRating(r) }));
-    const filtered = threshold === 0
-      ? withMean
-      : withMean.filter((r) => r.mean_rating >= threshold);
-
+    const withMean = restaurants.map((r) => ({ ...r, mean_rating: calcMean(r) }));
+    const filtered = threshold === 0 ? withMean : withMean.filter((r) => r.mean_rating >= threshold);
     setDisplayed(filtered);
   }, [restaurants, followerRatings, selectedFol, threshold]);
 
-  /* ─────────────────── marker rendering ─────────────────── */
+  /* ─────────────────── marker renderer ─────────────────── */
   const renderMarkers = useCallback((places) => {
     const map = mapInstance.current;
     if (!map || !window.kakao?.maps) return;
 
-    /* clear old */
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
 
@@ -245,9 +210,9 @@ function MapPage () {
     const imgOpt  = { offset: new window.kakao.maps.Point(13, 36) };
 
     places.forEach((p) => {
-      const pos          = new window.kakao.maps.LatLng(p.y, p.x);
-      const markerImage  = new window.kakao.maps.MarkerImage(imgSrc, imgSize, imgOpt);
-      const marker       = new window.kakao.maps.Marker({ map, position: pos, image: markerImage });
+      const pos         = new window.kakao.maps.LatLng(p.y, p.x);
+      const markerImage = new window.kakao.maps.MarkerImage(imgSrc, imgSize, imgOpt);
+      const marker      = new window.kakao.maps.Marker({ map, position: pos, image: markerImage });
 
       const info = new window.kakao.maps.InfoWindow({
         zIndex: 1,
@@ -255,19 +220,28 @@ function MapPage () {
       });
       window.kakao.maps.event.addListener(marker, "mouseover", () => info.open(map, marker));
       window.kakao.maps.event.addListener(marker, "mouseout",  () => info.close());
-      window.kakao.maps.event.addListener(marker, "click",     () => info.open(map, marker));
+      window.kakao.maps.event.addListener(marker, "click",     () => navigate(`/restaurantInfo/${p.restaurant_id}`));
 
       markersRef.current.push(marker);
       bounds.extend(pos);
     });
 
     if (places.length > 0) {
-      isProgrammaticMoveRef.current = true;                 // suppress next idle event
+      isProgrammaticMoveRef.current = true;
       map.setBounds(bounds);
     }
-  }, []);
+  }, [navigate]);
 
   useEffect(() => { renderMarkers(displayed); }, [displayed, renderMarkers]);
+
+  /* ─────────────────── restaurant click from sidebar ─────────────────── */
+  const handleRestaurantClick = (r) => {
+    if (!r || r.y == null || r.x == null || !window.kakao?.maps || !mapInstance.current) return;
+    const newCenter = new window.kakao.maps.LatLng(r.y, r.x);
+    isProgrammaticMoveRef.current = true;
+    mapInstance.current.setCenter(newCenter);
+    mapInstance.current.setLevel(3); // zoom‑in for detail
+  };
 
   /* ───────────────────────── render ───────────────────────── */
   return (
@@ -285,6 +259,7 @@ function MapPage () {
           onPreferenceFilterChange={setThreshold}
           currentThreshold={threshold}
           onFollowerSelectionChange={setSelectedFol}
+          onRestaurantClick={handleRestaurantClick}
         />
         <main id="map" className="map-area" ref={mapContainer}></main>
       </div>
