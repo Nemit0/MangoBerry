@@ -1,5 +1,6 @@
 import contextlib
 import logging
+import sys
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, Set
 
 import numpy as np
@@ -22,7 +23,7 @@ logger = logging.getLogger(__name__)
 THRESHOLD: float = 0.50           # cosine ≥ THRESHOLD counts as a match
 EMBED_DIM: int = 1536             # OpenAI text‑embedding‑3‑small dimension
 LIFT_TAIL_B: int = 10             # 1 disables logarithmic skew
-print(f"DEBUG: USING CONFIG:\nTHRESHOLD = {THRESHOLD}\nEMBED_DIM = {EMBED_DIM}\nLIFT_TAIL_B = {LIFT_TAIL_B}")
+print(f"DEBUG: USING CONFIG:\nTHRESHOLD = {THRESHOLD}\nEMBED_DIM = {EMBED_DIM}\nLIFT_TAIL_B = {LIFT_TAIL_B}, gil_enabled: {sys._is_gil_enabled()}")
 
 def skew_score(score: float, b: int = LIFT_TAIL_B) -> float:
     """
