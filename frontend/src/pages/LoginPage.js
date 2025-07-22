@@ -61,7 +61,7 @@ function LoginPage() {
                                         id='username'
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
-                                        placeholder='아이디'
+                                        placeholder='이메일'
                                         required
                                     />
                                 </div>

@@ -12,7 +12,11 @@ from ..connection.mongodb import (
     photo_collection,
 )
 
-from ..services.calc_score import update_user_to_restaurant_score
+from ..services.calc_score import (
+    update_user_to_restaurant_score,
+    batch_user_rest_scores,
+)
+
 from ..services.utilities import get_location_from_ip
 from .common_imports import *  # noqa: F403,F401
 
@@ -115,7 +119,7 @@ def search_restaurant_es(
 def nearby_restaurant_es(
     request: Request,
     distance: str = Query("5km", pattern=r"^[0-9]+(m|km)$"),
-    size: int = Query(10, gt=1, le=1000),
+    size: int = Query(10, gt=1, le=10000),
     viewer_id: Optional[int] = Query(None, description="Viewer ID for personalised scoring"),
     # Frontend‑supplied coordinates (aliases y / x for convenience)
     lat: Optional[float] = Query(None, alias="y", description="Latitude of the client"),
@@ -168,24 +172,27 @@ def nearby_restaurant_es(
         for r in db.query(Restaurant).filter(Restaurant.restaurant_id.in_(rest_ids)).all()
     }
 
-    results: List[Dict[str, Any]] = []
-    for h in hits:
-        src = h["_source"]
-        r_id = src["r_id"]
-        row = rest_map.get(r_id)
+    ratings = (
+        {} if viewer_id is None
+        else batch_user_rest_scores(viewer_id, list(rest_ids), db=db)
+    )
 
-        rating = _safe_score(viewer_id, r_id, db)
+    results: list[dict[str, Any]] = []
+    for h in hits:
+        src  = h["_source"]
+        r_id = src["r_id"]
+        row  = rest_map.get(r_id)
 
         results.append(
             {
                 "restaurant_id": r_id,
-                "name": src["name"],
+                "name":      src["name"],
                 "categories": src.get("categories", ""),
-                "address": src.get("address", ""),
+                "address":   src.get("address", ""),
                 "distance_km": h["sort"][0],
                 "x": getattr(row, "longitude", None),
-                "y": getattr(row, "latitude", None),
-                "rating": rating,
+                "y": getattr(row, "latitude",  None),
+                "rating": ratings.get(r_id, 0.0),
             }
         )
 

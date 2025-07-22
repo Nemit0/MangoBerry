@@ -125,8 +125,8 @@ const EditPage = () => {
   };
 
   const handleDeleteImage = (index) => {
-    setImageFiles((prev) => prev.filter((_, i) => i !== index));
-    setImagePrev((prev) => prev.filter((_, i) => i !== index));
+    setImageFiles((prev) => prev.filter((_, i) => i !== index)); // drops File if any
+    setImagePrev((prev)  => prev.filter((_, i) => i !== index)); // drops preview
   };
 
   /* ───────────── keyword (re)analysis ───────────── */
@@ -189,26 +189,27 @@ const EditPage = () => {
 
   /* ───────────── save PATCH ───────────── */
   const handleSave = useCallback(async () => {
-    if (!originalRef.current) return;   // still loading
+    if (!originalRef.current) return;             // still loading
     const orig = originalRef.current;
 
-    /* 1) upload new images */
+    /* ---------- 1) upload NEW images ---------- */
     let addedFilenames = [];
     let addedUrls      = [];
     if (imageFiles.length) {
       try {
-        const uploadResults = await Promise.all(
+        const uploaded = await Promise.all(
           imageFiles.map(async (file) => {
-            const fd = new FormData(); fd.append('file', file);
-            const res = await fetch(`${API_ROOT}/reviews/${userID}/images?review_id=${reviewId}`, {
-              method: 'POST', body: fd,
-            });
+            const fd  = new FormData(); fd.append('file', file);
+            const res = await fetch(
+              `${API_ROOT}/reviews/${userID}/images?review_id=${reviewId}`,
+              { method: 'POST', body: fd }
+            );
             if (!res.ok) throw new Error(`upload HTTP ${res.status}`);
-            return res.json();          // { key, public_url }
+            return res.json();                    // { key, public_url }
           })
         );
-        addedFilenames = uploadResults.map((x) => x.key);
-        addedUrls      = uploadResults.map((x) => x.public_url);
+        addedFilenames = uploaded.map((x) => x.key);
+        addedUrls      = uploaded.map((x) => x.public_url);
       } catch (err) {
         console.error(err);
         alert(`사진 업로드 오류: ${err.message}`);
@@ -216,18 +217,27 @@ const EditPage = () => {
       }
     }
 
-    /* 2) diff → payload */
+    /* ---------- 2) figure out which originals remain ---------- */
+    const keptUrls = orig.photo_urls.filter((url) => imagePrev.includes(url));
+    const keptFns  = orig.photo_filenames
+                      .filter((_, i) => imagePrev.includes(orig.photo_urls[i]));
+
+    /* ---------- 3) build the final lists we want in DB ---------- */
+    const finalPhotoUrls      = [...keptUrls, ...addedUrls];
+    const finalPhotoFilenames = [...keptFns, ...addedFilenames];
+
+    /* ---------- 4) diff against the original payload ---------- */
     const payload = {};
     if (selectedRestaurant?.r_id &&
         selectedRestaurant.r_id !== orig.restaurant_id) payload.restaurant_id = selectedRestaurant.r_id;
 
-    if (oneLiner   !== orig.comments) payload.comments = oneLiner;
-    if (reviewText !== orig.review)   payload.review   = reviewText;
+    if (oneLiner   !== orig.comments)           payload.comments = oneLiner;
+    if (reviewText !== orig.review)             payload.review   = reviewText;
 
-    if (addedFilenames.length) {
-      payload.photo_filenames = [...(orig.photo_filenames || []), ...addedFilenames];
-      payload.photo_urls      = [...(orig.photo_urls      || []), ...addedUrls];
-    }
+    if (!arraysEqual(finalPhotoFilenames, orig.photo_filenames))
+      payload.photo_filenames = finalPhotoFilenames;
+    if (!arraysEqual(finalPhotoUrls,      orig.photo_urls))
+      payload.photo_urls      = finalPhotoUrls;
 
     const curPos = Object.keys(positiveKeywords).filter((k) => positiveKeywords[k]);
     const curNeg = Object.keys(negativeKeywords).filter((k) => negativeKeywords[k]);
@@ -239,7 +249,7 @@ const EditPage = () => {
       return;
     }
 
-    /* 3) PUT */
+    /* ---------- 5) PUT request ---------- */
     try {
       const res = await fetch(`${API_ROOT}/update_reviews/${reviewId}`, {
         method : 'PUT',
@@ -253,8 +263,8 @@ const EditPage = () => {
       console.error(err);
       alert(`저장 실패: ${err.message}`);
     }
-  }, [imageFiles, oneLiner, reviewText, positiveKeywords,
-      negativeKeywords, selectedRestaurant, navigate, reviewId]);
+  }, [imageFiles, imagePrev, oneLiner, reviewText, positiveKeywords,
+      negativeKeywords, selectedRestaurant, navigate, reviewId, userID]);
 
   /* cancel */
   const handleCancel = () =>

@@ -1,6 +1,8 @@
 import contextlib
 import logging
+import os
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, Set
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import numpy as np
 from fastapi import Depends
@@ -30,8 +32,8 @@ def relu(x: float) -> float:
 
 def skew_score(score: float, b: int = LIFT_TAIL_B) -> float:
     """
-    Apply logarithmic tail lift to a score in [0, 1].
-    If b = 1, no skew is applied (linear).
+    Apply logarithmic tail lift to a score in [0, 1].
+    If b=1, no skew is applied (linear).
     """
     if b <= 1:
         return score
@@ -390,40 +392,70 @@ def update_user_to_user_score(
             with contextlib.suppress(StopIteration):
                 next(db_gen)
 
-# ──────────────────────────────────── CLI demo ────────────────────────────────
-if __name__ == "__main__":
-    import json
-    from pathlib import Path
+def batch_user_rest_scores(                       # <─ public helper
+    u_id: int,
+    r_ids: list[int],
+    *,
+    db: Session,
+    threshold: float      = THRESHOLD,
+    lift_tail_b: int      = 1,
+    max_workers: int | None = None,
+) -> dict[int, float]:
+    """
+    Vector‑friendly batch computation of *compatibility scores* for one user
+    against many restaurants.
 
-    user_file = Path("/home/nemit/Downloads/user_keyword.json")
-    rest_file = Path("/home/nemit/Downloads/filtered_restaurant_keywords.json")
+    Parameters
+    ----------
+    u_id        : target user
+    r_ids       : list of restaurant IDs
+    db          : **local** SQLAlchemy session (use Depends(get_db) in routes)
+    threshold   : cosine cut‑off forwarded to `_score_pair`
+    lift_tail_b : skew param – keep at 1 for linear mapping
+    max_workers : override for thread pool size (defaults to 2×CPU)
 
-    with user_file.open() as f:
-        user_data = json.load(f)
-    with rest_file.open() as f:
-        rest_data = json.load(f)
+    Returns
+    -------
+    {r_id: score(float in 0–100)}
+    """
+    if not r_ids:
+        return {}
 
-    sample_user_id = user_data[0]["user_id"]
-    sample_rest_id = rest_data[0]["r_id"]
+    # ── 1. ONE read for the user keyword profile ─────────────────────────────
+    kw_user_raw = (user_keywords_collection.find_one({"user_id": u_id}) or {}) \
+                     .get("keywords", [])
+    kw_user = _canonize_kw_list(kw_user_raw)
+    if not kw_user:
+        # anonymous / cold‑start – everybody gets 0.0
+        return {r: 0.0 for r in r_ids}
 
-    sample_user_kw = user_data[0]["keywords"]
-    sample_rest_kw = rest_data[0]["keywords"]
-
-    score = _score_pair(
-        _canonize_kw_list(sample_user_kw),
-        _canonize_kw_list(sample_rest_kw),
+    # ── 2. ONE bulk read for all requested restaurants ───────────────────────
+    rest_kw_cursor = restaurant_keywords_collection.find(
+        {"r_id": {"$in": r_ids}},
+        {"_id": 0, "r_id": 1, "keywords": 1},
     )
-    print(
-        f"Sample user {sample_user_id} ↔ restaurant {sample_rest_id} score:", round(score, 2)
-    )
+    rest_kw_map = {
+        doc["r_id"]: _canonize_kw_list(doc.get("keywords", []))
+        for doc in rest_kw_cursor
+    }
 
-    # Quick sweep across all restaurants
-    print(f"Scores for user {sample_user_id}:")
-    for rest in rest_data:
-        rest_id = rest["r_id"]
-        rest_kw = rest.get("keywords", [])
+    # ── 3. Threaded fan‑out of the pure‑Python/NumPy scorer ───────────────────
+    def _score_single(r_id: int) -> tuple[int, float]:
+        kw_rest = rest_kw_map.get(r_id, [])
         s = _score_pair(
-            _canonize_kw_list(sample_user_kw),
-            _canonize_kw_list(rest_kw),
+            kw_user,
+            kw_rest,
+            threshold=threshold,
+            lift_tail_b=lift_tail_b,
         )
-        print(f"  Restaurant {rest_id}: {round(s, 2)}")
+        return r_id, s
+
+    pool_size = max_workers or min(len(r_ids), os.cpu_count() * 2)
+    with ThreadPoolExecutor(max_workers=pool_size) as ex:
+        fut_map = {ex.submit(_score_single, rid): rid for rid in r_ids}
+        scores  = {rid: 0.0 for rid in r_ids}           # default fallback
+        for fut in as_completed(fut_map):
+            r_id, val = fut.result()
+            scores[r_id] = val
+
+    return scores
