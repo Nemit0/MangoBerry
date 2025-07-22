@@ -105,7 +105,7 @@ const FollowingPage = () => {
   if (error)     return <p>{error}</p>;
 
   return (
-    <div className="follower-page">
+    <div className="following-page">
       <Header />
       <div className="following-wrapper">
         <h2 className="following-title">팔로잉</h2>
