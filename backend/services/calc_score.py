@@ -24,6 +24,10 @@ EMBED_DIM: int = 1536             # OpenAI text‑embedding‑3‑small dimensio
 LIFT_TAIL_B: int = 10             # 1 disables logarithmic skew
 print(f"DEBUG: USING CONFIG:\nTHRESHOLD = {THRESHOLD}\nEMBED_DIM = {EMBED_DIM}\nLIFT_TAIL_B = {LIFT_TAIL_B}")
 
+def relu(x: float) -> float:
+    """Rectified linear unit (ReLU) activation function."""
+    return np.maximum(0, x)
+
 def skew_score(score: float, b: int = LIFT_TAIL_B) -> float:
     """
     Apply logarithmic tail lift to a score in [0, 1].
@@ -31,7 +35,7 @@ def skew_score(score: float, b: int = LIFT_TAIL_B) -> float:
     """
     if b <= 1:
         return score
-    return np.log1p((b - 1) * score) / np.log(b)
+    return np.log1p(relu((b - 1) * score)) / np.log(b)
 
 # ───────────────────────────── Canonicalisation helpers ───────────────────────
 def _canon_token(rec: Dict[str, Any]) -> str:

@@ -221,7 +221,7 @@ const MyPage = () => {
 
               <aside className="post-right-part">
                 <div className="word-cloud-container">
-                  <h3 className="word-cloud-title">워드&nbsp;클라우드</h3>
+                  <h3 className="word-cloud-title">내&nbsp;키워드</h3>
                   <div className="word-cloud-content">
                     <WordCloud keywords={keywords} />
                   </div>
