@@ -51,6 +51,7 @@
 .restaurant-name {
     font-size: 2rem;
     font-weight: bold;
+    margin-top: 10px;
     margin-bottom: 10px;
     align-self: flex-start;
 }
@@ -58,25 +59,25 @@
 .restaurant-address {
     font-size: 1.1rem;
     color: #555;
-    margin-bottom: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
     align-self: flex-start;
 }
 
 /* ───────── Word‑cloud box – matches thumbnail width ───────── */
 .word-cloud-container {
     width: 100%;            /* stretch inside flex column */
-    max-width: 400px;       /* identical to .restaurant-image */
+    max-width: 600px;       /* identical to .restaurant-image */
     display: flex;
     flex-direction: column;
     gap: 12px;
     align-items: center;
     justify-content: flex-start;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-    padding: 20px;
-    height: 420px;
+    background-color: #ffffff;
+    padding: 10px;
+    height: 150px;
     box-sizing: border-box;
+    border: none;
 }
 
 .word-cloud-title {
@@ -98,4 +99,22 @@
 .word-cloud-content svg {
     max-width: 100%;
     max-height: 100%;
+}
+
+@media (max-width: 700px) {
+
+    .restaurantInfopage-layout {
+        width: 100%;
+    }
+
+    .rIpage-middle-area {
+        flex-direction: column;
+        margin-top: 20px;
+    }
+
+    .rIpage-left-part,
+    .rIpage-right-part {
+        width: 100%;
+        padding-right: 0;
+    }
 }

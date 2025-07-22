@@ -44,6 +44,7 @@ const MyPage = () => {
   const [followingCount,  setFollowingCount]  = useState(0);
   const [postCount,       setPostCount]       = useState(0);
   const [keywords,        setKeywords]        = useState([]);
+  const [windowWidth,     setWindowWidth]     = useState(window.innerWidth); // 워드클라우드 크기 변경
 
   /* UX flags */
   const [loading, setLoading] = useState(true);
@@ -141,6 +142,13 @@ const MyPage = () => {
   /* ------------------------------------------------------------------ */
   /* Lifecycle                                                          */
   /* ------------------------------------------------------------------ */
+  // 워드클라우드 크기 변경
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -214,16 +222,19 @@ const MyPage = () => {
             </div>
 
             {/* Posts + word‑cloud */}
-            <div className="my-user-post">
+            <div className={`my-user-post ${window.innerWidth <= 700 ? 'mobile-layout' : ''}`}>
               <section className="post-left-part">
                 <PostList isMyPage={true} user_id={userID} columns={1} />
               </section>
 
               <aside className="post-right-part">
-                <div className="word-cloud-container">
-                  <h3 className="word-cloud-title">내&nbsp;키워드</h3>
-                  <div className="word-cloud-content">
-                    <WordCloud keywords={keywords} />
+                <div className="mypage-word-cloud-container">
+                  <div className="mypage-word-cloud-content">
+                    <WordCloud 
+                      keywords={keywords}
+                      width={windowWidth <= 700 ? 600 : 300}
+                      height={windowWidth <= 700 ? 200 : 300}
+                    /> 
                   </div>
                 </div>
               </aside>

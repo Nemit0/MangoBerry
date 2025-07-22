@@ -18,3 +18,24 @@
     height: 100%;
     background-color: #f0f0f0; /* 지도 로딩 전 배경색 */
 }
+
+.mobile-sidebar-toggle-button {
+    display: none; /* 기본적으로 숨김 */
+}
+
+@media (max-width: 700px) {
+    .mobile-sidebar-toggle-button {
+        display: block; /* 모바일에서만 표시 */
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1000;
+        padding: 10px 20px;
+        background-color: #672091;
+        color: #fff;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+    }
+}
