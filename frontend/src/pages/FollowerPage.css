@@ -52,6 +52,7 @@
     align-items: center;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     height: 60px;
+    cursor: pointer;
   }
   
   /* profile-image-container: 이미지와 아이콘이 들어갈 공간의 크기를 고정합니다. */
@@ -75,6 +76,7 @@
     height: 100%; /* 컨테이너 높이에 꽉 차게 */
     object-fit: cover;
     border-radius: 50%; /* 좀 더 확실하게 원형 유지 */
+    cursor: pointer;
   }
   
   .user-name {
@@ -142,3 +144,105 @@
     background-color: #d0d0d0;
     border-color: #ccc; /* hover시에도 테두리 색상 고정 */
   }
+
+/* === 모바일 화면 최적화 (max-width: 700px) - 아래에 추가 === */
+@media (max-width: 700px) {
+  .follower-page {
+    padding: 20px 10px; /* 전체 페이지 좌우 패딩 줄임 */
+    /* min-height와 overflow-y는 유지 */
+  }
+
+  .follower-wrapper {
+    margin-top: 60px; /* 헤더가 작아졌을 경우를 대비해 마진 조정 */
+    height: calc(100vh - 60px); /* 헤더 높이에 맞춰 조정 */
+    width: 100%; /* 너비 100%로 설정하여 스크롤 방지 */
+    box-sizing: border-box; /* 패딩 포함 너비 계산 */
+  }
+
+  h2.follower-title {
+    font-size: 20px; /* 제목 폰트 크기 줄임 */
+    margin-bottom: 20px;
+    text-align: center; /* 모바일에서 제목 중앙 정렬 */
+  }
+
+  .follower-count {
+    width: 100%; /* 너비 100% */
+    padding: 0 10px; /* 좌우 패딩 추가 */
+    box-sizing: border-box;
+    text-align: left; /* 텍스트 정렬 유지 */
+    margin-bottom: 10px;
+    font-size: 13px; /* 폰트 크기 줄임 */
+  }
+
+  .keyword-result-container {
+    width: 100%; /* 컨테이너 너비 100% */
+    padding: 0 10px; /* 좌우 패딩 추가 */
+    box-sizing: border-box;
+  }
+
+  .keyword-box {
+    width: 100%; /* 각 카드의 너비 100% */
+    height: auto; /* 높이 고정 대신 내용에 따라 자동 조절 */
+    padding: 10px 15px; /* 내부 패딩 줄임 */
+    margin-bottom: 10px; /* 하단 마진 줄임 */
+    flex-wrap: wrap; /* 요소들이 한 줄에 안 담기면 다음 줄로 */
+    justify-content: space-between; /* 요소들 간 공간 배분 */
+    align-items: center; /* 세로 중앙 정렬 */
+  }
+
+  .profile-image-container {
+    width: 40px; /* 프로필 이미지 컨테이너 크기 줄임 */
+    height: 40px;
+    margin-right: 10px; /* 마진 줄임 */
+  }
+
+  .user-name {
+    font-size: 16px; /* 닉네임 폰트 크기 줄임 */
+    flex-grow: 1; /* 남은 공간을 채우도록 */
+    white-space: nowrap; /* 닉네임이 길어도 한 줄에 표시 */
+    overflow: hidden; /* 넘치는 부분 숨김 */
+    text-overflow: ellipsis; /* 숨겨진 부분 ...으로 표시 */
+  }
+
+  .follow-button {
+    padding: 6px 12px; /* 버튼 패딩 줄임 */
+    font-size: 11px; /* 버튼 폰트 크기 줄임 */
+    min-width: 60px; /* 버튼 최소 너비 조정 */
+    margin-left: 10px; /* 유저 이름과 버튼 사이 간격 */
+  }
+}
+
+/* 추가적으로 더 작은 모바일 화면 (예: 450px 이하)을 위한 미디어 쿼리도 고려 */
+@media (max-width: 450px) {
+  .follower-page {
+    padding: 15px 5px; /* 더 작은 화면에서 패딩 더 줄임 */
+  }
+
+  h2.follower-title {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+
+  .follower-count {
+    font-size: 12px;
+  }
+
+  .keyword-box {
+    padding: 8px 10px;
+  }
+
+  .profile-image-container {
+    width: 36px;
+    height: 36px;
+  }
+
+  .user-name {
+    font-size: 15px;
+  }
+
+  .follow-button {
+    padding: 5px 10px;
+    font-size: 10px;
+    min-width: 50px;
+  }
+}

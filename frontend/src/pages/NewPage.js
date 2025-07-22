@@ -98,36 +98,47 @@ const NewPage = () => {
     }
   };
 
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
   /* ──────────────────────────────────────────────────────────────
      Helper: keyword analysis POST /analyze_review
   ────────────────────────────────────────────────────────────── */
   const handleAnalysis = async () => {
+    if (isAnalyzing || analysisComplete) return;
     if (!reviewText.trim()) { alert('리뷰 내용을 입력해주세요.'); return; }
-    try {
-      const payload = {
-        name:        selectedRestaurant?.name || searchQuery || '알수없음',
-        one_liner:   oneLiner,
-        text:        reviewText,
-      };
-      const res = await fetch(`${API_ROOT}/analyze_review`, {
-        method : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body   : JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();          // [{ keyword, sentiment }]
-      const pos  = {};
-      const neg  = {};
-      data.forEach(({ keyword, sentiment }) =>
-        (sentiment === 'positive' ? pos : neg)[keyword] = true
-      );
-      setPositiveKeywords(pos);
-      setNegativeKeywords(neg);
-      setAnalysisComplete(true);
-    } catch (err) {
-      console.error(err);
-      alert('키워드 분석 중 오류가 발생했습니다.');
-    }
+
+    setIsAnalyzing(true);
+
+    // Simulate a 1-second analysis period
+    setTimeout(async () => {
+      try {
+        const payload = {
+          name:        selectedRestaurant?.name || searchQuery || '알수없음',
+          one_liner:   oneLiner,
+          text:        reviewText,
+        };
+        const res = await fetch(`${API_ROOT}/analyze_review`, {
+          method : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body   : JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();          // [{ keyword, sentiment }]
+        const pos  = {};
+        const neg  = {};
+        data.forEach(({ keyword, sentiment }) =>
+          (sentiment === 'positive' ? pos : neg)[keyword] = true
+        );
+        setPositiveKeywords(pos);
+        setNegativeKeywords(neg);
+        setAnalysisComplete(true);
+      } catch (err) {
+        console.error(err);
+        alert('키워드 분석 중 오류가 발생했습니다.');
+      } finally {
+        setIsAnalyzing(false);
+      }
+    }, 1000);
   };
 
   /* ──────────────────────────────────────────────────────────────
@@ -293,9 +304,9 @@ const NewPage = () => {
                   <button
                     onClick={handleAnalysis}
                     className="analysis-button"
-                    disabled={analysisComplete}
+                    disabled={isAnalyzing || analysisComplete}
                   >
-                    {analysisComplete ? '분석 완료' : '분석 시작'}
+                    {isAnalyzing ? '분석 중...' : (analysisComplete ? '분석 완료' : '분석 시작')}
                   </button>
                 </div>
 
