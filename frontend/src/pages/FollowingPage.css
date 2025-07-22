@@ -79,11 +79,22 @@ border-radius: 50%; /* 좀 더 확실하게 원형 유지 */
 cursor: pointer;
 }
 
+.user-profile-link {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  flex-grow: 1; /* Allow the link to take up available space */
+  min-width: 0; /* Prevent overflow issues in flex containers */
+}
+
 .user-name {
   font-size: 18px;
   font-weight: bold;
   color: #333;
-  margin-right: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-left: 10px; /* Add space between image and name */
 }
 
 /* 팔로잉 버튼 스타일 */

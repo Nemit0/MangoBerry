@@ -117,16 +117,16 @@ const FollowingPage = () => {
               key={u.user_id}
               className="keyword-box"
             >
-              <div className="profile-image-container">
-                <img
-                  src={u.profile_url}
-                  alt={`${u.nickname} profile`}
-                  className="profile-img"
-                  onClick={() => handleProfileClick(u.user_id)}
-                />
+              <div className="user-profile-link" onClick={() => handleProfileClick(u.user_id)}>
+                <div className="profile-image-container">
+                  <img
+                    src={u.profile_url}
+                    alt={`${u.nickname} profile`}
+                    className="profile-img"
+                  />
+                </div>
+                <div className="user-name">{u.nickname}</div>
               </div>
-
-              <div className="user-name" onClick={() => handleProfileClick(u.user_id)}>{u.nickname}</div>
               <RatingDisplay score={u.rating / 10} width={50} height={50} />
               <button
                 className={`follow-button ${u.isFollowing ? "following" : "follow"}`}
