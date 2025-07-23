@@ -1,4 +1,5 @@
-import os, requests
+import os
+import requests
 from collections import Counter
 from typing import Any, Dict, List, Optional
 
@@ -8,33 +9,29 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import func
 
 from ..connection.elasticdb import es_client as es
-from ..connection.mysqldb import get_db, Restaurant, Review, Users
-from ..connection.mongodb import (
+from ..connection.mysqldb   import get_db, Restaurant, Review, Users
+from ..connection.mongodb   import (
     restaurant_keywords_collection,
     review_keywords_collection,
     photo_collection,
 )
-
-from ..schemas.restaurant import RestaurantCreate
-
-
-from ..services.calc_score import (
+from ..schemas.restaurant   import RestaurantCreate
+from ..services.calc_score  import (
     update_user_to_restaurant_score,
     batch_user_rest_scores,
 )
+from ..services.utilities   import get_location_from_ip
+from .common_imports        import *       # noqa: F401,F403
 
-from ..services.utilities import get_location_from_ip
-from .common_imports import *
-
-KAKAO_KEY = os.getenv("KAKAO_MAP_APP_KEY")                     # REST API key
-KAKAO_HEADER = {"Authorization": f"KakaoAK {KAKAO_KEY}"}       # common hdr
-
+# ────────────────────────── Kakao API set-up ──────────────────────────
+KAKAO_KEY    = os.getenv("KAKAO_MAP_APP_KEY")           # REST API key
+KAKAO_HEADER = {"Authorization": f"KakaoAK {KAKAO_KEY}"}
 
 router = APIRouter()
 
-# ───────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────
 # Helpers
-# ───────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────
 def _safe_score(viewer_id: Optional[int], r_id: int, db: Session) -> float:
     """
     Wrapper around `update_user_to_restaurant_score()` that returns **0.0**
@@ -52,8 +49,8 @@ def _safe_score(viewer_id: Optional[int], r_id: int, db: Session) -> float:
         return score
     except ValueError:
         return 0.0
-    
-# ── Kakao helpers ────────────────────────────────────────────────
+
+# ── Kakao helpers ─────────────────────────────────────────────────────
 def _coords_from_address(addr: str) -> tuple[float, float] | None:
     """Geocodes **road / jibun** address → (lat, lon)."""
     url = "https://dapi.kakao.com/v2/local/search/address.json"
@@ -64,7 +61,7 @@ def _coords_from_address(addr: str) -> tuple[float, float] | None:
     return None
 
 def _address_from_coords(lat: float, lon: float) -> str | None:
-    """Reverse‑geocodes (lat, lon) → road address string."""
+    """Reverse-geocodes (lat, lon) → road address string."""
     url = "https://dapi.kakao.com/v2/local/geo/coord2address.json"
     res = requests.get(url, headers=KAKAO_HEADER, params={"x": lon, "y": lat})
     if res.ok and (docs := res.json().get("documents")):
@@ -72,19 +69,96 @@ def _address_from_coords(lat: float, lon: float) -> str | None:
         return road["address_name"]
     return None
 
+def _search_kakao_places(keyword: str, max_pages: int = 3) -> list[dict[str, Any]]:
+    """
+    Retrieve up to **45** place records from Kakao Local Keyword-Search.
 
-# ───────────────────────────────────────────────────────────────────
-# 1) TEXT / FACET RESTAURANT SEARCH
-# ───────────────────────────────────────────────────────────────────
+    Parameters
+    ----------
+    keyword : str
+        Free-text search term.
+    max_pages : int, default 3
+        Kakao returns 15 results per page → 3 pages = 45 max.
+
+    Returns
+    -------
+    List[Dict] - each item contains the **full** document returned by Kakao.
+    """
+    results: list[dict[str, Any]] = []
+    url = "https://dapi.kakao.com/v2/local/search/keyword.json"
+
+    for page in range(1, max_pages + 1):
+        params = {"query": keyword, "page": page}
+        res    = requests.get(url, headers=KAKAO_HEADER, params=params)
+        if not res.ok:
+            raise HTTPException(
+                status_code=res.status_code,
+                detail=f"Kakao API error → {res.text}",
+            )
+        data = res.json()
+        results.extend(data.get("documents", []))
+        if data.get("meta", {}).get("is_end"):
+            break
+
+    return results
+
+@router.get("/search_kakao", tags=["Restaurant"])
+def search_kakao(
+    keyword: str = Query(..., min_length=1, description="검색 키워드 (예: '딸부자네')"),
+):
+    """
+    Proxy endpoint → Kakao Keyword-Search.
+
+    Returns
+    -------
+    {
+        "success": True,
+        "results": [
+            {
+                "id"       : str,
+                "name"     : str,
+                "address"  : str | None,
+                "category" : str | None,
+                "latitude" : float | None,
+                "longitude": float | None,
+                "phone"    : str | None,
+            },
+            ...
+        ]
+    }
+    """
+    try:
+        docs = _search_kakao_places(keyword)
+    except HTTPException:
+        raise 
+    except Exception as exc:
+        raise HTTPException(500, f"Kakao search failed → {exc!s}")
+
+    mapped: list[dict[str, Any]] = []
+    for d in docs:
+        mapped.append(
+            {
+                "id"       : d.get("id"),
+                "name"     : d.get("place_name"),
+                "address"  : d.get("road_address_name") or d.get("address_name"),
+                "category" : d.get("category_name"),
+                "latitude" : float(d["y"]) if d.get("y") else None,
+                "longitude": float(d["x"]) if d.get("x") else None,
+                "phone"    : d.get("phone"),
+            }
+        )
+
+    return {"success": True, "results": mapped}
+
 @router.get("/search_restaurant_es", tags=["Restaurant"])
 def search_restaurant_es(
-    name: Optional[str] = Query(None, description="Full‑text search on restaurant name"),
+    name: Optional[str] = Query(None, description="Full-text search on restaurant name"),
     category: Optional[str] = Query(None, description="Exact category match"),
-    address: Optional[str] = Query(None, description="Full‑text search on address"),
+    address: Optional[str] = Query(None, description="Full-text search on address"),
     size: int = Query(100, gt=1, le=1000),
     viewer_id: Optional[int] = Query(
         None,
-        description="Logged‑in user ID (for personalised compatibility scores)",
+        description="Logged-in user ID (for personalised compatibility scores)",
     ),
     db: Session = Depends(get_db),
 ):
@@ -107,7 +181,7 @@ def search_restaurant_es(
     except Exception as exc:  # pragma: no cover
         return {"success": False, "error": f"Elasticsearch query failed → {exc}"}
 
-    # Pre‑fetch all corresponding MySQL rows (lat/lon + optional state_id)
+    # Pre-fetch all corresponding MySQL rows (lat/lon + optional state_id)
     rest_ids = {h["_source"]["r_id"] for h in hits}
     rest_map = {
         r.restaurant_id: r
@@ -150,7 +224,7 @@ def nearby_restaurant_es(
     distance: str = Query("5km", pattern=r"^[0-9]+(m|km)$"),
     size: int = Query(10, gt=1, le=10000),
     viewer_id: Optional[int] = Query(None, description="Viewer ID for personalised scoring"),
-    # Frontend‑supplied coordinates (aliases y / x for convenience)
+    # Frontend-supplied coordinates (aliases y / x for convenience)
     lat: Optional[float] = Query(None, alias="y", description="Latitude of the client"),
     lon: Optional[float] = Query(None, alias="x", description="Longitude of the client"),
     db: Session = Depends(get_db),
@@ -323,17 +397,17 @@ def add_restaurant(
     # ── 1) Resolve missing geo/address data ──────────────────────
     lat, lon, addr = payload.latitude, payload.longitude, payload.location
 
-    # 1‑A. Need coords → get them from Kakao
+    # 1-A. Need coords → get them from Kakao
     if (lat is None or lon is None) and addr:
         if (coords := _coords_from_address(addr)) is None:
             raise HTTPException(400, "Unable to geocode supplied address")
         lat, lon = coords
 
-    # 1‑B. Need address → reverse‑geocode
+    # 1-B. Need address → reverse-geocode
     if not addr:
         addr = _address_from_coords(lat, lon)
         if not addr:
-            raise HTTPException(400, "Unable to reverse‑geocode coordinates")
+            raise HTTPException(400, "Unable to reverse-geocode coordinates")
 
     # ── 2) Insert row in MySQL (manual PK) ───────────────────────
     try:
@@ -365,7 +439,7 @@ def add_restaurant(
     try:
         es.index(index="full_restaurant_kor", id=new_id, document=es_doc)
     except Exception as exc:
-        # Best‑effort rollback in MySQL so IDs stay contiguous
+        # Best-effort rollback in MySQL so IDs stay contiguous
         db.query(Restaurant).filter(Restaurant.restaurant_id == new_id).delete()
         db.commit()
         raise HTTPException(500, f"Elasticsearch insert failed → {exc!s}")

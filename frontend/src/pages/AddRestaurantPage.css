@@ -1,3 +1,5 @@
+/* AddRestaurantPage.css – extended with Kakao search dropdown styles */
+
 .addrest-container {
   width: 60%;
   margin: 0 auto;
@@ -45,9 +47,8 @@
   margin-left: 4px;
 }
 
-/* inputs & selects now **always** take the full available width */
-.addrest-form input,
-.addrest-form select {
+/* inputs & selects */
+.addrest-form input {
   width: 100%;
   height: 56px;
   padding: 0 14px;
@@ -58,11 +59,11 @@
   box-sizing: border-box;
 }
 
-/* coordinates row – two equal halves that line up with the form edges */
+/* coordinates row – two equal halves */
 .coord-row {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* equal halves */
-  gap: 12px;                       /* same as other form gaps */
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
 /* action buttons */
@@ -92,9 +93,81 @@
   color: #FAF0D2;
 }
 
+/* ─────────────── Kakao search UI (copied from NewPage) ─────────────── */
+.restaurant-search-container {
+  position: relative;
+  width: 100%;
+}
+
+.restaurant-search-input {
+  width: 100%;
+  height: 56px;
+  border-radius: 8px;
+  border: 2px solid #ccc;
+  padding: 0 45px 0 14px;
+  font-family: 'IBM_Plex_Sans_KR';
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+.restaurant-search-button {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.restaurant-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  margin-top: 4px;
+  list-style: none;
+  padding: 0;
+}
+
+.restaurant-dropdown-item {
+  padding: 10px 16px;
+  text-align: left;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.restaurant-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.restaurant-dropdown-item:hover {
+  background: #f8f8f8;
+}
+
+.restaurant-dropdown-item .place-name {
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 4px 0;
+  font-size: 1em;
+}
+
+.restaurant-dropdown-item .place-address {
+  font-size: 0.85em;
+  color: #666;
+  margin: 0;
+}
+
 /* ───────────── mobile (<700 px) ───────────── */
 @media (max-width: 700px) {
   .addrest-container { width: 100%; padding: 0 12px; }
   .addrest-main     { margin-top: 20px; }
   .addrest-form     { max-width: 100%; }
+  .restaurant-search-input { height: 40px; }
 }

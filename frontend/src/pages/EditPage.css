@@ -1,386 +1,128 @@
-/* EditPage.css  ───────────────────────────────────────────────────────────
-   This file is now functionally in sync with NewPage.css.
-   Only class‑name differences between the two pages remain.
-   Paste the entire contents over the old EditPage.css.                */
+.editpage-container{display:flex;flex-direction:column;height:100vh;width:60%;margin:0 auto;}
+.editpage-content{display:flex;flex-grow:1;height:calc(100vh - 80px);margin-top:80px;box-sizing:border-box;}
+.editpage-main{flex:1;padding:20px;display:flex;flex-direction:column;align-items:center;}
+.editpage-wrapper{width:70%;}
+.editpage-top{margin-bottom:20px;text-align:left;}
+.page-title-with-delete{display:flex;justify-content:space-between;align-items:center;}
+.page-title-with-delete h1{margin:0;}
+.editpage-bottom{display:flex;flex:1;}
 
-/* ────────────────────────────── Layout root ───────────────────────────── */
-
-.editpage-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  width: 60%;
-  margin: 0 auto;
+/* left column */
+.editpage-left{
+  flex:3;padding-right:20px;display:flex;flex-direction:column;
+  height:400px;flex-shrink:0;position:relative;
+}
+.editpage-image-preview-container{
+  margin-top:0;display:flex;flex-wrap:wrap;gap:10px;
+  flex-grow:1;overflow-y:auto;padding-bottom:70px;
+}
+.editpage-image-preview-wrapper{position:relative;}
+.image-preview{max-width:100%;height:auto;}
+.delete-image-button{
+  position:absolute;top:5px;right:5px;width:20px;height:20px;
+  border:none;border-radius:50%;background:rgba(0,0,0,.5);
+  color:#fff;font-size:12px;line-height:20px;cursor:pointer;
+}
+/* floating upload button */
+.editpage-photo-upload{
+  position:absolute;bottom:10px;right:10px;
+  width:48px;height:48px;border:2px dashed #ccc;border-radius:8px;
+  background:#fff;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;z-index:20;transition:background .2s ease,border-color .2s ease;
+}
+.editpage-photo-upload:hover{
+  background:#fafafa;border-color:#672091;
 }
 
-.editpage-content {
-  display: flex;
-  flex-grow: 1;
-  height: calc(100vh - 80px); /* header height offset */
-  margin-top: 80px;
-  box-sizing: border-box;
-}
-
-.editpage-main {
-  flex: 1;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.editpage-wrapper {
-  width: 70%;
-}
-
-.editpage-top {
-  text-align: left;
-  margin-bottom: 20px;
-}
-
-.page-title-with-delete {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.page-title-with-delete h1 { margin: 0; }
-
-/* ───────────────────────────── Left column ───────────────────────────── */
-
-.editpage-bottom {
-  display: flex;
-  flex: 1;
-}
-
-.editpage-left {
-  flex: 3;
-  padding-right: 20px;
-  display: flex;
-  flex-direction: column;
-  height: 400px;
-  flex-shrink: 0;
-}
-
-.editpage-photo-upload {
-  height: 40px; /* 고정 높이 */
-  border: 2px dashed #ccc;
-  padding: 20px;
-  text-align: center;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.editpage-image-preview-container {
-  margin-top: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  flex-grow: 1; /* 남은 공간을 모두 차지 */
-  overflow-y: auto; /* 이미지가 많아지면 스크롤 */
-}
-
-.image-preview {
-  max-width: 100%;
-  height: auto;
-}
-
-.editpage-image-preview-wrapper {
-  position: relative;
-}
-
-.delete-image-button {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  width: 20px;
-  height: 20px;
-  font-size: 12px;
-  line-height: 20px;
-  text-align: center;
-}
-
-/* ───────────────────────────── Right column ──────────────────────────── */
-
-.editpage-right {
-  flex: 7;
-  display: flex;
-  flex-direction: column;
-}
-
-.editpage-inputs {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* ───────── Text fields (inputs & textarea) ───────── */
-
+/* right column */
+.editpage-right{flex:7;display:flex;flex-direction:column;}
+.editpage-inputs{display:flex;flex-direction:column;gap:10px;}
 .editpage-inputs input,
 .editpage-inputs textarea,
-.restaurant-search-input {
-  width: 100%;
-  height: 60px;
-  border-radius: 8px;
-  border: 2px solid #ccc;
-  padding: 0 12px;
-  font-family: 'IBM_Plex_Sans_KR';
-  font-size: 14px;
-  box-sizing: border-box;
+.restaurant-search-input{
+  width:100%;height:60px;border:2px solid #ccc;border-radius:8px;
+  padding:0 12px;box-sizing:border-box;font-family:"IBM_Plex_Sans_KR";font-size:14px;
 }
-
-.editpage-inputs textarea {
-  resize: none;
-  height: 250px;
-  padding: 12px;
-}
-
-/* unified placeholder styling */
+.editpage-inputs textarea{height:250px;resize:none;padding:12px;}
 .editpage-inputs input::placeholder,
 .editpage-inputs textarea::placeholder,
-.restaurant-search-input::placeholder {
-  color: #999;
-  font-size: 14px;
-}
+.restaurant-search-input::placeholder{color:#999;font-size:14px;}
 
-/* ───────── Primary buttons (analysis / save / cancel) ───────── */
-
+/* buttons */
 .analysis-button,
 .cancel-button,
 .save-button,
-.delete-button {
-  background-color: black;
-  color: white;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+.delete-button{
+  background:#000;color:#fff;border:none;border-radius:8px;
+  padding:10px 24px;font-size:16px;cursor:pointer;
+  transition:background .2s ease,color .2s ease;
 }
-
-.analysis-button.align-self { align-self: center; }
-
 .analysis-button:hover,
-.analysis-button:disabled,
 .cancel-button:hover,
 .save-button:hover,
 .delete-button:hover,
+.analysis-button:disabled,
 .cancel-button:disabled,
 .save-button:disabled,
-.delete-button:disabled {
-  background-color: #672091;
-  color: #FAF0D2;
+.delete-button:disabled{background:#672091;color:#faf0d2;}
+.analysis-button.align-self{align-self:center;}
+
+/* keyword blocks */
+.analysis-results{margin-top:20px;}
+.keyword-sections-container{display:flex;gap:20px;align-items:stretch;}
+.keyword-type-section{flex:1 1 0;display:flex;flex-direction:column;}
+.keyword-type-section h2{text-align:left;padding-left:35px;white-space:nowrap;}
+.editpage-keyword-section{
+  flex:1;width:100%;min-height:120px;border:1px solid #ccc;border-radius:5px;
+  display:flex;flex-wrap:wrap;gap:10px;
+  align-items:center;justify-content:center;padding:10px;box-sizing:border-box;
 }
-
-/* ─────────────────────────── Analysis results / keywords ───────────────── */
-
-.analysis-results { margin-top: 20px; }
-
-.keyword-sections-container {
-  display: flex;
-  gap: 20px;
-  align-items: stretch;
-}
-
-.keyword-type-section {
-  flex: 1 1 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.keyword-type-section h2 {
-  text-align: left;
-  padding-left: 35px;
-  white-space: nowrap; /* 줄바꿈 방지 */
-}
-
-/* fixed‑size keyword box */
-.editpage-keyword-section {
-  flex: 1;
-  width: 100%;
-  min-height: 120px;
-  border: 1px solid #ccc;
-  padding: 10px;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
 .edit-positive-button,
-.edit-nagative-button {
-  background-color: #eee;
-  border-radius: 8px;
-  border: none;
-  /* padding: 4px 10px; */
+.edit-nagative-button{background:#eee;border:none;border-radius:8px;cursor:pointer;}
+.edit-positive-button.active{background:#d4edda;}
+.edit-nagative-button.active{background:#f8d7da;}
+
+/* action buttons */
+.action-buttons{margin:20px 0;display:flex;justify-content:flex-end;gap:10px;}
+
+/* restaurant search */
+.restaurant-search-container{position:relative;width:100%;}
+.restaurant-search-input{padding:0 45px 0 12px;}
+.restaurant-search-button{
+  position:absolute;top:50%;right:12px;transform:translateY(-50%);
+  border:none;background:none;cursor:pointer;
 }
-
-.edit-positive-button.active { background-color: #D4EDDA; }
-.edit-nagative-button.active { background-color: #F8D7DA; }
-
-/* ───────────────────────────── Action buttons wrapper ──────────────────── */
-
-.action-buttons {
-  margin-top: 20px;
-  margin-bottom: 20px;
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
+.restaurant-dropdown{
+  position:absolute;top:100%;left:0;right:0;z-index:10;
+  max-height:200px;overflow-y:auto;
+  border:1px solid #ccc;border-radius:8px;
+  background:#fff;margin-top:4px;list-style:none;padding:0;
 }
-
-/* ───────────────────────── Restaurant search UI ───────────────────────── */
-
-.restaurant-search-container {
-  position: relative;
-  width: 100%;
+.restaurant-dropdown-item{
+  padding:10px 16px;border-bottom:1px solid #f0f0f0;
+  cursor:pointer;text-align:left;
 }
+.restaurant-dropdown-item:last-child{border-bottom:none;}
+.restaurant-dropdown-item:hover{background:#f8f8f8;}
+.place-name{font-weight:bold;color:#333;margin:0 0 4px;}
+.place-address{font-size:.85em;color:#666;margin:0;}
 
-.restaurant-search-input {
-  padding: 0 45px 0 12px; /* leave room for search icon */
-}
-
-.restaurant-search-button {
-  position: absolute;
-  top: 50%;
-  right: 12px;
-  transform: translateY(-50%);
-  border: none;
-  background: none;
-  cursor: pointer;
-}
-
-/* ───────── Dropdown list ───────── */
-
-.restaurant-dropdown {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 100%;
-  z-index: 10;
-  max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background: #fff;
-  margin-top: 4px;
-  list-style: none;
-  padding: 0;
-}
-
-.restaurant-dropdown-item {
-  padding: 10px 16px;
-  text-align: left;
-  cursor: pointer;
-}
-
-.restaurant-dropdown-item:hover {
-  background: #f0f0f0;
-}
-
-/* Mobile styles for NewPage (max-width: 360px) */
-@media (max-width: 700px) {
-  .editpage-container {
-    width: 100%;
-    padding: 10px;
-  }
-
-  .editpage-main {
-    margin-top: 20px; /* Header의 새로운 높이에 맞춰 조정 */
-    height: calc(100vh - 20px); /* 남은 공간 계산 */
-  }
-
-  .editpage-wrapper {
-    width: 100%;
-  }
-
-  .editpage-bottom {
-    flex-direction: column;
-  }
-
-  .editpage-left,
-  .editpage-right {
-    flex: none;
-    width: 100%;
-    padding-right: 0;
-  }
-
-  .editpage-photo-upload {
-    height: 150px; /* Adjust as needed */
-  }
-
-  .editpage-image-preview-container {
-    margin-top: 10px;
-  }
-
+/* mobile */
+@media (max-width:700px){
+  .editpage-container{width:100%;padding:10px;}
+  .editpage-main{margin-top:20px;height:calc(100vh - 20px);}
+  .editpage-bottom{flex-direction:column;}
+  .editpage-left,.editpage-right{width:100%;padding-right:0;}
+  .editpage-left{height:300px;}
+  .editpage-image-preview-container{padding-bottom:60px;}
+  .editpage-photo-upload{bottom:8px;right:8px;}
+  .editpage-photo-upload svg{width:22px;height:22px;}
   .editpage-inputs input,
   .editpage-inputs textarea,
-  .restaurant-search-input {
-    height: 40px; /* Adjust input height for smaller screens */
-  }
-
-  .editpage-inputs textarea {
-    height: 150px; /* Adjust textarea height for smaller screens */
-  }
-
-  .keyword-sections-container {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .keyword-type-section {
-    width: 100%;
-  }
-
-  .keyword-type-section h2 {
-    padding-left: 0;
-    text-align: center;
-  }
-
-  .editpage-keyword-section {
-    min-height: 80px; /* Adjust keyword section height */
-  }
-
-  .action-buttons {
-    justify-content: center;
-  }
-}
-
-/* identical styling so both pages look the same */
-.restaurant-dropdown-item {
-  padding: 10px 16px;
-  text-align: left;
-  cursor: pointer;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.restaurant-dropdown-item:last-child {
-  border-bottom: none;
-}
-
-.restaurant-dropdown-item:hover {
-  background: #f8f8f8;
-}
-
-.restaurant-dropdown-item .place-name {
-  font-weight: bold;
-  color: #333;
-  margin: 0 0 4px 0;
-  font-size: 1em;
-}
-
-.restaurant-dropdown-item .place-address {
-  font-size: 0.85em;
-  color: #666;
-  margin: 0;
+  .restaurant-search-input{height:40px;}
+  .editpage-inputs textarea{height:150px;}
+  .keyword-sections-container{flex-direction:column;gap:10px;}
+  .keyword-type-section h2{padding-left:0;text-align:center;}
+  .editpage-keyword-section{min-height:80px;}
+  .action-buttons{justify-content:center;}
 }
