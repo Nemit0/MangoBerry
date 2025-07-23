@@ -167,7 +167,10 @@
 /* ───────────── mobile (<700 px) ───────────── */
 @media (max-width: 700px) {
   .addrest-container { width: 100%; padding: 0 12px; }
-  .addrest-main     { margin-top: 20px; }
+  .addrest-main { 
+    margin-top: 120px;
+    height: calc(100vh - 120px); 
+  }
   .addrest-form     { max-width: 100%; }
   .restaurant-search-input { height: 40px; }
 }
