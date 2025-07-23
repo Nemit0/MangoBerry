@@ -9,25 +9,29 @@ const DEFAULT_IMAGE =
   "https://mangoberry-bucket.s3.ap-northeast-2.amazonaws.com/test/single/final_logo.jpg";
 
 function PostList({
-  searchTerm = "",
-  isMyPage   = false,
-  user_id    = null,
-  restaurant_id = null,
-  columns    = 3
+  searchTerm     = "",
+  isMyPage       = false,
+  user_id        = null,
+  restaurant_id  = null,
+  columns        = 3,
 }) {
   /* ─────────────── state ─────────────── */
   const [posts,       setPosts]       = useState([]);
   const [filtered,    setFiltered]    = useState([]);
+  const [loading,     setLoading]     = useState(true);   // ★ NEW
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selected,    setSelected]    = useState(null);
 
   const { user } = useAuth();
-  const viewerId = user?.user_id ?? null;   // logged‑in user
+  const viewerId = user?.user_id ?? null;
 
   /* ───────────── initial fetch ───────────── */
   useEffect(() => {
+    let abort = false;               // guards against stale setState
+
     (async () => {
       try {
+        setLoading(true);            // ★ NEW
         /* base search (freq‑sorted) */
         let url = `${API_URL}/search_review_es?size=50&sort=frequent`;
 
@@ -38,15 +42,15 @@ function PostList({
         if (isMyPage && viewerId)        url += `&user_id=${viewerId}`;
         else if (!isMyPage && user_id)   url += `&user_id=${user_id}`;
 
-        if (restaurant_id) {
-          url += `&restaurant_id=${restaurant_id}`;
-        }
+        if (restaurant_id) url += `&restaurant_id=${restaurant_id}`;
 
         const resp = await fetch(url, { headers: { "Content-Type": "application/json" } });
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 
         const { success, result, error } = await resp.json();
         if (!success) throw new Error(error ?? "Unknown error");
+
+        if (abort) return;           // component unmounted
 
         /* flatten & normalise */
         const normalised = result.map((raw, idx) => {
@@ -80,9 +84,17 @@ function PostList({
         setFiltered(normalised);
       } catch (e) {
         console.error("[PostList] load failed:", e);
+        setPosts([]);                // avoid lingering old data
+        setFiltered([]);
+      } finally {
+        if (!abort) setLoading(false);  // ★ NEW
       }
     })();
-  }, [viewerId, isMyPage, user_id]);
+
+    return () => {
+      abort = true;
+    };
+  }, [viewerId, isMyPage, user_id, restaurant_id]);        // ← include restaurant_id
 
   /* ────────────── search filter ────────────── */
   useEffect(() => {
@@ -106,6 +118,17 @@ function PostList({
   const open  = p => { setSelected(p); setIsModalOpen(true); };
   const close = () => { setIsModalOpen(false); setSelected(null); };
 
+  /* ─────────── helper: placeholder renderer ─────────── */
+  const renderPlaceholder = () => (
+    <p className="no-results">
+      {loading
+        ? "게시물을 불러오는 중입니다…"
+        : searchTerm
+          ? `"${searchTerm}"에 대한 결과가 없습니다.`
+          : "아직 작성된 리뷰가 없습니다."}
+    </p>
+  );
+
   /* ────────────── render ────────────── */
   return (
     <div className="post-list-wrapper">
@@ -113,11 +136,7 @@ function PostList({
         {filtered.length ? (
           filtered.map(p => <PostItem key={p.id} post={p} onClick={open} />)
         ) : (
-          <p className="no-results">
-            {searchTerm
-              ? `"${searchTerm}"에 대한 결과가 없습니다.`
-              : "게시물을 불러오는 중입니다"}
-          </p>
+          renderPlaceholder()
         )}
       </div>
 

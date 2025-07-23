@@ -230,11 +230,11 @@ const MyPage = () => {
               <aside className="post-right-part">
                 <div className="mypage-word-cloud-container">
                   <div className="mypage-word-cloud-content">
-                    <WordCloud 
-                      keywords={keywords}
-                      width={windowWidth <= 700 ? 600 : 300}
-                      height={windowWidth <= 700 ? 200 : 300}
-                    /> 
+                    <WordCloud
+                       keywords={keywords}
+                       width={windowWidth <= 700 ? 600 : 300}
+                       height={windowWidth <= 700 ? 200 : 300}
+                     />
                   </div>
                 </div>
               </aside>

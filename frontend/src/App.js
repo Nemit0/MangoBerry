@@ -15,6 +15,7 @@ import OthersPage       from './pages/OthersPage';
 import MapPage          from './pages/MapPage';
 import NotFoundPage     from './pages/NotFoundPage';
 import RestaurantInfoPage from './pages/RestaurantInfoPage';
+import AddRestaurantPage from './pages/AddRestaurantPage';
 
 function App() {
   return (
@@ -40,6 +41,8 @@ function App() {
                  element={<ProtectedRoute><FollowerPage /></ProtectedRoute>} />
           <Route path="/following"
                  element={<ProtectedRoute><FollowingPage /></ProtectedRoute>} />
+          <Route path="/restaurant/new"
+            element={<ProtectedRoute><AddRestaurantPage /></ProtectedRoute>} />
 
           {/* 404 */}
           <Route path="*" element={<NotFoundPage />} />
