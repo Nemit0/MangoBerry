@@ -60,6 +60,7 @@ function MapPage () {
   const [selectedFol,     setSelectedFol]     = useState([]);
   const [displayed,       setDisplayed]       = useState([]);
   const [loading,         setLoading]         = useState(false);
+  const [isSidebarOpen,   SetIsSidebarOpen]   = useState(false); // 모바일환경에서 탐색버튼
 
   /* keep origin ref fresh */
   useEffect(() => { originRef.current = origin; }, [origin]);
@@ -260,8 +261,14 @@ function MapPage () {
           currentThreshold={threshold}
           onFollowerSelectionChange={setSelectedFol}
           onRestaurantClick={handleRestaurantClick}
+          isOpen={isSidebarOpen}
+          onClose={() => SetIsSidebarOpen(false)}
         />
-        <main id="map" className="map-area" ref={mapContainer}></main>
+        <main id="map" className="map-area" ref={mapContainer}>
+          <button className="mobile-sidebar-toggle-button" onClick={() => SetIsSidebarOpen(true)}>
+            탐색
+          </button>
+        </main>
       </div>
     </div>
   );

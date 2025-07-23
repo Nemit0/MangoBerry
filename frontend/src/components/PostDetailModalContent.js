@@ -66,8 +66,12 @@ function PostDetailModalContent({ selectedPost, isMyPage }) {
 
             {/* ⭐⭐ 우측 영역: modal-right ⭐⭐ */}
             <div className="modal-right">
-                <RatingDisplay score={selectedPost.rating/10} width={50} height={50} />
-                <h2 className="modal-post-restaurant-name" onClick={handleRestaurantClick}>{selectedPost.r_name}</h2>
+                
+                <div className='modal-Rname-rating'>
+                    <h2 className="modal-post-restaurant-name" onClick={handleRestaurantClick}>{selectedPost.r_name}</h2>
+                    <RatingDisplay score={selectedPost.rating} width={24} height={48} />
+                </div>
+                
                 <h3 className='modal-post-title'>{selectedPost.title}</h3>
 
                 <div className='modal-info'>
