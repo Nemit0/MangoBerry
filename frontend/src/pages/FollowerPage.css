@@ -11,7 +11,7 @@
     display: flex;
     flex-direction: column;
     height: calc(100vh - 80px); /* 뷰포트 높이 - 헤더 높이 */
-    margin-top: 80px; /* 헤더 아래에서 시작 */
+    margin-top: 110px; /* 헤더 아래에서 시작 */
     box-sizing: border-box;
   }
   
@@ -50,6 +50,7 @@
     margin-bottom: 15px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     height: 60px;
     cursor: pointer;
@@ -83,7 +84,6 @@
     font-size: 18px;
     font-weight: bold;
     color: #333;
-    margin-right: auto;
   }
   
   /* 팔로잉 버튼 스타일 */
