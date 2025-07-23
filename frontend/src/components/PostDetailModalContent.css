@@ -94,6 +94,12 @@
     overflow-y: auto;  /* 세로 스크롤 */
 }
 
+.modal-Rname-rating {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
 .modal-post-restaurant-name {
     font-size: 1.8em;
     font-weight: bold;
@@ -184,10 +190,6 @@
         flex: none; /* flexgrow를 없애고 내용에 따라 크기 조절 */
         width: 100%;
         padding: 0;
-    }
-
-    .modal-user-name {
-        margin-bottom: 10px;
     }
 
     .modal-post-image {

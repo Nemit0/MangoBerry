@@ -23,6 +23,8 @@ const MapSidebar = ({
   currentThreshold,
   onFollowerSelectionChange,
   onRestaurantClick,                // NEW – parent callback
+  isOpen,
+  onClose,
 }) => {
   /* viewer info */
   const { user } = useAuth();
@@ -115,7 +117,8 @@ const MapSidebar = ({
 
   /* ─────────────────── render ─────────────────── */
   return (
-    <div className={`map-sidebar-container ${isCollapsed ? "collapsed" : ""}`}>
+    <div className={`map-sidebar-container ${isCollapsed ? "collapsed" : ""} ${isOpen ? "open" : ""}`}>
+      <button className="mobile-sidebar-close-button" onClick={onClose}>x</button>
       <div className="sidebar-content">
         <p className="map-logo" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
           GUMIO

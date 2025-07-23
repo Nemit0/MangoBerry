@@ -34,8 +34,9 @@
     border: none;
     font-size: 2em;
     cursor: pointer;
-    color: #666;
+    color: #000000;
     line-height: 1; /* x 버튼 세로 정렬 */
+    z-index: 10; /* 다른 모달 콘텐츠 위에 오도록 보장 */
 }
 
 .modal-close-button:hover {
@@ -51,4 +52,15 @@
 @keyframes slideIn {
     from { transform: translateY(-50px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 700px) {
+    .modal-close-button {
+        top: 50px;
+        right: 30px;
+        background-color: rgba(255, 255, 255, 0.5);
+        border-radius: 80%;
+        font-size: 30px;
+        font-weight: bold;
+    }
 }
