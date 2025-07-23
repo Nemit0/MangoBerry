@@ -1,38 +1,37 @@
-/* src/components/LoadingSpinner.css */
 .spinner-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: grid;
+  place-items: center;
   z-index: 1000;
 }
 
+/* spinner container */
 .spinner {
   position: relative;
   width: 90px;
   height: 90px;
 }
 
+/* individual bar */
 .spinner-bar {
+  /* park pivot at centre, then offset: ½ width left, full height up   */
   position: absolute;
-  width: 6px; /* 짧고 뭉툭한 막대 */
-  height: 18px; /* 짧고 뭉툭한 막대 */
-  background: #8A2BE2; /* 기본 보라색 */
+  left: 50%;
+  top: 50%;
+  margin-left: calc(-1 * var(--bar-w) / 2);
+  margin-top:  calc(-1 * var(--bar-h));
+  width: var(--bar-w);
+  height: var(--bar-h);
   border-radius: 3px;
-  transform-origin: 50% 50%;
-  animation: fadeAndRotate 1.2s linear infinite;
+  transform-origin: 50% 100%;      /* bottom‑centre = pivot */
+  background: #8a2be2;
+  animation: barFade 1.2s linear infinite;
 }
 
-@keyframes fadeAndRotate {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.2;
-  }
+/* fade animation */
+@keyframes barFade {
+  0%   { opacity: 1; }
+  100% { opacity: 0.2; }
 }
