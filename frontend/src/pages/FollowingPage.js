@@ -126,8 +126,8 @@ const FollowingPage = () => {
                   />
                 </div>
                 <div className="user-name">{u.nickname}</div>
+                <RatingDisplay score={u.rating} width={20} height={40} />
               </div>
-              <RatingDisplay score={u.rating / 10} width={50} height={50} />
               <button
                 className={`follow-button ${u.isFollowing ? "following" : "follow"}`}
                 onClick={() => toggleFollow(u.user_id, u.isFollowing)}
