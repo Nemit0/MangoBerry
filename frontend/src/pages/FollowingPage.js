@@ -7,6 +7,7 @@ import "./FollowingPage.css";
 import foxImage from "../assets/photo/circular_image.png";
 import Header from "../components/Header";
 import RatingDisplay from "../components/RatingDisplay";
+import { TfiBackLeft } from "react-icons/tfi"
 
 const API_ROOT = "/api";
 
@@ -108,7 +109,10 @@ const FollowingPage = () => {
     <div className="following-page">
       <Header />
       <div className="following-wrapper">
-        <h2 className="following-title">팔로잉</h2>
+        <div className="back-and-title">
+          <button className="back-button" onClick={() => navigate(-1)}><TfiBackLeft size={20}/></button>
+          <h2 className="following-title">팔로잉</h2>
+        </div>
         <div className="follower-count">ALL&nbsp;{following.length}</div>
 
         <div className="keyword-result-container">
