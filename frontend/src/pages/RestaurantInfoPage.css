@@ -21,14 +21,36 @@
     flex-grow: 1;
     background-color: #ffffff;
     padding: 20px;
+    padding-top: 0px;
     box-sizing: border-box;
     overflow-y: auto;
     max-height: 100%;
     display: flex;            /* two columns */
 }
 
-.rIpage-left-part  { width: 50%; padding-right: 20px; box-sizing: border-box; }
-.rIpage-right-part { width: 50%; }
+.rIpage-left-part  { width: 50%; padding-right: 20px; box-sizing: border-box; border-right: 2px solid #ececec; }
+.rIpage-right-part { width: 50%; padding-left: 10px;}
+
+.rest-review {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.review-title {
+    color: #333333;
+}
+
+.back-space {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.rest-back-button {
+    margin: 10px 0px;
+    background-color: white;
+    border: none;
+    cursor: pointer;
+}
 
 .restaurant-info-container {
     display: flex;
@@ -45,6 +67,18 @@
     height: auto;
     border-radius: 8px;
     margin-bottom: 20px;
+}
+
+.name-mark { /* 삭제 예정 */
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+}
+
+.bookmark { /* 삭제 예정 */
+    background-color: rgb(255, 255, 255);
+    border: none
 }
 
 /* ───────── Text meta ───────── */
@@ -110,12 +144,17 @@
     .rIpage-middle-area {
         flex-direction: column;
         margin-top: 20px;
+        padding-top: 20px;
     }
 
     .rIpage-left-part,
     .rIpage-right-part {
         width: 100%;
         padding-right: 0;
+    }
+
+    .rIpage-left-part {
+        border-right: none;
     }
 }
 

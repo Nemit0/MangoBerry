@@ -94,7 +94,6 @@
     text-overflow: ellipsis; /* 넘치는 부분 ...으로 표시 */
     font-size: 1em;
     color: #333;
-    font-weight: bold;
     text-align: left;
 }
 

@@ -58,7 +58,7 @@ function PostItem({ post, onClick }) {
           <RatingDisplay score={post.rating} width={12} height={24} />
         </div>
 
-        <h4 className="post-title">{post.title}</h4>
+        <p className="post-title">{post.title}</p>
 
         <div className="post-positive-tags">
           {positives.map((kw, i) => (
