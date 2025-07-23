@@ -8,11 +8,11 @@
 }
 
 .following-wrapper {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - 80px); /* 뷰포트 높이 - 헤더 높이 */
-    margin-top: 80px; /* 헤더 아래에서 시작 */
-    box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 80px);
+  margin-top: 110px;
+  box-sizing: border-box;
 }
 
 html, body {
@@ -50,6 +50,7 @@ h2.following-title {
   margin-bottom: 15px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   height: 60px;
   cursor: pointer;
@@ -91,10 +92,6 @@ cursor: pointer;
   font-size: 18px;
   font-weight: bold;
   color: #333;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-left: 10px; /* Add space between image and name */
 }
 
 /* 팔로잉 버튼 스타일 */
@@ -155,57 +152,46 @@ cursor: pointer;
   border-color: #ccc; /* hover시에도 테두리 색상 고정 */
 }
 
+/* New style for profile-info */
+.profile-info {
+  display: flex;
+  align-items: center;
+}
+
 @media (max-width: 700px) {
   .following-page {
     padding: 20px 10px;
   }
 
-  .following-wrapper {
-    margin-top: 60px; /* Adjust for potentially smaller header */
-    height: calc(100vh - 60px);
-    width: 100%;
+  .follower-count,
+  .keyword-box {
+    width: 95%; /* 모바일 화면에서 너비를 95%로 조정 */
+    max-width: 660px; /* 최대 너비 설정 */
   }
 
   h2.following-title {
-    font-size: 20px;
+    font-size: 20px; /* 모바일에서 제목 크기 조정 */
     margin-bottom: 20px;
   }
 
-  .follower-count {
-    width: 100%;
-    padding: 0 10px;
-    box-sizing: border-box;
-  }
-
-  .keyword-result-container {
-    width: 100%;
-  }
-
   .keyword-box {
-    width: 100%;
-    padding: 10px 15px;
-    height: auto;
-    flex-direction: row;
-    align-items: center;
+    padding: 10px 15px; /* 모바일에서 패딩 조정 */
+    height: auto; /* 높이 자동 조정 */
   }
 
   .profile-image-container {
-    width: 40px;
+    width: 40px; /* 모바일에서 프로필 이미지 크기 조정 */
     height: 40px;
     margin-right: 10px;
   }
 
   .user-name {
-    font-size: 16px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 16px; /* 모바일에서 사용자 이름 폰트 크기 조정 */
   }
 
   .follow-button {
-    padding: 6px 12px;
-    font-size: 11px;
+    padding: 6px 12px; /* 모바일에서 버튼 패딩 조정 */
+    font-size: 11px; /* 모바일에서 버튼 폰트 크기 조정 */
     min-width: 70px;
-    margin-left: auto;
   }
 }
