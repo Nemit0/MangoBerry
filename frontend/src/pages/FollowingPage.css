@@ -92,6 +92,7 @@ cursor: pointer;
   font-size: 18px;
   font-weight: bold;
   color: #333;
+  margin-right: 10px; /* 닉네임과 RatingDisplay 사이 간격 */
 }
 
 /* 팔로잉 버튼 스타일 */
@@ -163,35 +164,97 @@ cursor: pointer;
     padding: 20px 10px;
   }
 
-  .follower-count,
-  .keyword-box {
-    width: 95%; /* 모바일 화면에서 너비를 95%로 조정 */
-    max-width: 660px; /* 최대 너비 설정 */
+  .following-wrapper {
+    margin-top: 110px;
+    height: calc(100vh - 110px);
+    width: 100%;
+    box-sizing: border-box;
   }
 
   h2.following-title {
-    font-size: 20px; /* 모바일에서 제목 크기 조정 */
+    font-size: 20px;
     margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .follower-count {
+    width: 100%;
+    padding: 0 10px;
+    box-sizing: border-box;
+    text-align: left;
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+
+  .keyword-result-container {
+    width: 100%;
+    padding: 0 10px;
+    box-sizing: border-box;
   }
 
   .keyword-box {
-    padding: 10px 15px; /* 모바일에서 패딩 조정 */
-    height: auto; /* 높이 자동 조정 */
+    width: 100%; /* 각 카드의 너비 100% */
+    height: auto; /* 높이 고정 대신 내용에 따라 자동 조절 */
+    padding: 10px 15px; /* 내부 패딩 줄임 */
+    margin-bottom: 10px; /* 하단 마진 줄임 */
+    flex-wrap: wrap; /* 요소들이 한 줄에 안 담기면 다음 줄로 */
+    justify-content: space-between; /* 요소들 간 공간 배분 */
+    align-items: center; /* 세로 중앙 정렬 */
   }
 
   .profile-image-container {
-    width: 40px; /* 모바일에서 프로필 이미지 크기 조정 */
+    width: 40px;
     height: 40px;
     margin-right: 10px;
   }
 
   .user-name {
-    font-size: 16px; /* 모바일에서 사용자 이름 폰트 크기 조정 */
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-left: 10px;
   }
 
   .follow-button {
-    padding: 6px 12px; /* 모바일에서 버튼 패딩 조정 */
-    font-size: 11px; /* 모바일에서 버튼 폰트 크기 조정 */
-    min-width: 70px;
+    padding: 6px 12px;
+    font-size: 11px;
+    min-width: 60px;
+    margin-left: 10px;
+  }
+}
+
+/* 추가적으로 더 작은 모바일 화면 (예: 450px 이하)을 위한 미디어 쿼리도 고려 */
+@media (max-width: 450px) {
+  .following-page {
+    padding: 15px 5px;
+  }
+
+  h2.following-title {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+
+  .follower-count {
+    font-size: 12px;
+  }
+
+  .keyword-box {
+    padding: 8px 10px;
+  }
+
+  .profile-image-container {
+    width: 36px;
+    height: 36px;
+  }
+
+  .user-name {
+    font-size: 15px;
+  }
+
+  .follow-button {
+    padding: 5px 10px;
+    font-size: 10px;
+    min-width: 50px;
   }
 }
