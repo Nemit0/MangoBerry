@@ -84,8 +84,14 @@
     font-size: 18px;
     font-weight: bold;
     color: #333;
+    margin-right: 10px; /* 닉네임과 RatingDisplay 사이 간격 */
   }
-  
+
+  .profile-info {
+    display: flex;
+    align-items: center;
+  }
+
   /* 팔로잉 버튼 스타일 */
   .follow-button {
     padding: 8px 15px;
