@@ -7,27 +7,27 @@ import { useAuth }             from "../contexts/AuthContext";
 import "./AddRestaurantPage.css";
 
 /* ───────────── constants ───────────── */
-const API_ROOT          = "/api";
-const CUISINE_PRESETS   = [
+const API_ROOT        = "/api";
+const CUISINE_PRESETS = [
   "한식", "중식", "일식", "양식", "분식",
-  "카페 / 디저트", "패스트푸드", "주점", "기타"
+  "카페 / 디저트", "패스트푸드", "주점", "기타",
 ];
 
 /* ───────────────────────────────── component ─────────────────────────────── */
 export default function AddRestaurantPage () {
   /* navigation / auth */
-  const navigate          = useNavigate();
-  const { user }          = useAuth();   // not strictly needed, but available
+  const navigate      = useNavigate();
+  const { user }      = useAuth(); // available if you later need it
 
   /* form state */
-  const [name,        setName]        = useState("");
-  const [addr,        setAddr]        = useState("");
-  const [cuisine,     setCuisine]     = useState("");
-  const [latitude,    setLatitude]    = useState("");  // optional
-  const [longitude,   setLongitude]   = useState("");  // optional
+  const [name,      setName]      = useState("");
+  const [addr,      setAddr]      = useState("");
+  const [cuisine,   setCuisine]   = useState("");
+  const [latitude,  setLatitude]  = useState("");
+  const [longitude, setLongitude] = useState("");
 
   /* ui state */
-  const [isPosting,   setIsPosting]   = useState(false);
+  const [isPosting, setIsPosting] = useState(false);
 
   /* ───────────── helpers ───────────── */
   const clearForm = () => {
@@ -38,27 +38,25 @@ export default function AddRestaurantPage () {
   /* POST /add_restaurant */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    /* basic validation */
-    if (!name.trim())   return alert("식당 이름을 입력해주세요!");
-    if (!cuisine.trim())return alert("음식 종류(카테고리)를 선택해주세요!");
+    if (!name.trim())    return alert("식당 이름을 입력해주세요!");
+    if (!cuisine.trim()) return alert("음식 종류(카테고리)를 선택해주세요!");
     if (!addr.trim() && !(latitude && longitude))
       return alert("주소 또는 좌표(위도, 경도) 중 하나는 필요합니다.");
 
-    /* payload as required by RestaurantCreate Pydantic model */
     const body = {
       name,
       location     : addr || null,
       cuisine_type : cuisine,
-      latitude     : latitude ? Number(latitude)  : null,
-      longitude    : longitude ? Number(longitude): null,
+      latitude     : latitude  ? Number(latitude)  : null,
+      longitude    : longitude ? Number(longitude) : null,
     };
 
     try {
       setIsPosting(true);
       const res = await fetch(`${API_ROOT}/add_restaurant`, {
-        method: "POST",
+        method : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body   : JSON.stringify(body),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
@@ -75,7 +73,6 @@ export default function AddRestaurantPage () {
     }
   };
 
-  /* cancel button */
   const handleCancel = () =>
     window.confirm("작성 중인 내용이 사라집니다. 계속하시겠습니까?") &&
     navigate(-1);
@@ -128,9 +125,9 @@ export default function AddRestaurantPage () {
             />
           </label>
 
-          {/* coordinates – mutually optional with address */}
+          {/* coordinates */}
           <div className="coord-row">
-            <label className="addrest-label half">
+            <label className="addrest-label">
               <span>위도 (latitude)</span>
               <input
                 type="number"
@@ -140,7 +137,7 @@ export default function AddRestaurantPage () {
                 placeholder="37.4979"
               />
             </label>
-            <label className="addrest-label half">
+            <label className="addrest-label">
               <span>경도 (longitude)</span>
               <input
                 type="number"
