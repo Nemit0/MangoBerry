@@ -1,11 +1,11 @@
-import './RestaurantInfoPage.css';
-import Header     from '../components/Header';
-import PostList   from '../components/PostList';
-import WordCloud  from '../components/WordCloud';
-import { useEffect, useState, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import "./RestaurantInfoPage.css";
+import Header     from "../components/Header";
+import PostList   from "../components/PostList";
+import WordCloud  from "../components/WordCloud";
+import { useEffect, useState, useCallback } from "react";
+import { useParams } from "react-router-dom";
 
-const API_ROOT = '/api';
+const API_ROOT = "/api";
 
 /* helper: [{ keyword, frequency }] ➜ [{ name, frequency }] */
 const mapKeywords = (arr = []) =>
@@ -13,7 +13,7 @@ const mapKeywords = (arr = []) =>
 
 function RestaurantInfoPage() {
   /* ─────────── routing param ─────────── */
-  const { restaurantId } = useParams();          // comes from /restaurantInfo/:restaurantId
+  const { restaurantId } = useParams(); // comes from /restaurantInfo/:restaurantId
 
   /* ─────────── state ─────────── */
   const [restaurant, setRestaurant] = useState(null); // filled after fetch
@@ -30,12 +30,12 @@ function RestaurantInfoPage() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const { success, data } = await res.json();
-      if (!success || !data) throw new Error('API returned failure');
+      if (!success || !data) throw new Error("API returned failure");
 
       setRestaurant({
         id      : data.id,
         name    : data.name,
-        address : data.address ?? '주소 정보 없음',
+        address : data.address ?? "주소 정보 없음",
         image   : data.image,                       // may be null
         keywords: mapKeywords(data.keywords || []),
       });
@@ -53,8 +53,8 @@ function RestaurantInfoPage() {
   }, [restaurantId, fetchRestaurantData]);
 
   /* ─────────── render ─────────── */
-  if (loading) return <div className="loading-screen">로딩 중…</div>;
-  if (error)   return <div className="error-screen">{error}</div>;
+  if (loading)     return <div className="loading-screen">로딩 중…</div>;
+  if (error)       return <div className="error-screen">{error}</div>;
   if (!restaurant) return null; // defensive – shouldn't normally happen
 
   return (
@@ -63,27 +63,31 @@ function RestaurantInfoPage() {
 
       <div className="main-content-wrapper">
         <main className="rIpage-middle-area">
-
           {/* ───────── Left column ───────── */}
           <div className="rIpage-left-part">
-            <div className="restaurant-info-container">
-
-              <img
-                src={restaurant.image ?? '/default_restaurant.jpg'}  // fallback
-                alt={restaurant.name}
-                className="restaurant-image"
-              />
+              <div className="restaurant-info-container">
+                {restaurant.image ? (
+                  /* When an image URL exists, show it */
+                  <img
+                    src={restaurant.image}
+                    alt={restaurant.name}
+                    className="restaurant-image"
+                  />
+                ) : (
+                  /* Otherwise, show text placeholder */
+                  <div className="no-image-placeholder">사진없음</div>
+                )}
 
               <h2 className="restaurant-name">{restaurant.name}</h2>
               <p className="restaurant-address">{restaurant.address}</p>
 
-              {/* Word‑cloud – same width as thumbnail */}
+              {/* Word-cloud – same width as thumbnail */}
               {restaurant.keywords.length > 0 && (
                 <div className="word-cloud-container">
                   <div className="word-cloud-content">
                     <WordCloud
                       keywords={restaurant.keywords}
-                      uniformColour="#672091"   /* violet‑500 */
+                      uniformColour="#672091" /* violet-500 */
                       height={150}
                       width={600}
                     />

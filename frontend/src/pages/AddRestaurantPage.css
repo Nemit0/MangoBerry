@@ -1,0 +1,99 @@
+.addrest-container {
+  width: 60%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.addrest-main {
+  flex: 1;
+  margin-top: 80px;     /* Header height offset */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.addrest-main h1 {
+  margin-bottom: 20px;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.addrest-form {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.addrest-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.addrest-label span {
+  font-weight: 600;
+}
+
+.req {
+  color: #e74c3c;
+  margin-left: 4px;
+}
+
+.addrest-form input,
+.addrest-form select {
+  height: 56px;
+  padding: 0 14px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: "IBM_Plex_Sans_KR";
+  box-sizing: border-box;
+}
+
+.coord-row {
+  display: flex;
+  gap: 12px;
+}
+
+.half {
+  flex: 1;
+}
+
+.addrest-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.save-btn,
+.cancel-btn {
+  background-color: #000;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 28px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color .2s ease;
+}
+
+.save-btn:disabled,
+.save-btn:hover,
+.cancel-btn:hover {
+  background-color: #672091;
+  color: #FAF0D2;
+}
+
+/* ───────────── mobile (<700 px) ───────────── */
+@media (max-width: 700px) {
+  .addrest-container { width: 100%; padding: 0 12px; }
+  .addrest-main     { margin-top: 20px; }
+  .addrest-form     { max-width: 100%; }
+}
