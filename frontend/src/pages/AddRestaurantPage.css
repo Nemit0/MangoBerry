@@ -3,12 +3,12 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
 }
 
 .addrest-main {
   flex: 1;
-  margin-top: 80px;     /* Header height offset */
+  margin-top: 80px;      /* Header height offset */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -45,8 +45,10 @@
   margin-left: 4px;
 }
 
+/* inputs & selects now **always** take the full available width */
 .addrest-form input,
 .addrest-form select {
+  width: 100%;
   height: 56px;
   padding: 0 14px;
   border: 2px solid #ccc;
@@ -56,15 +58,14 @@
   box-sizing: border-box;
 }
 
+/* coordinates row – two equal halves that line up with the form edges */
 .coord-row {
-  display: flex;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* equal halves */
+  gap: 12px;                       /* same as other form gaps */
 }
 
-.half {
-  flex: 1;
-}
-
+/* action buttons */
 .addrest-actions {
   margin-top: 10px;
   display: flex;
