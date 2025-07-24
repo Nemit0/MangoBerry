@@ -390,24 +390,54 @@ def add_restaurant(
     """
     Adds a new restaurant across **MySQL → Elasticsearch → MongoDB**.
 
+    Steps
+    -----
+    0.  Duplicate‑name guard → Elasticsearch lookup  
+    1.  Resolve missing geo / address data (Kakao)  
+    2.  Insert row in MySQL (manual PK)  
+    3.  Index document in Elasticsearch  
+    4.  Stub keywords doc in MongoDB  
+
     Returns
     -------
     { "success": True, "restaurant_id": int }
     """
+    # ── 0) Duplicate‑name guard ────────────────────────────────────
+    try:
+        # Simple phrase match on the name field; adjust analysis if needed
+        dup_query = {
+            "_source": False,
+            "size":   1,
+            "query":  {"match_phrase": {"name": payload.name}},
+        }
+        dup_hits = es.search(index="full_restaurant_kor", body=dup_query)
+        if dup_hits["hits"]["total"]["value"] > 0:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Restaurant named '{payload.name}' already exists",
+            )
+    except HTTPException:
+        # Propagate the duplicate error unchanged
+        raise
+    except Exception as exc:
+        # Lookup failure → treat as server error (safer than ignoring)
+        raise HTTPException(500, f"Elasticsearch lookup failed → {exc!s}")
+
     # ── 1) Resolve missing geo/address data ──────────────────────
     lat, lon, addr = payload.latitude, payload.longitude, payload.location
 
-    # 1-A. Need coords → get them from Kakao
+    # 1‑A. Need coordinates → forward‑geocode address
     if (lat is None or lon is None) and addr:
-        if (coords := _coords_from_address(addr)) is None:
+        coords = _coords_from_address(addr)
+        if coords is None:
             raise HTTPException(400, "Unable to geocode supplied address")
         lat, lon = coords
 
-    # 1-B. Need address → reverse-geocode
+    # 1‑B. Need address → reverse‑geocode coordinates
     if not addr:
         addr = _address_from_coords(lat, lon)
         if not addr:
-            raise HTTPException(400, "Unable to reverse-geocode coordinates")
+            raise HTTPException(400, "Unable to reverse‑geocode coordinates")
 
     # ── 2) Insert row in MySQL (manual PK) ───────────────────────
     try:
@@ -416,11 +446,11 @@ def add_restaurant(
 
         new_row = Restaurant(
             restaurant_id=new_id,
-            name         =payload.name,
-            location     =addr,
-            cuisine_type =payload.cuisine_type,
-            latitude     =lat,
-            longitude    =lon,
+            name=payload.name,
+            location=addr,
+            cuisine_type=payload.cuisine_type,
+            latitude=lat,
+            longitude=lon,
         )
         db.add(new_row)
         db.commit()
@@ -430,23 +460,21 @@ def add_restaurant(
 
     # ── 3) Index document in Elasticsearch ──────────────────────
     es_doc = {
-        "r_id":      new_id,
-        "name":      payload.name,
-        "address":   addr,
-        "categories":payload.cuisine_type,
-        "location":  {"lat": lat, "lon": lon},
+        "r_id": new_id,
+        "name": payload.name,
+        "address": addr,
+        "categories": payload.cuisine_type,
+        "location": {"lat": lat, "lon": lon},
     }
     try:
         es.index(index="full_restaurant_kor", id=new_id, document=es_doc)
     except Exception as exc:
-        # Best-effort rollback in MySQL so IDs stay contiguous
+        # Best‑effort rollback so PKs stay contiguous
         db.query(Restaurant).filter(Restaurant.restaurant_id == new_id).delete()
         db.commit()
         raise HTTPException(500, f"Elasticsearch insert failed → {exc!s}")
 
     # ── 4) Stub keywords doc in MongoDB ──────────────────────────
-    restaurant_keywords_collection.insert_one(
-        {"r_id": new_id, "keywords": []}
-    )
+    restaurant_keywords_collection.insert_one({"r_id": new_id, "keywords": []})
 
     return {"success": True, "restaurant_id": new_id}
