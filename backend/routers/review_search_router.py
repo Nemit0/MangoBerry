@@ -13,6 +13,7 @@ from ..connection.elasticdb import es_client as es
 from ..connection.mongodb import (
     photo_collection,
     review_keywords_collection,
+    follow_collection
 )
 
 from ..services.calc_score import batch_user_rest_scores
@@ -37,7 +38,7 @@ def search_review_es(
         None,
         description=(
             "User ID of the *viewer* (NOT the author) – required to compute "
-            "personalised compatibility scores."
+            "personalised compatibility scores and follow‑status flags."
         ),
     ),
     user_id: Optional[int] = Query(None, description="Filter by review author ID."),
@@ -53,11 +54,11 @@ def search_review_es(
     """
     1⃣  Elasticsearch → get review hits  
     2⃣  Bulk‑fetch restaurants & ratings (single batch call)  
-    3⃣  Enrich each hit with SQL + MongoDB data  
+    3⃣  Enrich each hit with SQL + MongoDB data (photos, keywords, follow)  
     4⃣  Return JSON directly consumable by *frontend/src/pages/PostList.js*
     """
 
-    # ─── 1. Build ES query ───
+    # ─── 1. Build ES query ─────────────────────────────────────────
     must: List[Dict[str, Any]] = []
     if text:
         must.append(
@@ -97,7 +98,7 @@ def search_review_es(
     if not hits:
         return {"success": True, "result": []}
 
-    # ─── 2. Bulk relational fetches ───
+    # ─── 2. Bulk SQL look‑ups ──────────────────────────────────────
     rest_ids: set[int] = {
         h["_source"]["restaurant_id"]
         for h in hits
@@ -117,7 +118,13 @@ def search_review_es(
         else batch_user_rest_scores(viewer_id, list(rest_ids), db=db)
     )
 
-    # ─── 3. Build final objects ───
+    # ─── 3. Viewer’s follow‑list (one Mongo query) ────────────────
+    viewer_following_ids: set[int] = set()
+    if viewer_id is not None:
+        viewer_doc = follow_collection.find_one({"user_id": viewer_id}) or {}
+        viewer_following_ids = set(viewer_doc.get("following_ids", []))
+
+    # ─── 4. Build enriched payload ────────────────────────────────
     results: List[Dict[str, Any]] = []
     for h in hits:
         src = h["_source"]
@@ -151,7 +158,10 @@ def search_review_es(
         # ⓔ Rating (batch lookup; default 0.0)
         rating: float = ratings.get(rid, 0.0)
 
-        # ⓕ Assemble
+        # ⓕ Follow status (viewer → author)
+        is_following: bool = uid in viewer_following_ids
+
+        # ⓖ Assemble final object
         results.append(
             {
                 "review_id": src["review_id"],
@@ -166,14 +176,16 @@ def search_review_es(
                 "rating": rating,
                 "images": images,
                 "keywords": keywords,
+                "is_following": is_following,        # ★ NEW
             }
         )
 
-    # ─── 4. Optional sorting ───
+    # ─── 5. Optional resorting ────────────────────────────────────
     if sort == "frequent":
         results.sort(
             key=lambda r: (r["rating"], r["created_at"] or ""),
             reverse=True,
         )
 
+    # ─── 6. Done ─────────────────────────────────────────────────
     return {"success": True, "result": results}

@@ -29,6 +29,7 @@
     height: calc(100vh - 77px); /* 뷰포트 높이 - 헤더 높이 */
     margin-top: 77px; /* 헤더 아래에서 시작 */
     box-sizing: border-box;
+    overflow: hidden;
 }
 
 /* 화면 너비 360px 이하일 때 Header 높이에 맞춰 PostList 조정 */
@@ -50,4 +51,32 @@
     overflow-y: auto; /* 내용이 넘칠 때 세로 스크롤바 생성 */
     max-height: 100%; /* 부모(main-content-wrapper)의 높이를 넘지 않도록 */
     padding-top: 0%;
+    overflow: hidden; /* 스크롤바 숨김 */
+}
+
+/* ─── feed‑tabs row ───────────────────────────────────────── */
+.feed-tabs {
+    display: flex;
+    justify-content: center;
+    border-bottom: 1px solid #e2e2e2;
+    margin-bottom: 10px;
+}
+
+.feed-tab {
+    flex: 1;
+    padding: 12px 0;
+    font-weight: 600;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.feed-tab:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.feed-tab.active {
+    border-bottom: 3px solid #1d9bf0;   /* twitter‑blue highlight */
+    color: #1d9bf0;
 }
