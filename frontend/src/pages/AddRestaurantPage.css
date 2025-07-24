@@ -19,9 +19,15 @@
 }
 
 .addrest-main h1 {
-  margin-bottom: 20px;
+  margin-bottom: 0px;
   font-size: 28px;
   font-weight: 700;
+  align-self: flex-start;
+}
+
+.addrest-main p {
+  align-self: flex-start;
+  color: gray;
 }
 
 .addrest-form {
@@ -40,12 +46,13 @@
 
 .addrest-label span {
   font-weight: 600;
+  text-align: left;
 }
 
-.req {
+/* .req {
   color: #e74c3c;
   margin-left: 4px;
-}
+} */
 
 /* inputs & selects */
 .addrest-form input {

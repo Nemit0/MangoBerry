@@ -46,7 +46,7 @@ export default function NewPage () {
   const searchRestaurants = async () => {
     if (!searchQuery.trim()) return;
     try {
-      const url = `${API_ROOT}/search_restaurant_es?name=${encodeURIComponent(searchQuery.trim())}&size=50`;
+      const url = `${API_ROOT}/search_restaurant_es?name=${encodeURIComponent(searchQuery.trim())}&size=10`;
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const { success, result } = await res.json();

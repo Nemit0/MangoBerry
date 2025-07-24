@@ -133,6 +133,7 @@ export default function AddRestaurantPage () {
       {isPosting && <LoadingSpinner />}
       <main className="addrest-main">
         <h1>새 식당 등록</h1>
+        <p>(식당 이름만 넣으면 자동적으로 채워집니다.)</p>
 
         <form onSubmit={handleSubmit} className="addrest-form">
 
@@ -177,7 +178,7 @@ export default function AddRestaurantPage () {
 
           {/* cuisine – now free‑text */}
           <label className="addrest-label">
-            <span>음식 종류<span className="req">*</span></span>
+            <span>음식 종류</span> {/* <span className="req">*</span> */}
             <input
               type="text"
               value={cuisine}
