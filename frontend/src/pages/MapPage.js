@@ -1,13 +1,13 @@
 import React, {
   useEffect, useRef, useState, useCallback,
 } from "react";
-import { useNavigate }      from "react-router-dom";
-import MapSidebar           from "../components/MapSidebar";
+import { useNavigate }       from "react-router-dom";
+import MapSidebar            from "../components/MapSidebar";
 import "../pages/HomePage.css";
 import "./MapPage.css";
-import MapMarker            from "../assets/photo/MapMarker_36.png";
-import { useAuth }          from "../contexts/AuthContext";
-import { FaSpinner }        from "react-icons/fa";
+import FoxMarker             from "../assets/photo/fox_tail/fox_tail_lev1.png";
+import { useAuth }           from "../contexts/AuthContext";
+import { FaSpinner }         from "react-icons/fa";
 
 /* ───────────────────────── constants ───────────────────────── */
 const KAKAO_MAP_APP_KEY = process.env.REACT_APP_KAKAO_MAP_APP_KEY;
@@ -15,6 +15,9 @@ const API_URL           = "/api";
 const DEFAULT_DISTANCE  = "5km";
 const MAX_RESULTS       = 500;
 const DEBOUNCE_MS       = 600;
+const IMG_W             = 18;
+const IMG_H             = 36;
+const LIGHT_GREY        = 230;     // <── light grey target for 0 %
 
 /* ───────────────────────── helpers ───────────────────────── */
 const average = (arr = []) =>
@@ -36,6 +39,58 @@ const haversineDistanceKm = (lat1, lon1, lat2, lon2) => {
               + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
   return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
+
+/* ────────── dynamic marker‑image cache (0 – 100 %) ────────── */
+const foxImg = new Image();
+foxImg.src   = FoxMarker;
+
+const markerCache = {};        // key = integer rating 0‑100 → kakao.maps.MarkerImage
+function getMarkerImageForRating(rating) {
+  const key = Math.round(Math.max(0, Math.min(100, rating)));
+  if (markerCache[key]) return markerCache[key];
+
+  // if base image not ready → fallback to plain icon & revisit later
+  if (!foxImg.complete) {
+    foxImg.onload = () => {
+      // flush cache so future calls regenerate with the now‑loaded image
+      Object.keys(markerCache).forEach((k) => delete markerCache[k]);
+    };
+    return new window.kakao.maps.MarkerImage(
+      FoxMarker,
+      new window.kakao.maps.Size(IMG_W, IMG_H),
+      { offset: new window.kakao.maps.Point(13, IMG_H) },
+    );
+  }
+
+  /* draw tinted icon on off‑screen canvas */
+  const canvas  = document.createElement("canvas");
+  canvas.width  = IMG_W;
+  canvas.height = IMG_H;
+  const ctx     = canvas.getContext("2d");
+
+  ctx.drawImage(foxImg, 0, 0, IMG_W, IMG_H);
+  const imgData = ctx.getImageData(0, 0, IMG_W, IMG_H);
+  const data    = imgData.data;
+  const blend   = key / 100;                 // 0 = light grey, 1 = colour
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i], g = data[i + 1], b = data[i + 2];
+    data[i]     = LIGHT_GREY * (1 - blend) + r * blend;
+    data[i + 1] = LIGHT_GREY * (1 - blend) + g * blend;
+    data[i + 2] = LIGHT_GREY * (1 - blend) + b * blend;
+    // alpha (data[i+3]) unchanged
+  }
+  ctx.putImageData(imgData, 0, 0);
+
+  const tintedUrl = canvas.toDataURL("image/png");
+  const markerImg = new window.kakao.maps.MarkerImage(
+    tintedUrl,
+    new window.kakao.maps.Size(IMG_W, IMG_H),
+    { offset: new window.kakao.maps.Point(13, IMG_H) },
+  );
+  markerCache[key] = markerImg;
+  return markerImg;
+}
 
 /* ───────────────────────── component ───────────────────────── */
 function MapPage () {
@@ -60,7 +115,7 @@ function MapPage () {
   const [selectedFol,     setSelectedFol]     = useState([]);
   const [displayed,       setDisplayed]       = useState([]);
   const [loading,         setLoading]         = useState(false);
-  const [isSidebarOpen,   SetIsSidebarOpen]   = useState(false); // 모바일환경에서 탐색버튼
+  const [isSidebarOpen,   SetIsSidebarOpen]   = useState(false);
 
   /* keep origin ref fresh */
   useEffect(() => { originRef.current = origin; }, [origin]);
@@ -205,14 +260,11 @@ function MapPage () {
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
 
-    const bounds  = new window.kakao.maps.LatLngBounds();
-    const imgSrc  = MapMarker;
-    const imgSize = new window.kakao.maps.Size(36, 36);
-    const imgOpt  = { offset: new window.kakao.maps.Point(13, 36) };
+    const bounds = new window.kakao.maps.LatLngBounds();
 
     places.forEach((p) => {
       const pos         = new window.kakao.maps.LatLng(p.y, p.x);
-      const markerImage = new window.kakao.maps.MarkerImage(imgSrc, imgSize, imgOpt);
+      const markerImage = getMarkerImageForRating(p.mean_rating);
       const marker      = new window.kakao.maps.Marker({ map, position: pos, image: markerImage });
 
       const info = new window.kakao.maps.InfoWindow({

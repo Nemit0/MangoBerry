@@ -143,7 +143,7 @@ export default function NewPage () {
       /* 2) review body */
       const body = {
         user_id:           userID,
-        restaurant_id:     selectedRestaurant.r_id,
+        restaurant_id:     selectedRestaurant.restaurant_id,
         comments:          oneLiner,
         review:            reviewText,
         photo_filenames:   photoFilenames,
@@ -151,6 +151,8 @@ export default function NewPage () {
         positive_keywords: Object.keys(positiveKeywords).filter((k) => positiveKeywords[k]),
         negative_keywords: Object.keys(negativeKeywords).filter((k) => negativeKeywords[k]),
       };
+
+      console.log("[NewPage] Review body:", body);
 
       /* 3) POST review */
       const res = await fetch(`${API_ROOT}/reviews`, {
