@@ -1,41 +1,64 @@
-// src/pages/HomePage.js
-import React, { useState } from 'react';
-import Header from '../components/Header';
-import PostList from '../components/PostList';
-import { useAuth } from '../contexts/AuthContext';
-import WelcomePopup from '../components/WelcomePopup';
+import React, { useState } from "react";
+import Header      from "../components/Header";
+import PostList    from "../components/PostList";
+import { useAuth } from "../contexts/AuthContext";
+import WelcomePopup from "../components/WelcomePopup";
 
-import './HomePage.css';
+import "./HomePage.css";
 
-function HomePage() {
-    // 검색어 상태를 HomePage에서 관리
-    const [searchTerm, setSearchTerm] = useState('');
+/* ───────────────────────── component ───────────────────────── */
+export default function HomePage () {
+  /* search */
+  const [searchTerm, setSearchTerm] = useState("");
 
-    const { isLoggedIn, showWelcomePopup, closeWelcomePopUp } = useAuth();
+  /* feed‑scope tab */
+  const [showFollowingOnly, setShowFollowingOnly] = useState(false);
 
-    // Header에서 검색어가 변경될 때 호출될 핸들러
-    const handleSearchChange = (term) => {
-        setSearchTerm(term);
-    };
+  /* auth / popup */
+  const { isLoggedIn, showWelcomePopup, closeWelcomePopUp } = useAuth();
 
-    return (
-        <div className="homepage-layout">
-            {/* Header 컴포넌트: 검색어 상태와 핸들러를 prop으로 전달 */}
-            <Header searchTerm={searchTerm} onSearchChange={handleSearchChange} />
-            {/* 하단 전체 콘텐츠 영역 */}
-            <div className="home-main-content-wrapper">
-                {/* 중간 게시물 영역 (PostList) - 스크롤 가능 */}
-                <main className="homepage-middle-posts-area">
-                    <PostList searchTerm={searchTerm} columns={3} /> {/* PostList에 검색어 전달 */}
-                </main>
+  /* handlers */
+  const handleSearchChange = (term) => setSearchTerm(term);
+  const selectAll          = () => setShowFollowingOnly(false);
+  const selectFollowing    = () => setShowFollowingOnly(true);
 
-                {/* WelcomePopup 조건부 렌더링 */}
-                {isLoggedIn && showWelcomePopup && (
-                    <WelcomePopup onClose={closeWelcomePopUp} />
-                )}
-            </div>
-        </div>
-    );
+  return (
+    <div className="homepage-layout">
+      <Header searchTerm={searchTerm} onSearchChange={handleSearchChange} />
+
+      {/* main content */}
+      <div className="home-main-content-wrapper">
+        <main className="homepage-middle-posts-area">
+          {/* ─── feed‑scope tabs ─── */}
+          <div className="feed-tabs">
+            <button
+              type="button"
+              className={`feed-tab ${showFollowingOnly ? "" : "active"}`}
+              onClick={selectAll}
+            >
+              전체
+            </button>
+            <button
+              type="button"
+              className={`feed-tab ${showFollowingOnly ? "active" : ""}`}
+              onClick={selectFollowing}
+            >
+              팔로잉
+            </button>
+          </div>
+
+          {/* PostList gets both searchTerm & scope flag */}
+          <PostList
+            searchTerm={searchTerm}
+            columns={3}
+            followingOnly={showFollowingOnly}
+          />
+        </main>
+
+        {isLoggedIn && showWelcomePopup && (
+          <WelcomePopup onClose={closeWelcomePopUp} />
+        )}
+      </div>
+    </div>
+  );
 }
-
-export default HomePage;

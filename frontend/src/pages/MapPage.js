@@ -1,5 +1,7 @@
+/* MapPage.js */
 import React, {
   useEffect, useRef, useState, useCallback,
+  startTransition,
 } from "react";
 import { useNavigate }       from "react-router-dom";
 import MapSidebar            from "../components/MapSidebar";
@@ -12,25 +14,24 @@ import { FaSpinner }         from "react-icons/fa";
 /* ───────────────────────── constants ───────────────────────── */
 const KAKAO_MAP_APP_KEY = process.env.REACT_APP_KAKAO_MAP_APP_KEY;
 const API_URL           = "/api";
-const DEFAULT_DISTANCE  = "5km";
-const MAX_RESULTS       = 500;
-const DEBOUNCE_MS       = 600;
+const DEFAULT_DISTANCE  = "1km";
+const MAX_RESULTS       = 200;
+const DISTANCE_THRESHOLD_KM = parseDistanceKm(DEFAULT_DISTANCE);
+const DEBOUNCE_MS       = 600;   // map idle debounce (kept)
+const API_THROTTLE_MS   = 1200;  // minimum ms between real API calls
 const IMG_W             = 18;
 const IMG_H             = 36;
-const LIGHT_GREY        = 230;     // <── light grey target for 0 %
+const LIGHT_GREY        = 230;   // light grey target for 0 %
 
 /* ───────────────────────── helpers ───────────────────────── */
-const average = (arr = []) =>
-  arr.length === 0 ? 0 : arr.reduce((a, b) => a + b, 0) / arr.length;
-
-const parseDistanceKm = (d) => {
+function average (arr = []) {
+  return arr.length === 0 ? 0 : arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+function parseDistanceKm (d) {
   const num = parseFloat(String(d).replace(/[^0-9.+-]/g, ""));
   return Number.isFinite(num) ? num : 5;
-};
-const DISTANCE_THRESHOLD_KM = parseDistanceKm(DEFAULT_DISTANCE);
-
-/* haversine distance (km) */
-const haversineDistanceKm = (lat1, lon1, lat2, lon2) => {
+}
+function haversineDistanceKm (lat1, lon1, lat2, lon2) {
   const toRad = (deg) => deg * (Math.PI / 180);
   const R     = 6371;
   const dLat  = toRad(lat2 - lat1);
@@ -38,23 +39,19 @@ const haversineDistanceKm = (lat1, lon1, lat2, lon2) => {
   const a     = Math.sin(dLat / 2) ** 2
               + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
   return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-};
+}
 
-/* ────────── dynamic marker‑image cache (0 – 100 %) ────────── */
+/* ────────── dynamic marker-image cache (0 – 100 %) ────────── */
 const foxImg = new Image();
 foxImg.src   = FoxMarker;
 
-const markerCache = {};        // key = integer rating 0‑100 → kakao.maps.MarkerImage
-function getMarkerImageForRating(rating) {
+const markerCache = {};  // 0..100 → kakao.maps.MarkerImage
+function getMarkerImageForRating (rating) {
   const key = Math.round(Math.max(0, Math.min(100, rating)));
   if (markerCache[key]) return markerCache[key];
 
-  // if base image not ready → fallback to plain icon & revisit later
   if (!foxImg.complete) {
-    foxImg.onload = () => {
-      // flush cache so future calls regenerate with the now‑loaded image
-      Object.keys(markerCache).forEach((k) => delete markerCache[k]);
-    };
+    foxImg.onload = () => { Object.keys(markerCache).forEach((k) => delete markerCache[k]); };
     return new window.kakao.maps.MarkerImage(
       FoxMarker,
       new window.kakao.maps.Size(IMG_W, IMG_H),
@@ -62,7 +59,6 @@ function getMarkerImageForRating(rating) {
     );
   }
 
-  /* draw tinted icon on off‑screen canvas */
   const canvas  = document.createElement("canvas");
   canvas.width  = IMG_W;
   canvas.height = IMG_H;
@@ -71,14 +67,13 @@ function getMarkerImageForRating(rating) {
   ctx.drawImage(foxImg, 0, 0, IMG_W, IMG_H);
   const imgData = ctx.getImageData(0, 0, IMG_W, IMG_H);
   const data    = imgData.data;
-  const blend   = key / 100;                 // 0 = light grey, 1 = colour
+  const blend   = key / 100;
 
   for (let i = 0; i < data.length; i += 4) {
     const r = data[i], g = data[i + 1], b = data[i + 2];
     data[i]     = LIGHT_GREY * (1 - blend) + r * blend;
     data[i + 1] = LIGHT_GREY * (1 - blend) + g * blend;
     data[i + 2] = LIGHT_GREY * (1 - blend) + b * blend;
-    // alpha (data[i+3]) unchanged
   }
   ctx.putImageData(imgData, 0, 0);
 
@@ -92,8 +87,30 @@ function getMarkerImageForRating(rating) {
   return markerImg;
 }
 
+/* ────────── simple LRU-ish cache for nearby results ────────── */
+const RESULT_CACHE_MAX = 30;
+const resultCache = new Map(); // key -> { time, data }
+function makeCacheKey (viewer, center) {
+  const lat = Math.round(center.lat * 1e4);
+  const lon = Math.round(center.lon * 1e4);
+  return `${viewer ?? "anon"}|${lat}|${lon}|${DEFAULT_DISTANCE}|${MAX_RESULTS}`;
+}
+function cachePut (key, data) {
+  if (resultCache.has(key)) resultCache.delete(key);
+  resultCache.set(key, { time: Date.now(), data });
+  if (resultCache.size > RESULT_CACHE_MAX) {
+    const oldestKey = [...resultCache.entries()].sort((a, b) => a[1].time - b[1].time)[0][0];
+    resultCache.delete(oldestKey);
+  }
+}
+function cacheGet (key) {
+  const v = resultCache.get(key);
+  if (!v) return null;
+  return v.data;
+}
+
 /* ───────────────────────── component ───────────────────────── */
-function MapPage () {
+export default function MapPage () {
   /* refs */
   const mapContainer          = useRef(null);
   const mapInstance           = useRef(null);
@@ -102,10 +119,15 @@ function MapPage () {
   const isProgrammaticMoveRef = useRef(false);
   const originRef             = useRef(null);
 
+  // request control
+  const abortRef              = useRef(null);      // AbortController
+  const requestSeqRef         = useRef(0);         // increasing id to “take latest”
+  const lastApiCallTsRef      = useRef(0);         // time-throttle
+
   /* services */
-  const { user } = useAuth();
-  const viewerID = user?.user_id ?? null;
-  const navigate = useNavigate();
+  const { user }    = useAuth();
+  const viewerID    = user?.user_id ?? null;
+  const navigate    = useNavigate();
 
   /* state */
   const [origin,          setOrigin]          = useState(null);
@@ -185,12 +207,38 @@ function MapPage () {
       window.kakao.maps.event.addListener(mapInstance.current, "idle", handleIdle);
       return () => window.kakao.maps.event.removeListener(mapInstance.current, "idle", handleIdle);
     })().catch((e) => alert(`Kakao Map init failed: ${e}`));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* ─────────────────── API helpers ─────────────────── */
+  /* ─────────────────── NEW: clear follower cache when origin changes ─────────────────── */
+  useEffect(() => {
+    // Whenever the centre of the map moves far enough to generate a new `origin`,
+    // we throw away any follower-specific ratings so that a fresh query will be
+    // made for the follower the next time they are (or remain) selected.
+    setFollowerRatings({});
+  }, [origin]);
+
+  /* ─────────────────── API helper with cancellation & take-latest ─────────────────── */
   const fetchNearby = useCallback(async (viewer, center) => {
     if (!center) return [];
+
+    const now = Date.now();
+    const since = now - lastApiCallTsRef.current;
+    if (since < API_THROTTLE_MS) {
+      await new Promise((r) => setTimeout(r, API_THROTTLE_MS - since));
+    }
+    lastApiCallTsRef.current = Date.now();
+
+    const key = makeCacheKey(viewer, center);
+    const cached = cacheGet(key);
+    if (cached) return cached;
+
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    const mySeq = ++requestSeqRef.current;
+
     const url = new URL(`${API_URL}/nearby_restaurant_es`, window.location.origin);
     url.searchParams.set("distance", DEFAULT_DISTANCE);
     url.searchParams.set("size",      MAX_RESULTS);
@@ -198,55 +246,71 @@ function MapPage () {
     url.searchParams.set("y", center.lat);
     url.searchParams.set("x", center.lon);
 
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 110000);
+    setLoading(true);
+
     try {
       const resp = await fetch(url, { signal: controller.signal });
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const json = await resp.json();
       if (!json.success) throw new Error(json.error || "Unknown error");
-      return json.results;
-    } finally { clearTimeout(timer); }
+
+      if (mySeq === requestSeqRef.current) {
+        cachePut(key, json.results);
+        return json.results;
+      }
+      return [];
+    } catch (err) {
+      if (controller.signal.aborted) return [];
+      console.error("[MapPage] fetchNearby error:", err);
+      throw err;
+    } finally {
+      if (mySeq === requestSeqRef.current) {
+        startTransition(() => setLoading(false));
+      }
+    }
   }, []);
 
-  /* ─────────────────── initial + updated viewer list ─────────────────── */
+  /* ─────────────────── initial + viewer list ─────────────────── */
   useEffect(() => {
     (async () => {
       if (!origin) return;
-      setLoading(true);
       try {
         const data = await fetchNearby(viewerID, origin);
-        setRestaurants(data);
-      } catch (err) { console.error("[MapPage] fetchNearby (viewer) failed:", err); }
-      finally      { setLoading(false); }
+        if (data.length > 0) setRestaurants(data);
+      } catch {/* logged already */}
     })();
   }, [origin, viewerID, fetchNearby]);
 
-  /* ─────────────────── followers lists ─────────────────── */
+  /* ─────────────────── follower lists ─────────────────── */
   useEffect(() => {
     if (!origin || selectedFol.length === 0) return;
     const fid = selectedFol[0];
     if (followerRatings[fid]) return;
+
     (async () => {
       try {
         const list            = await fetchNearby(fid, origin);
         const ratingsByRestID = Object.fromEntries(list.map((r) => [r.restaurant_id, r.rating]));
         setFollowerRatings((prev) => ({ ...prev, [fid]: ratingsByRestID }));
-      } catch (err) { console.error("[MapPage] fetchNearby (follower) failed:", err); }
+      } catch (err) {
+        console.error("[MapPage] fetchNearby (follower) failed:", err);
+      }
     })();
   }, [selectedFol, origin, fetchNearby, followerRatings]);
 
   /* ─────────────────── mean calc + filter ─────────────────── */
   useEffect(() => {
-    if (restaurants.length === 0) return;
+    if (restaurants.length === 0) { setDisplayed([]); return; }
+
     const calcMean = (r) => {
       const ratings = [r.rating];
       selectedFol.forEach((fid) => {
         const fr = followerRatings[fid]?.[r.restaurant_id];
         if (typeof fr === "number") ratings.push(fr);
       });
-      return average(ratings);
+      return average(ratings);   // ← arithmetic mean of viewer + each selected follower
     };
+
     const withMean = restaurants.map((r) => ({ ...r, mean_rating: calcMean(r) }));
     const filtered = threshold === 0 ? withMean : withMean.filter((r) => r.mean_rating >= threshold);
     setDisplayed(filtered);
@@ -293,7 +357,7 @@ function MapPage () {
     const newCenter = new window.kakao.maps.LatLng(r.y, r.x);
     isProgrammaticMoveRef.current = true;
     mapInstance.current.setCenter(newCenter);
-    mapInstance.current.setLevel(3); // zoom‑in for detail
+    mapInstance.current.setLevel(3);
   };
 
   /* ───────────────────────── render ───────────────────────── */
@@ -325,5 +389,3 @@ function MapPage () {
     </div>
   );
 }
-
-export default MapPage;
