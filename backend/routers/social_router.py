@@ -6,7 +6,7 @@ from typing import List, Dict, Optional
 from uuid import uuid4
 
 # Add these constants if not imported elsewhere
-MAX_SIZE_BYTES = 5 * 1024 * 1024  # Example: 5MB limit
+MAX_SIZE_BYTES = 50 * 1024 * 1024  # Example: 50MB limit
 ALLOWED_MIME_PREFIX = "image/"
 
 from ..connection.mysqldb import (

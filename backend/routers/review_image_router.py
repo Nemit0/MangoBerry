@@ -15,7 +15,7 @@ router = APIRouter()
 
 # ────────────────────────────────────────────────────────────
 # Configuration – tweak as needed
-MAX_SIZE_BYTES = 10 * 1024 * 1024          # 10 MB hard limit
+MAX_SIZE_BYTES = 100 * 1024 * 1024          # 100 MB hard limit
 ALLOWED_MIME_PREFIX = "image/"             # simple guard
 # ────────────────────────────────────────────────────────────
 

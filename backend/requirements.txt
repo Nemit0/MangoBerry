@@ -16,3 +16,4 @@ email-validator
 pillow
 numpy
 motor
+cryptography
