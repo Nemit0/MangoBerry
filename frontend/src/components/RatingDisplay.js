@@ -14,21 +14,21 @@ const RatingDisplay = ({ score, width, height }) => {
   const getTailImage = (score) => {
     if (score >= 1 && score <= 20) {
       return fox_tail_lev1;
-    } else if (score >= 21 && score <= 30) {
+    } else if (score > 20 && score <= 30) {
       return fox_tail_lev2;
-    } else if (score >= 31 && score <= 40) {
+    } else if (score > 30 && score <= 40) {
       return fox_tail_lev3;
-    } else if (score >= 41 && score <= 50) {
+    } else if (score > 40 && score <= 50) {
       return fox_tail_lev4;
-    } else if (score >= 51 && score <= 60) {
+    } else if (score > 50 && score <= 60) {
       return fox_tail_lev5;
-    } else if (score >= 61 && score <= 70) {
+    } else if (score > 60 && score <= 70) {
       return fox_tail_lev6;
-    } else if (score >= 71 && score <= 80) {
+    } else if (score > 70 && score <= 80) {
       return fox_tail_lev7;
-    } else if (score >= 81 && score <= 90) {
+    } else if (score > 80 && score <= 90) {
       return fox_tail_lev8;
-    } else if (score >= 91 && score <= 100) {
+    } else if (score > 90 && score <= 100) {
       return fox_tail_lev9;
     }
     return null; 

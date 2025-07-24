@@ -318,7 +318,7 @@ function MapPage () {
         />
         <main id="map" className="map-area" ref={mapContainer}>
           <button className="mobile-sidebar-toggle-button" onClick={() => SetIsSidebarOpen(true)}>
-            탐색
+            검색
           </button>
         </main>
       </div>

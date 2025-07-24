@@ -3,9 +3,13 @@ import Header     from "../components/Header";
 import PostList   from "../components/PostList";
 import WordCloud  from "../components/WordCloud";
 import { useEffect, useState, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { TfiBackLeft } from "react-icons/tfi"
+import { FaBookmark } from "react-icons/fa6";
 
 const API_ROOT = "/api";
+
+
 
 /* helper: [{ keyword, frequency }] ➜ [{ name, frequency }] */
 const mapKeywords = (arr = []) =>
@@ -14,6 +18,7 @@ const mapKeywords = (arr = []) =>
 function RestaurantInfoPage() {
   /* ─────────── routing param ─────────── */
   const { restaurantId } = useParams(); // comes from /restaurantInfo/:restaurantId
+  const navigate = useNavigate();
 
   /* ─────────── state ─────────── */
   const [restaurant, setRestaurant] = useState(null); // filled after fetch
@@ -65,6 +70,10 @@ function RestaurantInfoPage() {
         <main className="rIpage-middle-area">
           {/* ───────── Left column ───────── */}
           <div className="rIpage-left-part">
+            <div className="back-space">
+              <button className="rest-back-button" onClick={()=>{navigate(-1)}}><TfiBackLeft size={20}/></button>
+            </div>
+            
               <div className="restaurant-info-container">
                 {restaurant.image ? (
                   /* When an image URL exists, show it */
@@ -75,11 +84,14 @@ function RestaurantInfoPage() {
                   />
                 ) : (
                   /* Otherwise, show text placeholder */
-                  <div className="no-image-placeholder">사진없음</div>
+                  <div className="no-image-placeholder"> </div>
                 )}
-
-              <h2 className="restaurant-name">{restaurant.name}</h2>
+              <div className="name-mark">
+                <h2 className="restaurant-name">{restaurant.name}</h2>
+                <button className="bookmark"><FaBookmark size={20}/></button> {/* 추후 삭제 예정 */}
+              </div>
               <p className="restaurant-address">{restaurant.address}</p>
+              
 
               {/* Word-cloud – same width as thumbnail */}
               {restaurant.keywords.length > 0 && (
@@ -99,6 +111,10 @@ function RestaurantInfoPage() {
 
           {/* ───────── Right column ───────── */}
           <div className="rIpage-right-part">
+            <div className="rest-review">
+              <h3 className="review-title">식당의 리뷰</h3>
+            </div>
+            
             {/* PostList already handles its own fetching when given restaurant_id */}
             <PostList columns={1} restaurant_id={restaurant.id} />
           </div>
