@@ -63,7 +63,7 @@
   width:48px;height:48px;
   border:2px dashed #ccc;
   border-radius:8px;
-  background:#fff;
+  background:rgba(255, 255, 255, 0.1);
   display:flex;
   align-items:center;
   justify-content:center;
@@ -72,7 +72,7 @@
   transition:background-color .2s ease,border-color .2s ease;
 }
 .newpage-photo-upload:hover{
-  background:#fafafa;
+  background:rgba(255, 255, 255, 0.5);
   border-color:#672091;
 }
 
@@ -163,8 +163,14 @@
   .newpage-main{margin-top:20px;height:calc(100vh - 20px);}
   .newpage-bottom{flex-direction:column;}
   .newpage-left,.newpage-right{width:100%;padding-right:0;}
-  .newpage-left{height:300px;}
-  .newpage-image-preview-container{padding-bottom:60px;}
+  .newpage-left{height:387px;border:none;}
+  .newpage-image-preview-container{
+    display: flex;
+    flex-wrap:nowrap;
+    overflow-x: auto;
+    overflow-y:hidden;
+    padding-bottom:10px;
+  }
   .newpage-photo-upload{bottom:8px;right:8px;}
   .newpage-photo-upload svg{width:22px;height:22px;}
   .newpage-inputs input,
