@@ -65,6 +65,7 @@
 .feed-tab {
     flex: 1;
     padding: 12px 0;
+    font-size: 15px;
     font-weight: 600;
     background: none;
     border: none;
@@ -77,6 +78,6 @@
 }
 
 .feed-tab.active {
-    border-bottom: 3px solid #1d9bf0;   /* twitter‑blue highlight */
-    color: #1d9bf0;
+    border-bottom: 3px solid #672091;   /* twitter‑blue highlight */
+    color: #672091;
 }
