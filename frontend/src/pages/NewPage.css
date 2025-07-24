@@ -21,17 +21,19 @@
 }
 .newpage-wrapper{width:100%;}
 .newpage-top{margin-bottom:20px;text-align:left;}
-.newpage-bottom{display:flex;flex:1;}
+.newpage-bottom{display:flex;flex:1;gap: 5px;}
 
 /* ──────────────────────── Left column ──────────────────────── */
 .newpage-left{
   flex:3;
-  padding-right:20px;
+  padding-right:0px;
   display:flex;
   flex-direction:column;
-  height:400px;
+  height:387px;
   flex-shrink:0;
   position:relative;           /* ‼️ enable absolute child positioning */
+  border: 2px solid #ccc;
+  border-radius: 8px;
 }
 .newpage-image-preview-container{
   margin-top:0;

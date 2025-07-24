@@ -21,7 +21,7 @@ const MyWordCloud = ({
 }) => {
   /* 2‑A. Track the actual pixel size of our wrapper <div> */
   const containerRef = useRef(null);
-  const [{ width, height }, setSize] = useState({ width: 300, height: 300 });
+  const [{ width, height }, setSize] = useState({ width: 300, height: 150 });
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -64,7 +64,7 @@ const MyWordCloud = ({
   }, [words.length]);
 
   const fontSize = (w) => {
-    const raw     = (Math.sqrt(w.value) * 6 + minFont) * crowdFactor;
+    const raw     = (Math.sqrt(w.value) * 1 + minFont) * crowdFactor;
     const clamped = Math.max(minFont, Math.min(maxFont, raw));
     return clamped;
   };
@@ -92,6 +92,7 @@ const MyWordCloud = ({
         deterministic                /* same layout on every render */
         fontWeight="bold"
         font="IBM_Plex_Sans_KR"
+        rotate={()=>0}
       />
     </div>
   );

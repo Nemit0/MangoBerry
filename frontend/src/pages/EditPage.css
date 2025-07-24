@@ -5,12 +5,12 @@
 .editpage-top{margin-bottom:20px;text-align:left;}
 .page-title-with-delete{display:flex;justify-content:space-between;align-items:center;}
 .page-title-with-delete h1{margin:0;}
-.editpage-bottom{display:flex;flex:1;}
+.editpage-bottom{display:flex;flex:1;gap: 5px;}
 
 /* left column */
 .editpage-left{
-  flex:3;padding-right:20px;display:flex;flex-direction:column;
-  height:400px;flex-shrink:0;position:relative;
+  flex:3;padding-right:0px;display:flex;flex-direction:column;
+  height:387px;flex-shrink:0;position:relative;border: 2px solid #ccc;border-radius: 8px;
 }
 .editpage-image-preview-container{
   margin-top:0;display:flex;flex-wrap:wrap;gap:10px;
