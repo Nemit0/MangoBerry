@@ -9,7 +9,7 @@ import "../pages/HomePage.css";
 import "./MapPage.css";
 import FoxMarker             from "../assets/photo/fox_tail/fox_tail_lev1.png";
 import { useAuth }           from "../contexts/AuthContext";
-import { FaSpinner }         from "react-icons/fa";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 /* ───────────────────────── constants ───────────────────────── */
 const KAKAO_MAP_APP_KEY = process.env.REACT_APP_KAKAO_MAP_APP_KEY;
@@ -152,7 +152,7 @@ export default function MapPage () {
         return { lat, lon };
       }
     } catch {/* ignore */}
-    return { lat: 37.525160, lon: 126.925930 };
+    return { lat: 37.525202, lon: 126.925769 }; // IBM Korea
   };
 
   const fetchCurrentLocation = useCallback(() => new Promise((resolve) => {
@@ -365,8 +365,7 @@ export default function MapPage () {
     <div className="map-page-layout">
       {loading && (
         <div className="loading-overlay">
-          <FaSpinner className="spinner" />
-          <span>음식점을 불러오는 중…</span>
+          <LoadingSpinner/>
         </div>
       )}
 
@@ -380,10 +379,11 @@ export default function MapPage () {
           isOpen={isSidebarOpen}
           onClose={() => SetIsSidebarOpen(false)}
         />
+
+        <button className="mobile-sidebar-toggle-button" onClick={() => SetIsSidebarOpen(true)}>
+          검색
+        </button>
         <main id="map" className="map-area" ref={mapContainer}>
-          <button className="mobile-sidebar-toggle-button" onClick={() => SetIsSidebarOpen(true)}>
-            검색
-          </button>
         </main>
       </div>
     </div>
