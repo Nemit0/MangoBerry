@@ -71,6 +71,7 @@
     border: none;
     cursor: pointer;
     transition: background 0.15s ease;
+    color: rgb(0, 0, 0);
 }
 
 .feed-tab:hover {
