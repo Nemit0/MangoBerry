@@ -152,7 +152,7 @@ export default function MapPage () {
         return { lat, lon };
       }
     } catch {/* ignore */}
-    return { lat: 37.525160, lon: 126.925930 };
+    return { lat: 37.525202, lon: 126.925769 }; // IBM Korea
   };
 
   const fetchCurrentLocation = useCallback(() => new Promise((resolve) => {
