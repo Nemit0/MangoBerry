@@ -48,7 +48,7 @@
     .mobile-sidebar-toggle-button {
         display: block; /* 모바일에서만 표시 */
         position: absolute;
-        bottom: 50px;
+        bottom: 10%;
         left: 50%;
         transform: translateX(-50%);
         z-index: 1000;
