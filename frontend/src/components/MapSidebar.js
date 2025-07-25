@@ -10,10 +10,10 @@ import "./MapSidebar.css";
 /* ───────────────────────── constants ───────────────────────── */
 const API_URL = "/api";
 const preferenceFilters = [
-  { label: "취향률 90% 이상", value: 90 },
-  { label: "취향률 80% 이상", value: 80 },
-  { label: "취향률 70% 이상", value: 70 },
-  { label: "취향률 60% 이상", value: 60 },
+  { label: "90% 이상", value: 90 },
+  { label: "80% 이상", value: 80 },
+  { label: "70% 이상", value: 70 },
+  { label: "60% 이상", value: 60 },
 ];
 
 /* ───────────────────────── component ───────────────────────── */
@@ -159,7 +159,7 @@ const MapSidebar = ({
         </div>
 
         {/* ── 취향률 필터 ── */}
-        <h3 className="sidebar-subtitle">취향률</h3>
+        <h3 className="sidebar-subtitle">취향매칭률</h3>
         <div className="sidebar-filter-group">
           {preferenceFilters.map(({ label, value }) => (
             <button

@@ -100,7 +100,7 @@ const FollowerPage = () => {
       <div className="follower-wrapper">
         <div className="back-and-title">
           <button className="back-button" onClick={() => navigate(-1)}><IoArrowBack size={20}/></button>
-          <h2 className="following-title">팔로잉</h2>
+          <h2 className="following-title">팔로워</h2>
         </div>
         <div className="follower-count">ALL&nbsp;{followers.length}</div>
 

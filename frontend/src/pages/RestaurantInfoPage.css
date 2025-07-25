@@ -69,14 +69,14 @@
     margin-bottom: 20px;
 }
 
-.name-mark { /* 삭제 예정 */
+/* .name-mark {
     display: flex;
     justify-content: space-between;
     width: 100%;
     align-items: center;
 }
 
-.bookmark { /* 삭제 예정 */
+.bookmark {
     background-color: rgb(255, 255, 255);
     border: none;
     cursor: pointer;
@@ -84,7 +84,7 @@
 
 .bookmark :active {
     color: #672091;
-}
+} */
 
 /* ───────── Text meta ───────── */
 .restaurant-name {

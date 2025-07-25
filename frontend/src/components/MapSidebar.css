@@ -49,13 +49,14 @@
     font-size: 1.4em;
     margin-bottom: 20px;
     text-align: left;
+    color: black;
 }
 
 .sidebar-subtitle {
     font-size: 1.1em;
     margin-top: 10px;
     margin-bottom: 5px;
-    color: #333;
+    color: #000000;
     text-align: left;
 }
 
@@ -89,7 +90,7 @@
 
 .sidebar-filter-group {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 8px;
 }
 
@@ -101,6 +102,7 @@
     font-size: 0.9em;
     cursor: pointer;
     transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    color: black;
 }
 
 .sidebar-custom-button-like {
@@ -113,9 +115,9 @@
 }
 
 .sidebar-custom-button.active {
-    background-color: #000000;
+    background-color: #672091;
     color: white;
-    border-color: #000000;
+    border-color: #672091;
 }
 
 .sidebar-following-list {
@@ -241,6 +243,7 @@
     width: 16px;
     height: 16px;
     cursor: pointer;
+    accent-color: #672091;
 }
 
 .mobile-sidebar-close-button {
@@ -279,5 +282,6 @@
         font-size: 24px;
         cursor: pointer;
         z-index: 1200;
+        color: black;
     }
 }

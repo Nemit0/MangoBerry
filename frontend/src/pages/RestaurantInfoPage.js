@@ -5,7 +5,7 @@ import WordCloud  from "../components/WordCloud";
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { IoArrowBack } from "react-icons/io5";
-import { FaBookmark } from "react-icons/fa6";
+// import { FaBookmark } from "react-icons/fa6";
 
 const API_ROOT = "/api";
 
@@ -24,7 +24,7 @@ function RestaurantInfoPage() {
   const [restaurant, setRestaurant] = useState(null); // filled after fetch
   const [error,      setError]      = useState(null); // string | null
   const [loading,    setLoading]    = useState(true); // simple spinner flag
-  const [isBookmarked, setIsBookMarked] = useState(false); // 삭제 예정
+  // const [isBookmarked, setIsBookMarked] = useState(false); // 삭제 예정
 
   /* ─────────── data fetch ─────────── */
   const fetchRestaurantData = useCallback(async (id) => {
@@ -59,9 +59,9 @@ function RestaurantInfoPage() {
   }, [restaurantId, fetchRestaurantData]);
 
   // 삭제 예정
-  const handleBookMarkClick = () => {
-    setIsBookMarked((prev)=>!prev);
-  };
+  // const handleBookMarkClick = () => {
+  //   setIsBookMarked((prev)=>!prev);
+  // };
 
   /* ─────────── render ─────────── */
   if (loading)     return <div className="loading-screen">로딩 중…</div>;
@@ -92,10 +92,11 @@ function RestaurantInfoPage() {
                   /* Otherwise, show text placeholder */
                   <div className="no-image-placeholder"> </div>
                 )}
-              <div className="name-mark">
-                <h2 className="restaurant-name">{restaurant.name}</h2>
-                <button className="bookmark" onClick={handleBookMarkClick}><FaBookmark size={25} color={isBookmarked ? '#672091' : 'black'}/></button> {/* 추후 삭제 예정 */}
-              </div>
+              {/* <div className="name-mark">
+                
+                <button className="bookmark" onClick={handleBookMarkClick}><FaBookmark size={25} color={isBookmarked ? '#672091' : 'black'}/></button>
+              </div> */}
+              <h2 className="restaurant-name">{restaurant.name}</h2>
               <p className="restaurant-address">{restaurant.address}</p>
               
 
