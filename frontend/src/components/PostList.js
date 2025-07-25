@@ -46,6 +46,8 @@ export default function PostList ({
 
         if (abort) return;
 
+        console.log("[PostList] load success:", result);
+
         /* flatten & normalise */
         const normalised = result.map((raw, idx) => {
           const images =

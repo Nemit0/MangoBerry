@@ -1,113 +1,180 @@
-import argparse
-import json
-from pathlib import Path
-from typing import Dict, Iterable, List, Tuple
+import os
+import math
+from datetime import datetime
+from typing import Iterator, List, Dict
 
-import numpy as np
-from sqlalchemy.orm import Session
+from sqlalchemy import create_engine, text
+from elasticsearch import Elasticsearch, helpers
 
-# ──────────────────────────────── project imports ──────────────────────────
-from backend.connection.mysqldb import Users, Restaurant, get_db          # SQL
-from backend.connection.mongodb import (                                 # Mongo
-    user_keywords_collection,
-    restaurant_keywords_collection,
+from ..connection.elasticdb import es_client
+
+# ───────────────────── config ─────────────────────
+MYSQL_DSN = os.getenv(
+    "MYSQL_DSN",
+    "mysql+pymysql://user:pass@127.0.0.1:3306/yourdb?charset=utf8mb4"
 )
-from backend.services.calc_score import (                                # canon helpers
-    _canonize_kw_list,
-)
+ES_URL = os.getenv("ES_URL", "http://localhost:9200")
 
-# ────────────────────────────── cosine utility ────────────────────────────
-def _cosine(a: np.ndarray, b: np.ndarray) -> float:
-    """Return cosine sim in [‑1,1]; 0 if either vec is all‑zero."""
-    if not a.any() or not b.any():
-        return 0.0
-    return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
+INDEX_NAME_NEW = "user_review_nickname_v2"
+ALIAS_NAME     = "user_review_nickname"
+BATCH_SIZE     = 1000
 
+# Optional: set to True if you want to delete ES docs that aren't in MySQL.
+DELETE_ORPHANS = True
 
-# ─────────────────────────── similarity map fn ────────────────────────────
-def keyword_similarity_map(
-    user_kw: Iterable[Dict],
-    rest_kw: Iterable[Dict],
-    *,
-    embed_dim: int = 1536,
-) -> List[Tuple[str, str, float]]:
-    """
-    Return list of (user_token, rest_token, cosine) for *all* pairs.
-    Tokens whose embeddings are malformed (wrong length) are skipped.
-    """
-    # canonicalise → list[dict]  each dict = {"token", "embedding", ...}
-    kw_u = _canonize_kw_list(user_kw)
-    kw_r = _canonize_kw_list(rest_kw)
+# ─────────────────── mappings ─────────────────────
+MAPPING = {
+    "settings": {
+        "analysis": {
+            "analyzer": {
+                # Use standard if you don't have nori plugin
+                "korean_text": {
+                    "type": "custom",
+                    "tokenizer": "standard",
+                    "filter": ["lowercase"]
+                }
+            }
+        }
+    },
+    "mappings": {
+        "dynamic": "strict",
+        "properties": {
+            "review_id":     {"type": "long"},
+            "user_id":       {"type": "long"},
+            "restaurant_id": {"type": "long"},
+            "nickname":      {"type": "keyword"},
+            "comments":      {"type": "text", "analyzer": "korean_text"},
+            "review":        {"type": "text", "analyzer": "korean_text"},
+            "photo_filenames": {"type": "keyword"},
+            "created_at":    {
+                "type":   "date",
+                "format": "strict_date_optional_time||epoch_millis"
+            }
+        }
+    }
+}
 
-    results: List[Tuple[str, str, float]] = []
-    for rec_u in kw_u:
-        emb_u = rec_u["embedding"]
-        if emb_u.size != embed_dim:
-            continue
-        for rec_r in kw_r:
-            emb_r = rec_r["embedding"]
-            if emb_r.size != embed_dim:
-                continue
-            cos = _cosine(emb_u, emb_r)
-            results.append((rec_u["token"], rec_r["token"], cos))
+# ─────────────────── sql query ────────────────────
+SQL = """
+SELECT
+    r.review_id,
+    r.user_id,
+    r.restaurant_id,
+    p.nickname,
+    r.comments,
+    r.review,
+    r.photo_filenames,
+    r.created_at
+FROM Review r
+LEFT JOIN People p ON p.user_id = r.user_id
+ORDER BY r.review_id
+"""
 
-    # Highest cosine first
-    results.sort(key=lambda x: x[2], reverse=True)
-    return results
+# ─────────────────── helpers ──────────────────────
+def chunk_iterable(iterable, size):
+    """Yield lists of length size from iterable."""
+    chunk = []
+    for item in iterable:
+        chunk.append(item)
+        if len(chunk) == size:
+            yield chunk
+            chunk = []
+    if chunk:
+        yield chunk
 
+def es_create_index_if_needed(es: Elasticsearch, name: str, body: dict):
+    if es.indices.exists(index=name):
+        print(f"[INFO] Index {name} already exists.")
+        return
+    es.indices.create(index=name, **body)
+    print(f"[OK] Created index {name}")
 
-# ────────────────────────────────── main ──────────────────────────────────
-def main() -> None:
-    p = argparse.ArgumentParser(description="Full keyword‑similarity map")
-    p.add_argument("--user", type=int, required=True, help="user_id")
-    p.add_argument("--rest", type=int, required=True, help="restaurant_id")
-    p.add_argument("--top", type=int, default=0,
-                   help="limit printed rows (0 = all)")
-    p.add_argument("--show-zero", action="store_true",
-                   help="include cosine == 0 pairs")
-    p.add_argument("--matrix-json", type=Path, default=None,
-                   help="save full similarity map to this JSON file")
-    args = p.parse_args()
+def es_point_alias(es: Elasticsearch, alias: str, new_index: str):
+    # Remove alias from any current index and attach to new_index atomically
+    actions = []
+    if es.indices.exists_alias(name=alias):
+        for old in es.indices.get_alias(name=alias).keys():
+            actions.append({"remove": {"index": old, "alias": alias}})
+    actions.append({"add": {"index": new_index, "alias": alias}})
+    es.indices.update_aliases({"actions": actions})
+    print(f"[OK] Alias {alias} -> {new_index}")
 
-    # DB session
-    db_gen = get_db()
-    db: Session = next(db_gen)
+def fetch_mysql_rows(engine) -> Iterator[Dict]:
+    with engine.connect() as conn:
+        result = conn.execution_options(stream_results=True).execute(text(SQL))
+        for row in result:
+            yield dict(row._mapping)
 
-    try:
-        user_doc = user_keywords_collection.find_one({"user_id": args.user}) or {}
-        rest_doc = restaurant_keywords_collection.find_one({"r_id": args.rest}) or {}
-        print(len(user_doc.get("keywords", [])), "user keywords found.")
-        print(len(rest_doc.get("keywords", [])), "restaurant keywords found.")
+def transform(row: Dict) -> Dict:
+    return {
+        "review_id":     int(row["review_id"]),
+        "user_id":       int(row["user_id"]),
+        "restaurant_id": int(row["restaurant_id"]),
+        "nickname":      row["nickname"] or None,
+        "comments":      row["comments"] or "",
+        "review":        row["review"] or "",
+        # split comma-string safely into list (strip spaces)
+        "photo_filenames": [
+            fn.strip() for fn in (row["photo_filenames"] or "").split(",") if fn.strip()
+        ],
+        "created_at":    row["created_at"].isoformat() if row["created_at"] else None,
+    }
 
-        pairs = keyword_similarity_map(
-            user_doc.get("keywords", []),
-            rest_doc.get("keywords", []),
-        )
+def bulk_index(es: Elasticsearch, index: str, docs: List[Dict]):
+    actions = [
+        {
+            "_op_type": "index",
+            "_index": index,
+            "_id": d["review_id"],
+            "_source": d
+        }
+        for d in docs
+    ]
+    helpers.bulk(es, actions, chunk_size=200, request_timeout=120)
+    print(f"[OK] Indexed {len(docs)} docs")
 
-    finally:
-        db.close()
-        try:
-            next(db_gen)
-        except StopIteration:
-            pass
+def collect_es_ids(es: Elasticsearch, index_or_alias: str) -> set:
+    ids = set()
+    for page in helpers.scan(es, index=index_or_alias, _source=False, query={"query": {"match_all": {}}}):
+        ids.add(int(page["_id"]))
+    return ids
 
-    if not args.show_zero:
-        pairs = [tpl for tpl in pairs if tpl[2] != 0.0]
-    if args.top:
-        pairs = pairs[: args.top]
+def main():
+    engine = create_engine(MYSQL_DSN)
+    es      = Elasticsearch(ES_URL)
 
-    # pretty print
-    print(f"\nUser {args.user} ↔ Restaurant {args.rest}")
-    print("user_keyword".ljust(25), "rest_keyword".ljust(25), "cosine")
-    print("-" * 60)
-    for u_tok, r_tok, cos in pairs:
-        print(u_tok.ljust(25)[:24], r_tok.ljust(25)[:24], f"{cos:6.3f}")
+    # 1) Ensure index exists
+    es_create_index_if_needed(es, INDEX_NAME_NEW, MAPPING)
 
-    # optional JSON dump of *entire* matrix (not just --top slice)
-    if args.matrix_json:
-        args.matrix_json.write_text(json.dumps(pairs, ensure_ascii=False, indent=2))
-        print(f"\nSaved similarity map → {args.matrix_json.resolve()}")
+    # 2) Bulk insert all rows
+    all_ids = set()
+    batch = []
+    for row in fetch_mysql_rows(engine):
+        doc = transform(row)
+        all_ids.add(doc["review_id"])
+        batch.append(doc)
+        if len(batch) >= BATCH_SIZE:
+            bulk_index(es, INDEX_NAME_NEW, batch)
+            batch.clear()
+    if batch:
+        bulk_index(es, INDEX_NAME_NEW, batch)
 
+    # 3) Delete orphans (docs in ES but not in MySQL)
+    if DELETE_ORPHANS:
+        es_ids = collect_es_ids(es, INDEX_NAME_NEW)
+        orphan_ids = es_ids - all_ids
+        if orphan_ids:
+            print(f"[INFO] Deleting {len(orphan_ids)} orphans...")
+            helpers.bulk(es, (
+                {"_op_type": "delete", "_index": INDEX_NAME_NEW, "_id": oid}
+                for oid in orphan_ids
+            ))
+        else:
+            print("[OK] No orphan docs to delete.")
+
+    # 4) Point alias
+    es_point_alias(es, ALIAS_NAME, INDEX_NAME_NEW)
+    print("[DONE] Sync complete.")
 
 if __name__ == "__main__":
     main()

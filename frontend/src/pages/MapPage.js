@@ -152,7 +152,7 @@ export default function MapPage () {
         return { lat, lon };
       }
     } catch {/* ignore */}
-    return { lat: 37.566826, lon: 126.9786567 }; // Seoul fallback
+    return { lat: 37.525160, lon: 126.925930 };
   };
 
   const fetchCurrentLocation = useCallback(() => new Promise((resolve) => {

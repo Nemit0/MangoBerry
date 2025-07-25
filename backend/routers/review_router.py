@@ -320,8 +320,13 @@ def create_review(payload: ReviewCreate, db: Session = Depends(get_db)):
     u_state_id = db.query(Users.state_id).filter(Users.user_id == payload.user_id).first()
     r_state_id = db.query(Restaurant.state_id).filter(Restaurant.restaurant_id == payload.restaurant_id).first()
 
-    print(f"User state_id: {u_state_id}, Restaurant state_id: {r_state_id}")
-
+    if r_state_id is None:
+        # Assign new state_id for restaurant and update the state id to restaurant
+        r_state_id = random_prime_in_range()
+        new_restaurant = Restaurant(
+            restaurant_id=payload.restaurant_id,
+            state_id=r_state_id
+        )
     # Calculate combined state_id
     if u_state_id and r_state_id:
         state_id = u_state_id[0] * r_state_id[0]
@@ -382,10 +387,11 @@ def create_review(payload: ReviewCreate, db: Session = Depends(get_db)):
         es.index(index="user_review_nickname", id=review_id, document={
             "review_id": review_id,
             "user_id": payload.user_id,
-            "nickname": nickname, 
             "restaurant_id": payload.restaurant_id,
-            "comments": payload.comments,
-            "review": payload.review,
+            "nickname": nickname,
+            "comments": payload.comments or "",
+            "review": payload.review or "",
+            "photo_filenames": payload.photo_filenames or [],
             "created_at": new_review.created_at.isoformat()
         })
 
@@ -503,7 +509,7 @@ def update_review(review_id: int, payload: ReviewUpdate, db: Session = Depends(g
             "doc": {
                 "comments": payload.comments,
                 "review": payload.review,
-                "photo_filenames": review.photo_filenames
+                "photo_filenames": payload.photo_filenames or []
             }
         })
 

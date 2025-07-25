@@ -1,90 +1,122 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import Header                    from "../components/Header";
-import { TbPhotoPlus }           from "react-icons/tb";
-import { FiSearch }              from "react-icons/fi";
-import { useAuth }               from "../contexts/AuthContext";
-import LoadingSpinner            from "../components/LoadingSpinner";
+import Header from "../components/Header";
+import { TbPhotoPlus } from "react-icons/tb";
+import { FiSearch } from "react-icons/fi";
+import { useAuth } from "../contexts/AuthContext";
+import LoadingSpinner from "../components/LoadingSpinner";
 import "./EditPage.css";
 
 /* ───────────────────────── constants ───────────────────────── */
 const API_ROOT = "/api";
-const USER_ID  = 9;       // fallback when anonymous
+const USER_ID = 9; // fallback when anonymous
 
-/* helper */
+/* helpers */
 const arraysEqual = (a = [], b = []) =>
   a.length === b.length && a.every((v, i) => v === b[i]);
 
-export default function EditPage () {
-  const { reviewId }  = useParams();
-  const navigate      = useNavigate();
-  const dropdownRef   = useRef(null);
-  const originalRef   = useRef(null);
-  const { user }      = useAuth();
-  const userID        = user?.user_id ?? USER_ID;
+const toNumberOrNull = (v) => {
+  const n = Number(v);
+  return Number.isNaN(n) ? null : n;
+};
+
+export default function EditPage() {
+  const { reviewId } = useParams();
+  const navigate = useNavigate();
+  const dropdownRef = useRef(null);
+  const originalRef = useRef(null);
+  const { user } = useAuth();
+  const userID = user?.user_id ?? USER_ID;
 
   /* photos */
-  const [imageFiles, setImageFiles] = useState([]);
-  const [imagePrev,  setImagePrev]  = useState([]);
+  const [imageFiles, setImageFiles] = useState([]); // File[]
+  const [imagePrev, setImagePrev] = useState([]); // string[]
 
   /* restaurant search */
-  const [searchQuery,        setSearchQuery]        = useState("");
-  const [restaurantList,     setRestaurantList]     = useState([]);
-  const [showDropdown,       setShowDropdown]       = useState(false);
-  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [restaurantList, setRestaurantList] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null); // { r_id, name, address }
 
   /* texts */
-  const [oneLiner,   setOneLiner]   = useState("");
+  const [oneLiner, setOneLiner] = useState("");
   const [reviewText, setReviewText] = useState("");
 
   /* keywords */
-  const [analysisComplete,  setAnalysisComplete]  = useState(false);
-  const [isAnalyzing,       setIsAnalyzing]       = useState(false);
-  const [positiveKeywords,  setPositiveKeywords]  = useState({});
-  const [negativeKeywords,  setNegativeKeywords]  = useState({});
+  const [analysisComplete, setAnalysisComplete] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [positiveKeywords, setPositiveKeywords] = useState({});
+  const [negativeKeywords, setNegativeKeywords] = useState({});
+
+  /* loading / error */
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
 
   /* ───────────────── initial fetch ───────────────── */
   useEffect(() => {
+    const controller = new AbortController();
+    let ignore = false;
+
     (async () => {
+      setLoading(true);
+      setLoadError(null);
+
       try {
-        const res = await fetch(`${API_ROOT}/get_review/${reviewId}`);
+        const res = await fetch(`${API_ROOT}/get_review/${reviewId}`, {
+          signal: controller.signal,
+        });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
+        if (ignore) return;
         originalRef.current = data;
 
+        /* set initial states */
         setOneLiner(data.comments ?? "");
         setReviewText(data.review ?? "");
         setSearchQuery(data.restaurant_name ?? "");
         setSelectedRestaurant({
-          r_id:     data.restaurant_id,
-          name:     data.restaurant_name,
-          address:  data.restaurant_address ?? "",
+          r_id: data.restaurant_id,
+          name: data.restaurant_name,
+          address: data.restaurant_address ?? "",
         });
+
         /* keywords */
-        const pos = {}, neg = {};
-        data.positive_keywords.forEach((k) => (pos[k] = true));
-        data.negative_keywords.forEach((k) => (neg[k] = true));
+        const pos = {};
+        const neg = {};
+        (data.positive_keywords ?? []).forEach((k) => (pos[k] = true));
+        (data.negative_keywords ?? []).forEach((k) => (neg[k] = true));
         setPositiveKeywords(pos);
         setNegativeKeywords(neg);
+
         /* photos */
         setImagePrev(data.photo_urls ?? []);
         setAnalysisComplete(true);
       } catch (err) {
+        if (controller.signal.aborted || ignore) return;
         console.error(err);
-        alert(`리뷰 데이터를 불러오지 못했습니다: ${err.message}`);
-        navigate(-1);
+        setLoadError(err);
+      } finally {
+        if (!ignore) setLoading(false);
       }
     })();
-  }, [reviewId, navigate]);
+
+    return () => {
+      ignore = true;
+      controller.abort();
+    };
+  }, [reviewId]);
 
   /* restaurant search */
   const searchRestaurants = async () => {
     if (!searchQuery.trim()) return;
     try {
-      const url = `${API_ROOT}/search_restaurant_es?name=${encodeURIComponent(searchQuery.trim())}&size=10`;
+      const url = `${API_ROOT}/search_restaurant_es?name=${encodeURIComponent(
+        searchQuery.trim()
+      )}&size=10`;
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const { success, result } = await res.json();
+      console.log("search result:", result);
       setRestaurantList(success && Array.isArray(result) ? result : []);
       setShowDropdown(true);
     } catch (err) {
@@ -92,6 +124,7 @@ export default function EditPage () {
       alert("식당 검색 중 오류가 발생했습니다.");
     }
   };
+
   const handleSearchKeyDown = (e) =>
     e.key === "Enter" && (e.preventDefault(), searchRestaurants());
 
@@ -116,11 +149,12 @@ export default function EditPage () {
     const files = Array.from(e.target.files);
     const blobs = files.map((f) => URL.createObjectURL(f));
     setImageFiles((prev) => [...prev, ...files]);
-    setImagePrev((prev)  => [...prev,  ...blobs]);
+    setImagePrev((prev) => [...prev, ...blobs]);
   };
+
   const handleDeleteImage = (idx) => {
     setImageFiles((prev) => prev.filter((_, i) => i !== idx));
-    setImagePrev((prev)  => prev.filter((_, i) => i !== idx));
+    setImagePrev((prev) => prev.filter((_, i) => i !== idx));
   };
 
   /* keyword re‑analysis */
@@ -133,9 +167,9 @@ export default function EditPage () {
     setIsAnalyzing(true);
     try {
       const payload = {
-        name:       selectedRestaurant?.name || searchQuery || "알수없음",
-        one_liner:  oneLiner,
-        text:       reviewText,
+        name: selectedRestaurant?.name || searchQuery || "알수없음",
+        one_liner: oneLiner,
+        text: reviewText,
       };
       const res = await fetch(`${API_ROOT}/analyze_review`, {
         method: "POST",
@@ -144,7 +178,8 @@ export default function EditPage () {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const arr = await res.json();
-      const pos = {}, neg = {};
+      const pos = {};
+      const neg = {};
       arr.forEach(({ keyword, sentiment }) =>
         (sentiment === "positive" ? pos : neg)[keyword] = true
       );
@@ -180,7 +215,8 @@ export default function EditPage () {
     const orig = originalRef.current;
 
     /* upload NEW images */
-    let addedFns = [], addedUrls = [];
+    let addedFns = [],
+      addedUrls = [];
     if (imageFiles.length) {
       try {
         const uploaded = await Promise.all(
@@ -195,7 +231,7 @@ export default function EditPage () {
             return res.json(); // { key, public_url }
           })
         );
-        addedFns  = uploaded.map((x) => x.key);
+        addedFns = uploaded.map((x) => x.key);
         addedUrls = uploaded.map((x) => x.public_url);
       } catch (err) {
         console.error(err);
@@ -204,32 +240,49 @@ export default function EditPage () {
       }
     }
 
+    /* ensure originals exist */
+    const origUrls = orig.photo_urls ?? [];
+    const origFns = orig.photo_filenames ?? [];
+
     /* kept originals */
-    const keptUrls = orig.photo_urls.filter((url) => imagePrev.includes(url));
-    const keptFns  = orig.photo_filenames.filter((_, i) =>
-      imagePrev.includes(orig.photo_urls[i])
-    );
+    const keptUrls = origUrls.filter((url) => imagePrev.includes(url));
+    const keptFns = origFns.filter((_, i) => imagePrev.includes(origUrls[i]));
 
     /* final arrays */
     const finalUrls = [...keptUrls, ...addedUrls];
-    const finalFns  = [...keptFns,  ...addedFns];
+    const finalFns = [...keptFns, ...addedFns];
 
-    /* diff */
+    /* diff payload */
     const payload = {};
-    if (selectedRestaurant?.r_id && selectedRestaurant.r_id !== orig.restaurant_id)
-      payload.restaurant_id = selectedRestaurant.r_id;
-    if (oneLiner   !== orig.comments)           payload.comments           = oneLiner;
-    if (reviewText !== orig.review)             payload.review             = reviewText;
-    if (!arraysEqual(finalFns,  orig.photo_filenames)) payload.photo_filenames = finalFns;
-    if (!arraysEqual(finalUrls, orig.photo_urls))      payload.photo_urls      = finalUrls;
+
+    /* restaurant diff: compare numeric IDs (and fallback to name) */
+    const origRid = toNumberOrNull(orig.restaurant_id);
+    const selRid = toNumberOrNull(selectedRestaurant?.restaurant_id);
+    const ridChanged =
+      (selRid !== null && selRid !== origRid) ||
+      (!selRid && selectedRestaurant?.name && selectedRestaurant.name !== orig.restaurant_name);
+
+    if (ridChanged && selRid !== null) {
+      payload.restaurant_id = selRid;
+    }
+
+    if (oneLiner !== orig.comments) payload.comments = oneLiner;
+    if (reviewText !== orig.review) payload.review = reviewText;
+
+    if (!arraysEqual(finalFns, origFns)) payload.photo_filenames = finalFns;
+    if (!arraysEqual(finalUrls, origUrls)) payload.photo_urls = finalUrls;
 
     const curPos = Object.keys(positiveKeywords).filter((k) => positiveKeywords[k]);
     const curNeg = Object.keys(negativeKeywords).filter((k) => negativeKeywords[k]);
-    if (!arraysEqual(curPos, orig.positive_keywords)) payload.positive_keywords = curPos;
-    if (!arraysEqual(curNeg, orig.negative_keywords)) payload.negative_keywords = curNeg;
+    if (!arraysEqual(curPos, orig.positive_keywords ?? []))
+      payload.positive_keywords = curPos;
+    if (!arraysEqual(curNeg, orig.negative_keywords ?? []))
+      payload.negative_keywords = curNeg;
 
-    if (Object.keys(payload).length === 0)
-      return alert("수정된 내용이 없습니다.");
+    if (Object.keys(payload).length === 0) {
+      alert("수정된 내용이 없습니다.");
+      return;
+    }
 
     try {
       const res = await fetch(`${API_ROOT}/update_reviews/${reviewId}`, {
@@ -245,15 +298,44 @@ export default function EditPage () {
       alert(`저장 실패: ${err.message}`);
     }
   }, [
-    imageFiles, imagePrev, oneLiner, reviewText,
-    positiveKeywords, negativeKeywords,
-    selectedRestaurant, navigate, reviewId, userID,
+    imageFiles,
+    imagePrev,
+    oneLiner,
+    reviewText,
+    positiveKeywords,
+    negativeKeywords,
+    selectedRestaurant,
+    navigate,
+    reviewId,
+    userID,
   ]);
 
   const handleCancel = () =>
     window.confirm("해당 글이 저장되지 않습니다.") && navigate("/");
 
   /* ───────────────────────── render ───────────────────────── */
+
+  if (loading) {
+    return (
+      <div className="editpage-container">
+        <Header />
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="editpage-container">
+        <Header />
+        <div className="editpage-error">
+          <p>리뷰 데이터를 불러오지 못했습니다: {loadError.message}</p>
+          <button onClick={() => navigate(-1)}>뒤로가기</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="editpage-container">
       <Header />
@@ -277,11 +359,7 @@ export default function EditPage () {
                 <div className="editpage-image-preview-container">
                   {imagePrev.map((src, idx) => (
                     <div key={idx} className="editpage-image-preview-wrapper">
-                      <img
-                        src={src}
-                        alt={`preview-${idx}`}
-                        className="image-preview"
-                      />
+                      <img src={src} alt={`preview-${idx}`} className="image-preview" />
                       <button
                         className="delete-image-button"
                         onClick={() => handleDeleteImage(idx)}
@@ -336,14 +414,12 @@ export default function EditPage () {
                       <ul className="restaurant-dropdown" ref={dropdownRef}>
                         {restaurantList.map((r) => (
                           <li
-                            key={r.r_id}
+                            key={r.r_id ?? r.id ?? r._id ?? r.name}
                             className="restaurant-dropdown-item"
                             onClick={() => handleSelectRestaurant(r)}
                           >
                             <p className="place-name">{r.name}</p>
-                            <p className="place-address">
-                              {r.address ?? "주소 정보 없음"}
-                            </p>
+                            <p className="place-address">{r.address ?? "주소 정보 없음"}</p>
                           </li>
                         ))}
                         <li

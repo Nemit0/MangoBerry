@@ -20,7 +20,7 @@ from ..services.calc_score  import (
     update_user_to_restaurant_score,
     batch_user_rest_scores,
 )
-from ..services.utilities   import get_location_from_ip
+from ..services.utilities   import get_location_from_ip, random_prime_in_range
 from .common_imports        import *       # noqa: F401,F403
 
 # ────────────────────────── Kakao API set-up ──────────────────────────
@@ -449,6 +449,7 @@ def add_restaurant(
             name=payload.name,
             location=addr,
             cuisine_type=payload.cuisine_type,
+            state_id=random_prime_in_range(),
             latitude=lat,
             longitude=lon,
         )
