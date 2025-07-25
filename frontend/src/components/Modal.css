@@ -59,8 +59,14 @@
         top: 50px;
         right: 30px;
         background-color: rgba(255, 255, 255, 0.5);
-        border-radius: 80%;
-        font-size: 30px;
-        font-weight: bold;
+        border-radius: 50%;
+        font-size: 24px;
+    }
+
+    .modal-content {
+        max-height: 80%;
+        max-width: 80%;
+        padding-left: 10px;
+        padding-right: 10px;
     }
 }

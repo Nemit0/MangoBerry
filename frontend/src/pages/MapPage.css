@@ -48,12 +48,12 @@
     .mobile-sidebar-toggle-button {
         display: block; /* 모바일에서만 표시 */
         position: absolute;
-        bottom: 10%;
+        bottom: 25%;
         left: 50%;
         transform: translateX(-50%);
         z-index: 1000;
         padding: 10px 20px;
-        background-color: #682091;
+        background-color: rgb(104, 32, 145);
         color: #fff;
         border: none;
         border-radius: 20px;

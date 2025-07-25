@@ -183,6 +183,7 @@
         flex-direction: column; /* 세로 정렬 */
         padding: 15px;
         gap: 20px;
+        max-width: 90%;
     }
 
     .modal-left,
@@ -190,6 +191,10 @@
         flex: none; /* flexgrow를 없애고 내용에 따라 크기 조절 */
         width: 100%;
         padding: 0;
+    }
+
+    .modal-right {
+        max-width: 95%;
     }
 
     .modal-post-image {
@@ -235,5 +240,9 @@
     .modal-right {
         width: 100%;
         padding: 10px;
+    }
+
+    .modal-post-content {
+        max-height: 10000px;
     }
 }
