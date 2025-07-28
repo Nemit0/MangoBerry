@@ -162,7 +162,8 @@ export default function NewPage () {
       });
       if (!res.ok) throw new Error(`Review POST HTTP ${res.status}`);
       const { review_id } = await res.json();
-      alert(`리뷰가 등록되었습니다 (ID: ${review_id})`);
+      alert(`리뷰가 등록되었습니다!`);
+      console.log("[NewPage] Review saved:", review_id);
       navigate("/");
     } catch (err) {
       console.error(err);

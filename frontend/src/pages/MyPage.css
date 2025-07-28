@@ -6,6 +6,7 @@
   width: 60%;
   margin: 0 auto;
 }
+
 .mypage-main-wrapper {
   display: flex;
   flex-grow: 1;
@@ -23,15 +24,43 @@
   max-height: 100%;
 }
 
+/* ───────────────── Loading block (align with HomePage PostList) ───────────────── */
+.postlist-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;                 /* space between spinner and text */
+  padding: 40px 16px;        /* breathing room, not full-screen overlay */
+  min-height: 120px;         /* gives a stable height so layout doesn't jump */
+  color: #666666;            /* same muted tone used commonly in loading states */
+  font-size: 0.95rem;        /* understated text size */
+  text-align: center;
+}
+
+.postlist-loader {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #BDBDBD;   /* light gray ring */
+  border-top-color: transparent;
+  animation: spin 0.8s linear infinite;
+}
+
+.postlist-loading-text {
+  letter-spacing: 0.02em;
+}
+
+/* ───────────────── Existing styles ───────────────── */
 .my-user-info {
   display: flex;
-  justify-content: space-between; /* 좌우 정렬 */
-  align-items: center; /* 수직 가운데 정렬 */
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
   padding: 30px 15px;
   border: 1px solid #ddd;
   border-radius: 8px;
 }
+
 .user-info-left {
   display: flex;
   align-items: center;
@@ -40,22 +69,22 @@
 
 /* --- 이미지 컨테이너 스타일 수정 --- */
 .user-image-container {
-  width: 60px; /* 프로필 사진 크기를 60px로 설정 */
-  height: 60px; /* 프로필 사진 크기를 60px로 설정 */
-  border-radius: 50%; /* 원형으로 자르기 */
-  overflow: hidden; /* 컨테이너 밖으로 나가는 이미지 부분 자르기 */
-  display: flex; /* 이미지를 중앙에 배치하기 위함 */
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
   justify-content: center;
   align-items: center;
-  border: 2px solid #ddd; /* 테두리 추가 (선택 사항) */
-  background-color: #eee; /* 이미지가 로드되기 전 배경색 */
+  border: 2px solid #ddd;
+  background-color: #eee;
 }
 
 .my-profile-img {
-  width: 100%; /* 컨테이너에 꽉 채우기 */
-  height: 100%; /* 컨테이너에 꽉 채우기 */
-  object-fit: cover; /* 이미지가 비율 유지하며 컨테이너 채우기 */
-  display: block; /* 이미지 하단 여백 제거 */
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 /* --- 이미지 컨테이너 스타일 끝 --- */
 
@@ -70,13 +99,16 @@
   align-items: center;
   gap: 80px;
 }
+
 .user-info-item {
   text-align: center;
 }
+
 .info-label {
   font-size: 0.9rem;
   color: #555;
 }
+
 .info-value {
   font-size: 1.2rem;
   font-weight: bold;
@@ -86,23 +118,26 @@
   display: flex;
   gap: 20px;
 }
+
 .post-left-part {
-  flex: 2; /* 왼쪽 부분이 더 넓게 */
+  flex: 2;
 }
+
 .post-right-part {
-  flex: 1; /* 오른쪽 부분이 더 좁게 */
+  flex: 1;
 }
+
 .mypage-word-cloud-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;                      /* spacing between title & cloud */
+  gap: 12px;
   align-items: center;
   justify-content: flex-start;
-  border: none;         /* straight solid line */
+  border: 1px solid #ddd;        /* light-grey border */
   border-radius: 8px;
   background-color: #ffffff;
   padding: 20px;
-  height: 420px;                  /* matches thumbnail height nicely */
+  height: 420px;
   box-sizing: border-box;
 }
 
@@ -115,21 +150,20 @@
 }
 
 .mypage-word-cloud-content {
-  flex: 1;                        /* fill remaining height */
-  width: 100%;                    /* take full width */
+  flex: 1;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* overflow hidden ensures the SVG stays clipped within border */
   overflow: hidden;
 }
 
-/* optional: limit SVG to container size */
 .mypage-word-cloud-content svg {
   max-width: 100%;
   max-height: 100%;
 }
 
+/* Kept for potential future use elsewhere in the app */
 .loading-overlay {
   position: fixed;
   inset: 0;
@@ -148,56 +182,68 @@
   animation: spin 1s linear infinite;
 }
 
+/* Spinner keyframes reused by .postlist-loader */
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* 모바일 화면 (360px 이하) */
+/* Minimal error style (optional) */
+.mypage-error {
+  width: 100%;
+  padding: 12px 16px;
+  color: #B00020;
+  background: #FDECEE;
+  border: 1px solid #F7C5CC;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+/* 모바일 화면 (700px 이하) */
 @media (max-width: 700px) {
-    .mypage-layout {
-        width: 100%; /* 전체 너비 사용 */
-        padding: 10px; /* 패딩 조정 */
-    }
+  .mypage-layout {
+    width: 100%;
+    padding: 10px;
+  }
 
-    .mypage-main-wrapper {
-      margin-top: 110px; /* Header의 새로운 높이에 맞춰 조정 */
-      height: calc(100vh - 110px); /* 남은 공간 계산 */
-    }
+  .mypage-main-wrapper {
+    margin-top: 110px;
+    height: calc(100vh - 110px);
+  }
 
-    .my-user-info {
-        flex-direction: column; /* 세로 정렬 */
-        align-items: flex-start; /* 왼쪽 정렬 */
-        gap: 15px; /* 간격 조정 */
-        padding: 15px;
-    }
+  .my-user-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 15px;
+  }
 
-    .user-info-right {
-        flex-direction: row; /* 세로 정렬 */
-        align-items: flex-start; /* 왼쪽 정렬 */
-        gap: 10px; /* 간격 조정 */
-        width: 100%; /* 전체 너비 사용 */
-    }
+  .user-info-right {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+  }
 
-    .user-info-item {
-        width: 100%; /* 전체 너비 사용 */
-        text-align: center; /* 텍스트 왼쪽 정렬 */
-    }
+  .user-info-item {
+    width: 100%;
+    text-align: center;
+  }
 
-    .my-user-post {
-        flex-direction: column; /* 세로 정렬 */
-        gap: 20px;
-    }
+  .my-user-post {
+    flex-direction: column;
+    gap: 20px;
+  }
 
-    .post-left-part,
-    .post-right-part {
-        width: 100%; /* 전체 너비 사용 */
-    }
+  .post-left-part,
+  .post-right-part {
+    width: 100%;
+  }
 
-    .mypage-word-cloud-container {
-        height: auto; /* 높이 자동 조절 */
-        max-width: 600px;
-        height: 200px;
-    }
+  .mypage-word-cloud-container {
+    height: auto;
+    max-width: 600px;
+    height: 200px;
+  }
 
-    .my-user-post.mobile-layout {
-        flex-direction: column-reverse;
-    }
+  .my-user-post.mobile-layout {
+    flex-direction: column-reverse;
+  }
 }

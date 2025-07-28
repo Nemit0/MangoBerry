@@ -2,7 +2,7 @@ import React, {
   useEffect,
   useState,
   useCallback,
-  useRef,          // NEW – for hidden file input
+  useRef,
 } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -44,14 +44,14 @@ const MyPage = () => {
   const [followingCount,  setFollowingCount]  = useState(0);
   const [postCount,       setPostCount]       = useState(0);
   const [keywords,        setKeywords]        = useState([]);
-  const [windowWidth,     setWindowWidth]     = useState(window.innerWidth); // 워드클라우드 크기 변경
+  const [windowWidth,     setWindowWidth]     = useState(window.innerWidth);
 
   /* UX flags */
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState(null);
 
   /* Refs */
-  const fileInputRef = useRef(null);          // NEW – hidden file chooser
+  const fileInputRef = useRef(null);
 
   /* ------------------------------------------------------------------ */
   /* Fetch helpers                                                      */
@@ -94,16 +94,16 @@ const MyPage = () => {
   /* Avatar upload flow                                                 */
   /* ------------------------------------------------------------------ */
   const handleProfileClick = () => {
-    /* 1️⃣ Open native file picker */
-    fileInputRef.current?.click();
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file || !userID) return;
 
-    /* Optional client‑side validation (size/type) */
-    if (file.size > 5 * 1024 * 1024) {        // 5 MB (same as backend)
+    if (file.size > 5 * 1024 * 1024) {
       alert("5MB 이하의 이미지만 업로드 가능합니다.");
       return;
     }
@@ -112,12 +112,10 @@ const MyPage = () => {
       return;
     }
 
-    /* 2️⃣ Prepare multipart/form‑data */
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      /* 3️⃣ POST to backend */
       const resp = await fetch(
         `${API_ROOT}/upload-profile-image/${userID}`,
         { method: "POST", body: formData }
@@ -125,16 +123,13 @@ const MyPage = () => {
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 
       const json = await resp.json();
-      /* 4️⃣ Optimistically update UI */
       if (json.profile_url) setProfileImg(json.profile_url);
 
-      /* 5️⃣ Refresh other social stats (in case backend mutated anything) */
       fetchSocial();
     } catch (err) {
       console.error("[MyPage] avatar upload failed:", err);
       alert("프로필 이미지를 업로드하지 못했습니다.");
     } finally {
-      /* 6️⃣ Reset the file input so selecting the same file twice re‑triggers change */
       if (fileInputRef.current) fileInputRef.current.value = null;
     }
   };
@@ -142,7 +137,6 @@ const MyPage = () => {
   /* ------------------------------------------------------------------ */
   /* Lifecycle                                                          */
   /* ------------------------------------------------------------------ */
-  // 워드클라우드 크기 변경
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
@@ -169,25 +163,31 @@ const MyPage = () => {
   /* ------------------------------------------------------------------ */
   /* Render                                                             */
   /* ------------------------------------------------------------------ */
-  if (!userID)
+  if (!userID) {
     return (
       <div className="mypage-layout">
         <Header />
         <main className="mypage-middle-area"><p>로그인이 필요합니다.</p></main>
       </div>
     );
+  }
 
   return (
     <div className="mypage-layout">
       <Header />
-
       <div className="mypage-main-wrapper">
-        {loading &&  <div className="mypage-loading">불러오는 중...</div>}
-        {error   && !loading && <div className="mypage-error">{error}</div>}
+        {error && !loading && <div className="mypage-error">{error}</div>}
 
-        {!loading && (
+        {/* ───────────────── Loading state (matches HomePage PostList style) ───────────────── */}
+        {loading ? (
           <main className="mypage-middle-area">
-
+            <div className="postlist-loading" role="status" aria-live="polite">
+              <span className="postlist-loader" aria-hidden="true"></span>
+              <span className="postlist-loading-text">게시글을 불러오는 중입니다…</span>
+            </div>
+          </main>
+        ) : (
+          <main className="mypage-middle-area">
             {/* Hidden file input – LIVE in the DOM but invisible */}
             <input
               ref={fileInputRef}
@@ -202,8 +202,8 @@ const MyPage = () => {
               <div className="user-info-left">
                 <div
                   className="user-image-container"
-                  onClick={handleProfileClick}     // NEW – clickable avatar
-                  style={{ cursor: "pointer" }}    // UX hint
+                  onClick={handleProfileClick}
+                  style={{ cursor: "pointer" }}
                 >
                   <img
                     src={profileImg}
@@ -222,7 +222,7 @@ const MyPage = () => {
             </div>
 
             {/* Posts + word‑cloud */}
-            <div className={`my-user-post ${window.innerWidth <= 700 ? 'mobile-layout' : ''}`}>
+            <div className={`my-user-post ${windowWidth <= 700 ? 'mobile-layout' : ''}`}>
               <section className="post-left-part">
                 <PostList isMyPage={true} user_id={userID} columns={1} />
               </section>
@@ -231,10 +231,10 @@ const MyPage = () => {
                 <div className="mypage-word-cloud-container">
                   <div className="mypage-word-cloud-content">
                     <WordCloud
-                       keywords={keywords}
-                       width={windowWidth <= 700 ? 600 : 300}
-                       height={windowWidth <= 700 ? 200 : 300}
-                     />
+                      keywords={keywords}
+                      width={windowWidth <= 700 ? 600 : 300}
+                      height={windowWidth <= 700 ? 200 : 300}
+                    />
                   </div>
                 </div>
               </aside>
