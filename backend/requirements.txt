@@ -12,6 +12,7 @@ openai
 scipy
 python-multipart
 passlib[bcrypt]
+python-jose[cryptography]
 email-validator
 pillow
 numpy

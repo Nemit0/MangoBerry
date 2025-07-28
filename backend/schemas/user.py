@@ -16,3 +16,9 @@ class RegisterInput(BaseModel):
         pattern=r"^(M|F|O)$"
     )
     verified:    bool | None = False
+ 
+class Token(BaseModel):
+    """Response model for JWT authentication token."""
+    access_token: str
+    token_type: str
+    user_id: int | None = None

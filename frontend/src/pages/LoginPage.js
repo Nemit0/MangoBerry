@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { login as apiLogin } from '../api';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import './LoginPage.css';
@@ -9,32 +10,18 @@ function LoginPage() {
     const [password, setPassword] = useState(''); 
     const [error, setError] = useState(''); 
     const navigate = useNavigate();
-    const { login } = useAuth(); // AuthContext의 login 함수 가져오기
+    const { login } = useAuth(); // Context login function
 
-    const API_URL = '/api';
-
+    // JWT login via apiLogin
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
 
         try {
-            const response = await fetch(`${API_URL}/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: username, password }),
-            });
-
-            if (!response.ok) {
-                throw new Error('HTTP status ' + response.status);
-            }
-            const data = await response.json();
-
-            if (data.login && data.verified) {
-                login(data);
-                navigate('/');
-            } else {
-                alert('Incorrect credentials or user not verified.');
-            }
+            // Authenticate and receive JWT
+            const data = await apiLogin(username, password);
+            login(data);
+            navigate('/');
         } catch (err) {
             console.error(err);
             setError('로그인 중 오류가 발생했습니다.');

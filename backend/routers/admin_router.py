@@ -22,6 +22,9 @@ from ..services.calc_score import (
     update_user_to_restaurant_score,
     update_user_to_user_score
 )
+from datetime import timedelta
+from ..services.auth import create_access_token, get_current_user
+from ..schemas.user import Token
 
 router = APIRouter()
 pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -112,19 +115,22 @@ def read_users(user_id: Optional[int] = Query(None), db: Session = Depends(get_d
         for u, p, rc in rows
     ]
 
-@router.post("/login", tags=["Auth"])
+@router.post("/login", response_model=Token, tags=["Auth"])
 def login(creds: LoginInput, db: Session = Depends(get_db)):
-    """bcrypt-based login verification."""
+    """Authenticate user and return a JWT access token."""
     person: People | None = (db.query(People)
                                .filter(People.email == creds.email)
                                .first())
 
     if (not person or person.verified != 1) or (not verify_password(creds.password, person.passwd)):
-        raise HTTPException(401, "Invalid credentials")
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    return {"user_id": person.user_id,
-            "login": True,
-            "verified": True}
+    # Create JWT access token with 3-day expiry
+    access_token = create_access_token(
+        data={"sub": person.user_id},
+        expires_delta=timedelta(days=3)
+    )
+    return {"access_token": access_token, "token_type": "bearer", "user_id": person.user_id}
 
 @router.post("/register/check_nickname", tags=["Registration"])
 def check_nickname(nickname: str, db: Session = Depends(get_db)):

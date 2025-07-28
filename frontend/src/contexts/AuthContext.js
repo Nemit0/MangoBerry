@@ -11,9 +11,9 @@ const API_ROOT    = "/api";
 
 export const AuthProvider = ({ children }) => {
   /* ───────────────────── persistent auth state ───────────────────── */
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem("isLoggedIn") === "true";
-  });
+  // JWT token-based auth state
+  const [token, setToken] = useState(() => localStorage.getItem("token"));
+  const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(localStorage.getItem("token")));
 
   const [user, setUser] = useState(() => {
     const cached = localStorage.getItem("user");
@@ -25,9 +25,11 @@ export const AuthProvider = ({ children }) => {
   const [hasSeenWelcomePopup, setHasSeenWelcomePopup] = useState(false);
 
   /* ───────────────────── side‑effects: localStorage ────────────────── */
+  // Persist JWT token in localStorage
   useEffect(() => {
-    localStorage.setItem("isLoggedIn", String(isLoggedIn));
-  }, [isLoggedIn]);
+    if (token) localStorage.setItem("token", token);
+    else localStorage.removeItem("token");
+  }, [token]);
 
   useEffect(() => {
     if (user) localStorage.setItem("user", JSON.stringify(user));
@@ -62,16 +64,16 @@ export const AuthProvider = ({ children }) => {
 
   /* ───────────────────────── auth helpers ──────────────────────────── */
   const login = useCallback(
-    (userData) => {
-      /* 1. Basic auth state */
+    (data) => {
+      // Store JWT token and basic user info
+      setToken(data.access_token);
       setIsLoggedIn(true);
-      setUser(userData); // { user_id, email, … }
+      setUser({ user_id: data.user_id });
 
-      /* 2. Check onboarding status asynchronously */
-      if (userData?.user_id) {
-        decideWelcomePopup(userData.user_id);
+      // Onboarding status check
+      if (data.user_id) {
+        decideWelcomePopup(data.user_id);
       } else {
-        /* Edge case: no user_id available */
         setShowWelcomePopup(true);
         setHasSeenWelcomePopup(false);
       }
@@ -82,7 +84,7 @@ export const AuthProvider = ({ children }) => {
   const logout = useCallback(() => {
     setIsLoggedIn(false);
     setUser(null);
-    localStorage.removeItem("isLoggedIn");
+    setToken(null);
     localStorage.removeItem("user");
   }, []);
 
@@ -95,7 +97,8 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         isLoggedIn,
-        user, // ← can access user.user_id anywhere in the app
+        user, // can access user.user_id anywhere in the app
+        token,
         login,
         logout,
         showWelcomePopup,
