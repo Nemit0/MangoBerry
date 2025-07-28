@@ -10,6 +10,8 @@ import "./MapPage.css";
 import FoxMarker             from "../assets/photo/fox_tail/fox_tail_lev1.png";
 import { useAuth }           from "../contexts/AuthContext";
 import LoadingSpinner from "../components/LoadingSpinner";
+import MapHelpBadge from "../components/MapHelpBadge";
+
 
 /* ───────────────────────── constants ───────────────────────── */
 const KAKAO_MAP_APP_KEY = process.env.REACT_APP_KAKAO_MAP_APP_KEY;
@@ -363,6 +365,7 @@ export default function MapPage () {
   /* ───────────────────────── render ───────────────────────── */
   return (
     <div className="map-page-layout">
+      <MapHelpBadge />
       {loading && (
         <div className="loading-overlay">
           <LoadingSpinner/>

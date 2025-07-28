@@ -1,0 +1,111 @@
+.map-help-badge-root {
+  position: fixed;
+  /* Keep a little breathing room from the edges on all devices */
+  top: 12px;
+  right: 12px;
+  z-index: 3000; /* Above map, sidebar, and loading overlay */
+  pointer-events: none; /* Container ignores clicks so inner controls can stack over map */
+}
+
+/* Collapsed round ? button */
+.map-help-badge-button {
+  pointer-events: auto; /* Re-enable interaction on the button */
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  border: 1px solid #e6e2eb;
+  background: #ffffff;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1;
+  color: #672091;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+
+.map-help-badge-button:hover { transform: translateY(-1px); }
+.map-help-badge-button:active { transform: translateY(0); }
+
+/* Expanded info panel */
+.map-help-panel {
+  pointer-events: auto; /* Panel is interactive */
+  position: relative;
+  width: clamp(260px, 38vw, 380px);
+  max-width: calc(100vw - 24px);       /* don’t overflow horizontally */
+  max-height: calc(100vh - 24px);      /* don’t overflow vertically */
+  overflow: auto;
+  padding: 12px 12px 14px 12px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+  border: 1px solid #eee7f6;
+}
+
+.map-help-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.map-help-title {
+  font-size: 14px;
+  color: #1d1d1f;
+}
+
+.map-help-close {
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: #333;
+  padding: 0 2px;
+}
+
+.map-help-body { font-size: 13px; color: #222; }
+.map-help-text { margin: 6px 0 10px 0; }
+
+.map-help-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 10px 0;
+}
+
+.legend-label { font-size: 11px; color: #555; }
+.legend-bar {
+  flex: 1 1 auto;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid #e5e5e5;
+  /* Left (0%): light gray, Right (100%): brand-ish purple */
+  background: linear-gradient(90deg, #e6e6e6 0%, #c8a6e6 60%, #7c35b0 100%);
+}
+
+.map-help-list {
+  margin: 0 0 8px 16px;
+  padding: 0;
+}
+
+.map-help-list li {
+  margin: 4px 0;
+  line-height: 1.35;
+}
+
+.map-help-note {
+  margin: 6px 0 0 0;
+  font-size: 12px;
+  color: #545454;
+}
+
+/* Mobile tweaks: nudge in a bit so it never clips edges */
+@media (max-width: 700px) {
+  .map-help-badge-root { top: 8px; right: 8px; }
+  .map-help-panel      { width: min(92vw, 360px); }
+}
