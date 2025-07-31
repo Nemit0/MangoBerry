@@ -12,9 +12,11 @@ import { useAuth }           from "../contexts/AuthContext";
 import LoadingSpinner from "../components/LoadingSpinner";
 import MapHelpBadge from "../components/MapHelpBadge";
 
-
 /* ───────────────────────── constants ───────────────────────── */
-const KAKAO_MAP_APP_KEY = process.env.REACT_APP_KAKAO_MAP_APP_KEY;
+const KAKAO_MAP_APP_KEY =
+  (typeof window !== "undefined" && window.__ENV && window.__ENV.REACT_APP_KAKAO_MAP_APP_KEY)
+    ? window.__ENV.REACT_APP_KAKAO_MAP_APP_KEY
+    : process.env.REACT_APP_KAKAO_MAP_APP_KEY; // build-time fallback
 const API_URL           = "/api";
 const DEFAULT_DISTANCE  = "1km";
 const MAX_RESULTS       = 200;

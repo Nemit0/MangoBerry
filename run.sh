@@ -3,11 +3,11 @@
 
 docker compose down
 
-branch="main"
+# branch="main"
 
-echo "Pulling from $branch"
+# echo "Pulling from $branch"
 
-git pull origin $branch
+# git pull origin $branch
 
 echo "Starting Container"
 

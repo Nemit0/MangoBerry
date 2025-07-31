@@ -1,4 +1,4 @@
-import hashlib
+import hashlib, os, time
 
 import numpy as np
 
@@ -7,7 +7,7 @@ from typing import Optional
 from warnings import warn
 
 from bson import ObjectId
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from pydantic import EmailStr
@@ -25,6 +25,9 @@ from ..services.calc_score import (
 from datetime import timedelta
 from ..services.auth import create_access_token, get_current_user
 from ..schemas.user import Token
+
+_EXPOSED_ONCE_FLAG = {"kakao_key_sent": False, "ts": 0.0}
+_EXPOSE_TTL_SECONDS = 60
 
 router = APIRouter()
 pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -46,6 +49,37 @@ def _sha256_hex(password: str) -> bytes:
         "Using SHA-256 is deprecated; use hash_password instead."
     )
     return hashlib.sha256(password.encode("utf-8")).hexdigest().encode("ascii")
+
+@router.get("/admin/runtime_frontend_env", tags=["Admin"])
+def runtime_frontend_env(response: Response, allow_multiple: Optional[bool] = False):
+    """
+    Expose runtime-only frontend env values (e.g. Kakao key) for the Nginx/React
+    container to fetch at boot and write into /usr/share/nginx/html/env-config.js.
+
+    Security/behavior:
+      - By default this endpoint will serve ONCE per backend process lifetime.
+      - You can allow retries within a small TTL window (default 5 minutes).
+      - Set `?allow_multiple=true` to disable single-shot guard (e.g., in dev).
+    """
+
+    kakao_key = os.getenv("REACT_APP_KAKAO_MAP_API_KEY") or os.getenv("KAKAO_MAP_APP_KEY") or ""
+    if not kakao_key:
+        raise HTTPException(status_code=500, detail="Kakao Map key not configured in environment.")
+
+    now = time.time()
+    if not allow_multiple:
+        sent = _EXPOSED_ONCE_FLAG["kakao_key_sent"]
+        ts   = _EXPOSED_ONCE_FLAG["ts"]
+        if sent and (now - ts) > _EXPOSE_TTL_SECONDS:
+            _EXPOSED_ONCE_FLAG["kakao_key_sent"] = False
+
+        if _EXPOSED_ONCE_FLAG["kakao_key_sent"]:
+            raise HTTPException(status_code=410, detail="Key already fetched for this boot.")
+
+        _EXPOSED_ONCE_FLAG["kakao_key_sent"] = True
+        _EXPOSED_ONCE_FLAG["ts"] = now
+
+    return {"REACT_APP_KAKAO_MAP_API_KEY": kakao_key}
 
 @router.get("/admin_sql", tags=["Admin"])
 def admin_people_sql(db: Session = Depends(get_db)):

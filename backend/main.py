@@ -1,7 +1,10 @@
 import sys
+sys.stdout.reconfigure(encoding='utf-8')
 
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+
+from .connection import load_env
 
 from .routers import (
     admin_router, 
@@ -12,8 +15,6 @@ from .routers import (
     review_search_router, 
     social_router
 )
-
-sys.stdout.reconfigure(encoding='utf-8')
 
 app = FastAPI()
 
