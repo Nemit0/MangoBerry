@@ -190,9 +190,9 @@ export default function MapPage () {
       mapInstance.current = new window.kakao.maps.Map(mapContainer.current, { center, level: 3 });
 
       const viewerMarker = new window.kakao.maps.Marker({ map: mapInstance.current, position: center });
-      new window.kakao.maps.InfoWindow({
-        content: '<div style="padding:5px;font-size:12px;">현재 내 위치</div>',
-      }).open(mapInstance.current, viewerMarker);
+      // new window.kakao.maps.InfoWindow({
+      //   content: '<div style="padding:5px;font-size:12px;">현재 내 위치</div>',
+      // }).open(mapInstance.current, viewerMarker);
 
       const handleIdle = () => {
         if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
